@@ -27,22 +27,29 @@ const SLIDES = [
         id: '1',
         title: 'Welcome to MentIQ',
         description: 'Experience a revolutionary way to learn and grow. Your personalized journey to excellence starts here.',
-        icon: 'flower-tulip-outline',
-        colors: ['#0f766e', '#14b8a6'], // Teal theme
+        icon: 'school-outline',
+        colors: ['#020617', '#0f766e', '#5eead4'], // Obsidian -> Teal -> Mint Glow
     },
     {
         id: '2',
         title: 'Expert Mentorship',
         description: 'Connect with world-class educators and mentors who are dedicated to your success and growth.',
-        icon: 'account-school-outline',
-        colors: ['#4338ca', '#6366f1'], // Indigo theme
+        icon: 'account-group-outline',
+        colors: ['#020617', '#3730a3', '#a5b4fc'], // Obsidian -> Indigo -> Lavender Glow
     },
     {
         id: '3',
+        title: 'AI-Powered Learning',
+        description: 'Harness the power of state-of-the-art AI to personalize your study path and accelerate your potential.',
+        icon: 'robot-outline',
+        colors: ['#020617', '#6b21a8', '#d8b4fe'], // Obsidian -> Violet -> Orchid Glow
+    },
+    {
+        id: '4',
         title: 'Achieve Your Goals',
         description: 'Track your progress, earn certificates, and bloom into the best version of yourself with MentIQ.',
-        icon: 'trophy-award',
-        colors: ['#be123c', '#f43f5e'], // Rose theme
+        icon: 'trophy-variant-outline',
+        colors: ['#020617', '#9f1239', '#fda4af'], // Obsidian -> Crimson -> Peach Glow
     },
 ];
 
