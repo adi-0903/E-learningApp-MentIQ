@@ -160,7 +160,7 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
                 }
               ]}
             >
-              <Text style={styles.appNameText}>EduBloom</Text>
+              <Text style={styles.appNameText}>MentIQ</Text>
               <View style={styles.badgeContainer}>
                 <View style={styles.badgeDot} />
                 <Text style={styles.taglineText}>INTELLIGENCE HUB</Text>

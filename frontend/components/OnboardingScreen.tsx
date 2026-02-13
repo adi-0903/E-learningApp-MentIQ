@@ -9,6 +9,7 @@ import {
     NativeScrollEvent,
     ImageBackground,
     Animated,
+    Image,
 } from 'react-native';
 import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -24,7 +25,7 @@ interface OnboardingScreenProps {
 const SLIDES = [
     {
         id: '1',
-        title: 'Welcome to EduBloom',
+        title: 'Welcome to MentIQ',
         description: 'Experience a revolutionary way to learn and grow. Your personalized journey to excellence starts here.',
         icon: 'flower-tulip-outline',
         colors: ['#0f766e', '#14b8a6'], // Teal theme
@@ -39,7 +40,7 @@ const SLIDES = [
     {
         id: '3',
         title: 'Achieve Your Goals',
-        description: 'Track your progress, earn certificates, and bloom into the best version of yourself with EduBloom.',
+        description: 'Track your progress, earn certificates, and bloom into the best version of yourself with MentIQ.',
         icon: 'trophy-award',
         colors: ['#be123c', '#f43f5e'], // Rose theme
     },
@@ -82,7 +83,14 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
                     style={styles.slideGradient}
                 >
                     <View style={styles.iconContainer}>
-                        <MaterialCommunityIcons name={item.icon as any} size={120} color="#fff" />
+                        {index === 0 ? (
+                            <Image
+                                source={require('@/assets/images/Logo.png')}
+                                style={styles.centralLogo}
+                            />
+                        ) : (
+                            <MaterialCommunityIcons name={item.icon as any} size={120} color="#fff" />
+                        )}
                     </View>
                     <View style={styles.textContainer}>
                         <Text style={styles.title}>{item.title}</Text>
@@ -195,11 +203,6 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         borderWidth: 2,
         borderColor: 'rgba(255,255,255,0.4)',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 10 },
-        shadowOpacity: 0.2,
-        shadowRadius: 20,
-        elevation: 10,
     },
     textContainer: {
         alignItems: 'center',
@@ -286,5 +289,10 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontWeight: 'bold',
         color: '#333',
+    },
+    centralLogo: {
+        width: 150,
+        height: 170,
+        resizeMode: 'contain',
     },
 });

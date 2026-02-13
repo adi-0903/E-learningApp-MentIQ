@@ -11,7 +11,8 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
+  Image
 } from 'react-native';
 import { ActivityIndicator, Text, TextInput } from 'react-native-paper';
 import { Colors, Typography, AppShadows, BorderRadius, Spacing } from '@/constants/theme';
@@ -118,8 +119,11 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
           <ScrollView contentContainerStyle={styles.scrollContent}>
             {/* Logo and Header */}
             <View style={styles.header}>
-              <Text style={styles.title}>Create Account</Text>
-              <Text style={styles.subtitle}>Join our learning community today</Text>
+              <Image
+                source={require('@/assets/images/Logo.png')}
+                style={styles.logoImage}
+              />
+              <Text style={styles.subtitle}>Where Mentorship Meets Intelligence</Text>
             </View>
 
             {/* Signup Card */}
@@ -334,6 +338,12 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
+    marginTop: Spacing.s,
+  },
+  logoImage: {
+    width: 140,
+    height: 120,
+    resizeMode: 'contain',
   },
   card: {
     backgroundColor: Colors.light.white,

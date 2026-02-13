@@ -179,7 +179,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 source={require('@/assets/images/Logo.png')}
                 style={styles.logoImage}
               />
-              <Text style={styles.title}>EduBloom</Text>
               <Text style={styles.subtitle}>Where Mentorship Meets Intelligence</Text>
             </View>
 
