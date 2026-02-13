@@ -2,7 +2,7 @@ import { useAuthStore } from '@/store/authStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, StyleSheet, View } from 'react-native';
+import { Animated, Dimensions, StyleSheet, View, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 
 const { width, height } = Dimensions.get('window');
@@ -14,10 +14,10 @@ interface SplashScreenProps {
 function SplashScreen({ onFinish }: SplashScreenProps) {
   const [progress, setProgress] = useState(0);
   const fadeAnim = useRef(new Animated.Value(0)).current;
-  const scaleAnim = useRef(new Animated.Value(0.3)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const logoRotateAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
-  const textSlideAnim = useRef(new Animated.Value(50)).current;
+  const textSlideAnim = useRef(new Animated.Value(30)).current;
   const isAppReady = useRef(false);
   const { getCurrentUser } = useAuthStore();
 
@@ -25,7 +25,6 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
     // Initialize app while showing splash
     const initializeApp = async () => {
       try {
-        // Enforce a maximum wait time of 5 seconds
         const timeoutPromise = new Promise((_, reject) =>
           setTimeout(() => reject(new Error('Initialization timeout')), 5000)
         );
@@ -41,35 +40,29 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
       }
     };
 
-    // Start animations sequence
     startAnimations();
     initializeApp();
 
-    // Progress bar animation - 2 second duration
     const progressInterval = setInterval(() => {
       setProgress(prev => {
-        // Only finish when both animation is done AND app is initialized
         if (prev >= 100 && isAppReady.current) {
           clearInterval(progressInterval);
-          // Delay before finishing to show complete animation
           setTimeout(() => {
             onFinish();
-          }, 300);
+          }, 600);
           return 100;
         }
 
-        // If animation is at 100 but app not ready, stay at 100
         if (prev >= 100) return 100;
 
-        return prev + 2.5; // (100 / 40 steps = 2.5) for 2 seconds at 50ms intervals
+        return prev + 2.0;
       });
-    }, 50);
+    }, 40);
 
     return () => clearInterval(progressInterval);
-  }, []); // Run on mount only
+  }, []);
 
   useEffect(() => {
-    // Animate progress bar
     Animated.timing(progressAnim, {
       toValue: progress,
       duration: 100,
@@ -78,33 +71,30 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
   }, [progress]);
 
   const startAnimations = () => {
-    // Fade in background
     Animated.timing(fadeAnim, {
       toValue: 1,
-      duration: 1000,
+      duration: 1200,
       useNativeDriver: true,
     }).start();
 
-    // Scale and rotate logo
     Animated.parallel([
       Animated.spring(scaleAnim, {
         toValue: 1,
-        tension: 50,
-        friction: 3,
+        tension: 40,
+        friction: 5,
         useNativeDriver: true,
       }),
       Animated.timing(logoRotateAnim, {
         toValue: 1,
-        duration: 1500,
+        duration: 2000,
         useNativeDriver: true,
       }),
     ]).start();
 
-    // Slide in text
     Animated.timing(textSlideAnim, {
       toValue: 0,
-      duration: 1200,
-      delay: 500,
+      duration: 1000,
+      delay: 400,
       useNativeDriver: true,
     }).start();
   };
@@ -117,7 +107,7 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#1e3c72', '#2a5298', '#667eea', '#764ba2']}
+        colors={['#010b0a', '#06201f', '#064e3b', '#0f766e']}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
@@ -130,20 +120,15 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
             }
           ]}
         >
-          {/* Educational background elements */}
+          {/* Subtle Modern Geometry background */}
           <View style={styles.educationalBackground}>
-            <EducationalElement icon="book-open-page-variant" position={{ top: '10%', left: '5%' }} delay={0} />
-            <EducationalElement icon="pencil" position={{ top: '15%', right: '8%' }} delay={200} />
-            <EducationalElement icon="lightbulb-on" position={{ bottom: '25%', left: '10%' }} delay={400} />
-            <EducationalElement icon="brain" position={{ bottom: '20%', right: '5%' }} delay={600} />
-            <EducationalElement icon="chart-line" position={{ top: '50%', left: '3%' }} delay={300} />
-            <EducationalElement icon="school" position={{ top: '45%', right: '4%' }} delay={500} />
+            <MaterialCommunityIcons name="molecule" size={400} color="rgba(45, 212, 191, 0.05)" style={styles.bgDecoration} />
           </View>
 
           {/* Floating particles background */}
           <View style={styles.particlesContainer}>
-            {[...Array(25)].map((_, index) => (
-              <FloatingParticle key={index} delay={index * 150} />
+            {[...Array(20)].map((_, index) => (
+              <FloatingParticle key={index} delay={index * 200} />
             ))}
           </View>
 
@@ -155,25 +140,16 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
                 {
                   transform: [
                     { scale: scaleAnim },
-                    { rotate: logoRotate }
                   ]
                 }
               ]}
             >
-              <LinearGradient
-                colors={['#667eea', '#764ba2']}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-                style={styles.logoBackground}
-              >
-                <View style={styles.logoInner}>
-                  <MaterialCommunityIcons
-                    name="school"
-                    size={90}
-                    color="#fff"
-                  />
-                </View>
-              </LinearGradient>
+              <View style={styles.logoHalo} />
+              <View style={styles.logoBlur} />
+              <Image
+                source={require('@/assets/images/Logo.png')}
+                style={styles.mainLogo}
+              />
             </Animated.View>
 
             <Animated.View
@@ -184,8 +160,11 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
                 }
               ]}
             >
-              <Text style={styles.appName}>EduBloom</Text>
-              <Text style={styles.tagline}>Learn • Grow • Excel</Text>
+              <Text style={styles.appNameText}>EduBloom</Text>
+              <View style={styles.badgeContainer}>
+                <View style={styles.badgeDot} />
+                <Text style={styles.taglineText}>INTELLIGENCE HUB</Text>
+              </View>
             </Animated.View>
           </View>
 
@@ -202,25 +181,27 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
                         outputRange: ['0%', '100%'],
                         extrapolate: 'clamp',
                       }),
+                      backgroundColor: '#2dd4bf',
                     }
                   ]}
                 />
               </View>
-              <Text style={styles.progressText}>{Math.round(progress)}%</Text>
+              <Text style={styles.progressPercent}>{Math.round(progress)}%</Text>
             </View>
 
-            <Text style={styles.loadingText}>
-              {progress < 30 ? 'Initializing...' :
-                progress < 60 ? 'Loading Resources...' :
-                  progress < 90 ? 'Preparing Experience...' :
-                    'Almost Ready!'}
+            <Text style={styles.loadingStatusText}>
+              {progress < 40 ? 'Securing Environment' :
+                progress < 75 ? 'Synchronizing Vault' :
+                  'Accessing Identity'}
             </Text>
           </View>
 
           {/* Bottom branding */}
           <View style={styles.brandingSection}>
-            <Text style={styles.brandingText}>Powered by Innovation</Text>
-            <Text style={styles.brandingSubtext}>Made in India 🇮🇳</Text>
+            <Text style={styles.brandingMainText}>BLOOM COLLECTIVE</Text>
+            <View style={styles.originBadge}>
+              <Text style={styles.originLabel}>ENGINEERED IN INDIA</Text>
+            </View>
           </View>
         </Animated.View>
       </LinearGradient>
@@ -228,72 +209,7 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
   );
 }
 
-// Educational element component for background
-interface EducationalElementProps {
-  icon: string;
-  position: { [key: string]: string };
-  delay: number;
-}
-
-function EducationalElement({ icon, position, delay }: EducationalElementProps) {
-  const floatAnim = useRef(new Animated.Value(0)).current;
-  const rotateAnim = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const startAnimation = () => {
-      Animated.loop(
-        Animated.parallel([
-          Animated.timing(floatAnim, {
-            toValue: 1,
-            duration: 4000 + Math.random() * 2000,
-            useNativeDriver: true,
-          }),
-          Animated.timing(rotateAnim, {
-            toValue: 1,
-            duration: 6000,
-            useNativeDriver: true,
-          }),
-        ])
-      ).start();
-    };
-
-    setTimeout(startAnimation, delay);
-  }, [delay]);
-
-  const translateY = floatAnim.interpolate({
-    inputRange: [0, 0.5, 1],
-    outputRange: [0, -20, 0],
-  });
-
-  const rotate = rotateAnim.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '360deg'],
-  });
-
-  return (
-    <Animated.View
-      style={[
-        styles.educationalElement,
-        position,
-        {
-          opacity: 0.15,
-          transform: [
-            { translateY },
-            { rotate },
-          ],
-        },
-      ]}
-    >
-      <MaterialCommunityIcons
-        name={icon as any}
-        size={50}
-        color="#fff"
-      />
-    </Animated.View>
-  );
-}
-
-// Floating particle component
+// Floating particle component refined
 function FloatingParticle({ delay }: { delay: number }) {
   const animValue = useRef(new Animated.Value(0)).current;
   const opacityValue = useRef(new Animated.Value(0)).current;
@@ -304,18 +220,18 @@ function FloatingParticle({ delay }: { delay: number }) {
         Animated.parallel([
           Animated.timing(animValue, {
             toValue: 1,
-            duration: 3000 + Math.random() * 2000,
+            duration: 4000 + Math.random() * 3000,
             useNativeDriver: true,
           }),
           Animated.sequence([
             Animated.timing(opacityValue, {
-              toValue: 0.6,
-              duration: 1000,
+              toValue: 0.4,
+              duration: 1500,
               useNativeDriver: true,
             }),
             Animated.timing(opacityValue, {
               toValue: 0,
-              duration: 2000,
+              duration: 2500,
               useNativeDriver: true,
             }),
           ]),
@@ -328,12 +244,12 @@ function FloatingParticle({ delay }: { delay: number }) {
 
   const translateY = animValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [height + 50, -50],
+    outputRange: [height * 0.8, height * 0.2],
   });
 
   const translateX = animValue.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: [0, Math.random() * 100 - 50, Math.random() * 100 - 50],
+    outputRange: [0, 30, 0],
   });
 
   return (
@@ -364,34 +280,30 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingVertical: 80,
+    paddingVertical: 100,
     paddingHorizontal: 40,
   },
   educationalBackground: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
-  educationalElement: {
-    position: 'absolute',
+    ...StyleSheet.absoluteFillObject,
     justifyContent: 'center',
     alignItems: 'center',
+    overflow: 'hidden',
+  },
+  bgDecoration: {
+    opacity: 0.1,
+    position: 'absolute',
+    right: -100,
+    top: height * 0.1,
   },
   particlesContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    ...StyleSheet.absoluteFillObject,
   },
   particle: {
     position: 'absolute',
-    width: 4,
-    height: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.8)',
-    borderRadius: 2,
+    width: 3,
+    height: 3,
+    backgroundColor: '#2dd4bf',
+    borderRadius: 1.5,
   },
   logoSection: {
     alignItems: 'center',
@@ -399,48 +311,64 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   logoContainer: {
-    marginBottom: 30,
-  },
-  logoBackground: {
-    width: 160,
-    height: 160,
-    borderRadius: 80,
+    width: 180,
+    height: 180,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 4,
-    borderColor: 'rgba(255, 255, 255, 0.4)',
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.6,
-    shadowRadius: 20,
-    elevation: 15,
+    marginBottom: 40,
   },
-  logoInner: {
-    justifyContent: 'center',
-    alignItems: 'center',
+  logoHalo: {
+    position: 'absolute',
+    width: 220,
+    height: 220,
+    borderRadius: 110,
+    borderWidth: 1,
+    borderColor: 'rgba(45, 212, 191, 0.1)',
+  },
+  logoBlur: {
+    position: 'absolute',
+    width: 140,
+    height: 140,
+    backgroundColor: 'rgba(45, 212, 191, 0.2)',
+    borderRadius: 70,
+    filter: 'blur(30px)',
+  },
+  mainLogo: {
+    width: 130,
+    height: 110,
+    resizeMode: 'contain',
+    zIndex: 10,
   },
   textContainer: {
     alignItems: 'center',
   },
-  appName: {
-    fontSize: 48,
+  appNameText: {
+    fontSize: 52,
     fontWeight: '900',
     color: '#fff',
-    letterSpacing: 3,
-    textShadowColor: 'rgba(0, 0, 0, 0.4)',
-    textShadowOffset: { width: 0, height: 3 },
-    textShadowRadius: 15,
-    marginBottom: 12,
+    letterSpacing: -1,
   },
-  tagline: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.95)',
-    letterSpacing: 1.5,
-    textAlign: 'center',
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 5,
+  badgeContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    marginTop: 8,
+    gap: 8,
+  },
+  badgeDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#2dd4bf',
+  },
+  taglineText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: 'rgba(255, 255, 255, 0.7)',
+    letterSpacing: 2,
   },
   loadingSection: {
     width: '100%',
@@ -449,61 +377,55 @@ const styles = StyleSheet.create({
   progressContainer: {
     width: '100%',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: 16,
   },
   progressBackground: {
-    width: '85%',
-    height: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
-    borderRadius: 4,
+    width: '80%',
+    height: 4,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: 2,
     overflow: 'hidden',
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
+    marginBottom: 12,
   },
   progressBar: {
     height: '100%',
-    backgroundColor: '#fff',
-    borderRadius: 4,
-    shadowColor: '#fff',
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.9,
-    shadowRadius: 12,
-    elevation: 8,
+    borderRadius: 2,
   },
-  progressText: {
-    fontSize: 15,
-    fontWeight: '800',
-    color: '#fff',
-    letterSpacing: 1.5,
-    textShadowColor: 'rgba(0, 0, 0, 0.2)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 3,
+  progressPercent: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#2dd4bf',
+    letterSpacing: 1,
   },
-  loadingText: {
-    fontSize: 17,
+  loadingStatusText: {
+    fontSize: 14,
     fontWeight: '700',
-    color: 'rgba(255, 255, 255, 0.95)',
-    letterSpacing: 0.8,
-    textShadowColor: 'rgba(0, 0, 0, 0.15)',
-    textShadowOffset: { width: 0, height: 1 },
-    textShadowRadius: 4,
+    color: 'rgba(255, 255, 255, 0.5)',
+    letterSpacing: 0.5,
+    textTransform: 'uppercase',
   },
   brandingSection: {
     alignItems: 'center',
   },
-  brandingText: {
+  brandingMainText: {
     fontSize: 12,
-    fontWeight: '600',
-    color: 'rgba(255, 255, 255, 0.8)',
-    letterSpacing: 1,
-    marginBottom: 4,
+    fontWeight: '900',
+    color: 'rgba(255, 255, 255, 0.4)',
+    letterSpacing: 4,
+    marginBottom: 10,
   },
-  brandingSubtext: {
-    fontSize: 11,
-    fontWeight: '500',
-    color: 'rgba(255, 255, 255, 0.7)',
-    letterSpacing: 0.5,
+  originBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 4,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  originLabel: {
+    fontSize: 8,
+    fontWeight: '900',
+    color: 'rgba(255, 255, 255, 0.3)',
+    letterSpacing: 1,
   },
 });
 
