@@ -1,6 +1,7 @@
 import { useAnnouncementStore, type Attachment } from '@/store/announcementStore';
 import { useAuthStore } from '@/store/authStore';
 import { useCourseStore } from '@/store/courseStore';
+import { useNotificationStore } from '@/store/notificationStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { format } from 'date-fns';
 import * as FileSystem from 'expo-file-system';
@@ -8,22 +9,32 @@ import * as IntentLauncher from 'expo-intent-launcher';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as MediaLibrary from 'expo-media-library';
 import * as WebBrowser from 'expo-web-browser';
-import { useEffect, useState } from 'react';
-import { Alert, FlatList, Platform, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useState, useRef } from 'react';
+import { Alert, FlatList, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Animated, Easing } from 'react-native';
 import ImageViewing from 'react-native-image-viewing';
 import { ActivityIndicator, FAB, Searchbar, Text } from 'react-native-paper';
+import { Colors, AppShadows } from '@/constants/theme';
 
 function AnnouncementsScreen({ navigation }: any) {
   const { user } = useAuthStore();
   const { announcements, isLoading, fetchCourseAnnouncements, fetchSchoolAnnouncements, fetchSubjectAnnouncements, fetchAllAnnouncements, deleteAnnouncement } = useAnnouncementStore();
   const { courses } = useCourseStore();
+  const { markAllAsRead } = useNotificationStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedFilter, setSelectedFilter] = useState<'all' | 'school' | 'subject'>('all');
   const [imageViewerVisible, setImageViewerVisible] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [currentImages, setCurrentImages] = useState<Array<{uri: string}>>([]);
+  const [currentImages, setCurrentImages] = useState<Array<{ uri: string }>>([]);
+
+  const fadeAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
+    Animated.timing(fadeAnim, {
+      toValue: 1,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+
     // Fetch announcements based on selected filter
     if (selectedFilter === 'all') {
       fetchAllAnnouncements();
@@ -32,14 +43,10 @@ function AnnouncementsScreen({ navigation }: any) {
     } else if (selectedFilter === 'subject') {
       fetchSubjectAnnouncements();
     }
-  }, [selectedFilter, fetchAllAnnouncements, fetchSchoolAnnouncements, fetchSubjectAnnouncements]);
 
-  useEffect(() => {
-    // Default to showing all announcements
-    if (!selectedFilter) {
-      setSelectedFilter('all');
-    }
-  }, [selectedFilter]);
+    // Reset unread count when viewing announcements
+    markAllAsRead();
+  }, [selectedFilter, fetchAllAnnouncements, fetchSchoolAnnouncements, fetchSubjectAnnouncements, markAllAsRead]);
 
   const filteredAnnouncements = announcements.filter(a =>
     a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -48,12 +55,12 @@ function AnnouncementsScreen({ navigation }: any) {
 
   const handleDeleteAnnouncement = (announcementId: string, title: string) => {
     Alert.alert(
-      'Delete Announcement',
-      `Are you sure you want to delete "${title}"? This action cannot be undone.`,
+      'System: Delete Update',
+      `Permanently remove "${title}" from the logs?`,
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'Delete',
+          text: 'Confirm Purge',
           style: 'destructive',
           onPress: async () => {
             try {
@@ -66,10 +73,7 @@ function AnnouncementsScreen({ navigation }: any) {
               } else if (selectedFilter === 'subject') {
                 fetchSubjectAnnouncements();
               }
-              Alert.alert('Success', 'Announcement deleted successfully');
-            } catch (error) {
-              Alert.alert('Error', 'Failed to delete announcement');
-            }
+            } catch (e) { Alert.alert('Error', 'Purge failed'); }
           },
         },
       ]
@@ -78,12 +82,7 @@ function AnnouncementsScreen({ navigation }: any) {
 
   const parseAttachments = (attachmentsStr: string | undefined): Attachment | null => {
     if (!attachmentsStr) return null;
-    try {
-      return JSON.parse(attachmentsStr);
-    } catch (error) {
-      console.error('Error parsing attachments:', error);
-      return null;
-    }
+    try { return JSON.parse(attachmentsStr); } catch { return null; }
   };
 
   const handleOpenLink = async (url: string) => {
@@ -113,27 +112,20 @@ function AnnouncementsScreen({ navigation }: any) {
     }
   };
 
-  const handleImagePress = (images: Array<{name: string; uri: string}>, index: number) => {
-    const imageViewerFormat = images.map(img => ({ uri: img.uri }));
-    setCurrentImages(imageViewerFormat);
-    setCurrentImageIndex(index);
-    setImageViewerVisible(true);
-  };
-
   const handleDownloadImage = async (imageUri: string, imageName?: string) => {
     try {
       // Check if it's a local file URI
       const isLocalFile = imageUri.startsWith('file://');
-      
+
       // Check if running in Expo Go
       const isExpoGo = __DEV__;
 
       if (isExpoGo || isLocalFile) {
         // In Expo Go or for local files, show alternative options
-        const message = isLocalFile 
+        const message = isLocalFile
           ? 'This is a local image file. You can view it in the image viewer but cannot download it directly.'
           : 'Due to Android permission changes, image download is limited in Expo Go. Please:\n\n1. Use a development build for full functionality\n2. Or manually save the image by long-pressing it';
-        
+
         Alert.alert(
           'Image Access',
           message,
@@ -155,38 +147,38 @@ function AnnouncementsScreen({ navigation }: any) {
       const fileName = imageName || `announcement_image_${Date.now()}.jpg`;
       // Sanitize filename for file system compatibility
       const sanitizedFileName = fileName.replace(/[^a-zA-Z0-9._-]/g, '_');
-      
+
       // Use a simple approach with a working cache directory path
       const fileUri = `file:///tmp/${sanitizedFileName}`;
 
       // Download the image
       const downloadResult = await FileSystem.downloadAsync(imageUri, fileUri);
-      
+
       if (downloadResult.status === 200) {
         // Save to media library
         const asset = await MediaLibrary.createAssetAsync(downloadResult.uri);
         await MediaLibrary.createAlbumAsync('ELearning Downloads', asset, false);
-        
+
         Alert.alert('Success', 'Image downloaded successfully!');
       } else {
         Alert.alert('Error', 'Failed to download image');
       }
     } catch (error) {
       console.error('Download error:', error);
-      
+
       // Check if it's a local file URI to avoid WebBrowser error
       const isLocalFile = imageUri.startsWith('file://');
-      
+
       if (isLocalFile) {
         Alert.alert(
-          'Download Error', 
+          'Download Error',
           'Unable to download local image file. Local files can only be viewed in the image viewer.',
           [{ text: 'OK', style: 'cancel' }]
         );
       } else {
         // Provide fallback for remote images only
         Alert.alert(
-          'Download Error', 
+          'Download Error',
           'Unable to download image. This may be due to Expo Go limitations. Consider using a development build for full functionality.',
           [
             { text: 'Open in Browser', onPress: () => WebBrowser.openBrowserAsync(imageUri) },
@@ -197,194 +189,188 @@ function AnnouncementsScreen({ navigation }: any) {
     }
   };
 
-  const renderAnnouncementItem = (announcement: any) => {
+  const renderAnnouncementItem = (announcement: any, index: number) => {
     const isSchoolWide = announcement.courseId === null;
-    const courseName = isSchoolWide ? null : courses.find(c => c.id === announcement.courseId)?.title || 'Unknown Course';
+    const course = !isSchoolWide ? courses.find(c => c.id === announcement.courseId) : null;
     const attachments = parseAttachments(announcement.attachments);
-    
+
     return (
-      <View key={announcement.id} style={styles.announcementCard}>
-        {/* Premium Gradient Header */}
-        <LinearGradient
-          colors={isSchoolWide ? ['#ff9800', '#ff5722'] : ['#667eea', '#764ba2']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={styles.announcementGradientHeader}
-        >
-          <View style={styles.announcementHeaderContent}>
-            <View style={styles.announcementBadgeContainer}>
-              <MaterialCommunityIcons 
-                name={isSchoolWide ? "school" : "book-open-page-variant"} 
-                size={16} 
-                color="#fff" 
-              />
-              <Text style={styles.announcementBadgeText}>
-                {isSchoolWide ? "School-wide" : courseName || "Course"}
-              </Text>
-            </View>
-            <View style={styles.announcementHeaderActions}>
-              <Text style={styles.announcementDate}>
-                {format(new Date(announcement.createdAt), 'MMM dd')}
-              </Text>
-              {user?.role === 'teacher' && announcement.teacherId === user.id && (
-                <TouchableOpacity
-                  onPress={() => handleDeleteAnnouncement(announcement.id.toString(), announcement.title)}
-                  style={styles.deleteButton}
-                >
-                  <MaterialCommunityIcons name="trash-can-outline" size={18} color="#fff" />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </LinearGradient>
-
-        {/* Card Content */}
-        <View style={styles.announcementCardContent}>
-          <Text style={styles.announcementTitle} numberOfLines={2}>
-            {announcement.title}
-          </Text>
-          <Text style={styles.announcementContent} numberOfLines={3}>
-            {announcement.content}
-          </Text>
-
-          {/* Compact Attachments Section */}
-          {attachments && ((attachments.images?.length || 0) > 0 || (attachments.pdfs?.length || 0) > 0 || (attachments.links?.length || 0) > 0) && (
-            <View style={styles.attachmentsContainer}>
-              <View style={styles.attachmentSummary}>
-                {attachments.images && attachments.images.length > 0 && (
-                  <TouchableOpacity 
-                    style={styles.attachmentBadge}
-                    onPress={() => handleImagePress(attachments.images!, 0)}
-                  >
-                    <MaterialCommunityIcons name="image" size={16} color="#667eea" />
-                    <Text style={styles.attachmentBadgeText}>{attachments.images.length} Image{attachments.images.length > 1 ? 's' : ''}</Text>
-                  </TouchableOpacity>
-                )}
-                
-                {attachments.pdfs && attachments.pdfs.length > 0 && (
-                  <TouchableOpacity 
-                    style={styles.attachmentBadge}
-                    onPress={() => handleOpenPdf(attachments.pdfs![0].uri)}
-                  >
-                    <MaterialCommunityIcons name="file-pdf-box" size={16} color="#ff9800" />
-                    <Text style={styles.attachmentBadgeText}>{attachments.pdfs.length} PDF{attachments.pdfs.length > 1 ? 's' : ''}</Text>
-                  </TouchableOpacity>
-                )}
-                
-                {attachments.links && attachments.links.length > 0 && (
-                  <TouchableOpacity 
-                    style={styles.attachmentBadge}
-                    onPress={() => handleOpenLink(attachments.links![0])}
-                  >
-                    <MaterialCommunityIcons name="link" size={16} color="#4caf50" />
-                    <Text style={styles.attachmentBadgeText}>{attachments.links.length} Link{attachments.links.length > 1 ? 's' : ''}</Text>
-                  </TouchableOpacity>
-                )}
+      <Animated.View
+        style={[
+          styles.nexusCard,
+          { opacity: fadeAnim, transform: [{ translateY: fadeAnim.interpolate({ inputRange: [0, 1], outputRange: [20 * (index + 1), 0] }) }] }
+        ]}
+      >
+        <View style={styles.cardIndicator} />
+        <View style={styles.cardInner}>
+          <View style={styles.cardHeader}>
+            <View style={styles.badgeWrapper}>
+              <View style={[styles.typeBadge, { backgroundColor: isSchoolWide ? '#ecfdf5' : '#eef2ff' }]}>
+                <Text style={[styles.typeText, { color: isSchoolWide ? '#059669' : '#4f46e5' }]}>
+                  {isSchoolWide ? 'INSTITUTIONAL' : 'COURSE UPDATE'}
+                </Text>
               </View>
+              <Text style={styles.timeTag}>{format(new Date(announcement.createdAt), 'MMM d, h:mm a')}</Text>
+            </View>
+            {user?.role === 'teacher' && announcement.teacherId === user.id && (
+              <TouchableOpacity onPress={() => handleDeleteAnnouncement(announcement.id.toString(), announcement.title)}>
+                <MaterialCommunityIcons name="dots-horizontal" size={20} color="#94a3b8" />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <Text style={styles.anTitle}>{announcement.title}</Text>
+          <Text style={styles.anContent} numberOfLines={3}>{announcement.content}</Text>
+
+          {attachments && (
+            <View style={styles.nexusAttachments}>
+              {attachments.images?.length ? (
+                <TouchableOpacity
+                  style={styles.mediaPreview}
+                  onPress={() => handleImagePress(attachments.images!, 0)}
+                >
+                  <MaterialCommunityIcons name="image-multiple" size={16} color="#6366f1" />
+                  <Text style={styles.mediaLabel}>{attachments.images.length} Insights</Text>
+                </TouchableOpacity>
+              ) : null}
+              {attachments.pdfs?.length ? (
+                <TouchableOpacity style={[styles.mediaPreview, { backgroundColor: '#fff1f2' }]} onPress={() => handleOpenPdf(attachments.pdfs![0].uri)}>
+                  <MaterialCommunityIcons name="file-pdf-box" size={16} color="#e11d48" />
+                  <Text style={[styles.mediaLabel, { color: '#e11d48' }]}>{attachments.pdfs.length} Documents</Text>
+                </TouchableOpacity>
+              ) : null}
+              {attachments.links?.length ? (
+                <TouchableOpacity style={[styles.mediaPreview, { backgroundColor: '#f0fdf4' }]} onPress={() => handleOpenLink(attachments.links![0])}>
+                  <MaterialCommunityIcons name="link-variant" size={16} color="#16a34a" />
+                  <Text style={[styles.mediaLabel, { color: '#16a34a' }]}>{attachments.links.length} Links</Text>
+                </TouchableOpacity>
+              ) : null}
             </View>
           )}
+
+          <View style={styles.cardFooter}>
+            <View style={styles.authorRow}>
+              <View style={styles.miniAvatar}>
+                <Text style={styles.avatarText}>M</Text>
+              </View>
+              <Text style={styles.authorName}>{isSchoolWide ? 'Bloom Admin' : course?.title}</Text>
+            </View>
+            <MaterialCommunityIcons name="chevron-right" size={20} color="#cbd5e1" />
+          </View>
         </View>
-      </View>
+      </Animated.View>
     );
   };
+
+  const handleImagePress = (images: Array<{ name: string; uri: string }>, index: number) => {
+    setCurrentImages(images.map(img => ({ uri: img.uri })));
+    setCurrentImageIndex(index);
+    setImageViewerVisible(true);
+  };
+
+  const isStudent = user?.role === 'student';
+  const themeColors = (isStudent
+    ? ['#06201f', '#064e3b', '#065f46']
+    : ['#0f172a', '#1e1b4b', '#312e81']) as readonly [string, string, ...string[]];
 
   if (isLoading && announcements.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#1976d2" />
+        <ActivityIndicator size="large" color={isStudent ? '#10b981' : '#6366f1'} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.premiumHeader}>
-        <View style={styles.headerContent}>
-          <Text style={styles.greeting}>📢 Announcements</Text>
+      <LinearGradient
+        colors={themeColors}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.nexusHeader}
+      >
+        <View style={styles.blurMesh}>
+          <MaterialCommunityIcons
+            name="broadcast"
+            size={300}
+            color={isStudent ? "rgba(16, 185, 129, 0.05)" : "rgba(99, 102, 241, 0.05)"}
+            style={styles.meshIcon}
+          />
         </View>
-      </View>
-
-      <View style={styles.searchContainer}>
-        <Searchbar
-          placeholder="Search announcements..."
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          style={styles.searchbar}
-          placeholderTextColor="#999"
-        />
-      </View>
-
-      {/* Filter Tabs */}
-      <View style={styles.filterContainer}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
-          <TouchableOpacity
-            style={[styles.filterTab, selectedFilter === 'all' && styles.filterTabActive]}
-            onPress={() => setSelectedFilter('all')}
-          >
-            <MaterialCommunityIcons 
-              name="view-dashboard" 
-              size={16} 
-              color={selectedFilter === 'all' ? '#fff' : '#667eea'} 
-            />
-            <Text style={[styles.filterTabText, selectedFilter === 'all' && styles.filterTabTextActive]}>
-              All
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={[styles.filterTab, selectedFilter === 'school' && styles.filterTabActive]}
-            onPress={() => setSelectedFilter('school')}
-          >
-            <MaterialCommunityIcons 
-              name="school" 
-              size={16} 
-              color={selectedFilter === 'school' ? '#fff' : '#667eea'} 
-            />
-            <Text style={[styles.filterTabText, selectedFilter === 'school' && styles.filterTabTextActive]}>
-              School-wise
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.filterTab, selectedFilter === 'subject' && styles.filterTabActive]}
-            onPress={() => setSelectedFilter('subject')}
-          >
-            <MaterialCommunityIcons 
-              name="book-open-page-variant" 
-              size={16} 
-              color={selectedFilter === 'subject' ? '#fff' : '#667eea'} 
-            />
-            <Text style={[styles.filterTabText, selectedFilter === 'subject' && styles.filterTabTextActive]}>
-              Subject
-            </Text>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
-
-      <FlatList
-        data={filteredAnnouncements}
-        renderItem={({ item }) => renderAnnouncementItem(item)}
-        keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={styles.listContent}
-        scrollEnabled={filteredAnnouncements.length > 0}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <MaterialCommunityIcons name="bell-off" size={64} color="#ccc" />
-            <Text style={styles.emptyText}>No announcements</Text>
+        <View style={styles.headerBody}>
+          <View style={styles.liveIndicator}>
+            <View style={styles.pulseDot} />
+            <Text style={styles.liveText}>LIVE UPDATES</Text>
           </View>
-        }
-      />
+          <Text style={styles.nexusTitle}>Update</Text>
+          <Text style={styles.nexusSubtitle}>Intelligent dispatch of system broadcasts</Text>
+        </View>
+      </LinearGradient>
 
-      {user?.role === 'teacher' && (
-        <FAB
-          icon="bell-plus"
-          label="New Announcement"
-          onPress={() => navigation.navigate('CreateAnnouncement')}
-          style={styles.fab}
+      <View style={styles.nexusContent}>
+        <View style={styles.searchContainer}>
+          <Searchbar
+            placeholder="Filter transmissions..."
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+            style={styles.nexusSearch}
+            placeholderTextColor="#94a3b8"
+            iconColor="#6366f1"
+            inputStyle={styles.searchText}
+          />
+        </View>
+
+        <View style={styles.filterHub}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.filterList}>
+            {(['all', 'school', 'subject'] as const).map((filter) => (
+              <TouchableOpacity
+                key={filter}
+                style={[styles.filterChip, selectedFilter === filter && styles.activeChip]}
+                onPress={() => setSelectedFilter(filter)}
+              >
+                <Text style={[styles.chipText, selectedFilter === filter && styles.activeChipText]}>
+                  {filter.toUpperCase()}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+
+        <FlatList
+          data={filteredAnnouncements}
+          renderItem={({ item, index }) => renderAnnouncementItem(item, index)}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.scrollList}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyNexus}>
+              <View style={styles.emptyPulse}>
+                <MaterialCommunityIcons name="waveform" size={48} color="#e2e8f0" />
+              </View>
+              <Text style={styles.emptyTitle}>Log Clear</Text>
+              <Text style={styles.emptyDesc}>No background transmissions found.</Text>
+            </View>
+          }
         />
-      )}
+      </View>
 
-      {/* Image Viewer Modal */}
+      {
+        user?.role === 'teacher' && (
+          <TouchableOpacity
+            style={styles.transmissionBtn}
+            onPress={() => navigation.navigate('CreateAnnouncement')}
+          >
+            <LinearGradient
+              colors={['#6366f1', '#4f46e5']}
+              style={styles.btnGradient}
+            >
+              <MaterialCommunityIcons name="plus" size={24} color="#fff" />
+              <Text style={styles.btnText}>NEW DISPATCH</Text>
+            </LinearGradient>
+          </TouchableOpacity>
+        )
+      }
+
       <ImageViewing
         images={currentImages}
         imageIndex={currentImageIndex}
@@ -407,301 +393,278 @@ function AnnouncementsScreen({ navigation }: any) {
           </View>
         )}
       />
-    </View>
+    </View >
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
+  },
+  nexusHeader: {
+    height: 180,
+    paddingTop: 50,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  blurMesh: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  meshIcon: {
+    position: 'absolute',
+    right: -50,
+    top: -30,
+  },
+  headerBody: {
+    zIndex: 1,
+  },
+  liveIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 8,
+  },
+  pulseDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10b981',
+  },
+  liveText: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#10b981',
+    letterSpacing: 2,
+  },
+  nexusTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#fff',
+    letterSpacing: -1,
+  },
+  nexusSubtitle: {
+    fontSize: 13,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 4,
+    fontWeight: '500',
+  },
+  nexusContent: {
+    flex: 1,
+    marginTop: -25,
+  },
+  searchContainer: {
+    paddingHorizontal: 24,
+    marginBottom: 16,
+  },
+  nexusSearch: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    height: 52,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 15,
+  },
+  searchText: {
+    fontSize: 14,
+    fontWeight: '600',
+  },
+  filterHub: {
+    marginBottom: 20,
+  },
+  filterList: {
+    paddingHorizontal: 24,
+    gap: 12,
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 14,
+    backgroundColor: '#f8fafc',
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  activeChip: {
+    backgroundColor: '#0f172a',
+    borderColor: '#0f172a',
+  },
+  chipText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#64748b',
+    letterSpacing: 1,
+  },
+  activeChipText: {
+    color: '#fff',
+  },
+  scrollList: {
+    paddingHorizontal: 20,
+    paddingBottom: 100,
+  },
+  nexusCard: {
+    backgroundColor: '#fff',
+    borderRadius: 28,
+    marginBottom: 20,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    overflow: 'hidden',
+    ...AppShadows.medium,
+  },
+  cardIndicator: {
+    height: 4,
+    width: '100%',
+    backgroundColor: '#6366f1',
+  },
+  cardInner: {
+    padding: 20,
+  },
+  cardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 14,
+  },
+  badgeWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  typeBadge: {
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+  },
+  typeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    letterSpacing: 0.5,
+  },
+  timeTag: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '600',
+  },
+  anTitle: {
+    fontSize: 19,
+    fontWeight: '900',
+    color: '#0f172a',
+    marginBottom: 6,
+  },
+  anContent: {
+    fontSize: 14,
+    color: '#475569',
+    lineHeight: 22,
+    fontWeight: '500',
+  },
+  nexusAttachments: {
+    flexDirection: 'row',
+    gap: 10,
+    marginTop: 18,
+  },
+  mediaPreview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f3ff',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 14,
+    gap: 6,
+  },
+  mediaLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#6366f1',
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginTop: 20,
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#f8fafc',
+  },
+  authorRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  miniAvatar: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 11,
+    fontWeight: '900',
+    color: '#94a3b8',
+  },
+  authorName: {
+    fontSize: 13,
+    fontWeight: '800',
+    color: '#64748b',
+  },
+  emptyNexus: {
+    alignItems: 'center',
+    paddingVertical: 80,
+  },
+  emptyPulse: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#f8fafc',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#0f172a',
+  },
+  emptyDesc: {
+    fontSize: 14,
+    color: '#94a3b8',
+    marginTop: 6,
+    fontWeight: '500',
+  },
+  transmissionBtn: {
+    position: 'absolute',
+    bottom: 30,
+    alignSelf: 'center',
+    width: '60%',
+    height: 56,
+    borderRadius: 28,
+    overflow: 'hidden',
+    elevation: 10,
+    shadowColor: '#6366f1',
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+  },
+  btnGradient: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  btnText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '900',
+    letterSpacing: 1,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  premiumHeader: {
-    backgroundColor: '#667eea',
-    paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    minHeight: 100,
-  },
-  headerContent: {
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  greeting: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#fff',
-    letterSpacing: 0.5,
-  },
-  header: {
-    backgroundColor: '#1976d2',
-    padding: 20,
-    paddingTop: 30,
-  },
-  headerTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#fff',
-  },
-  courseSelector: {
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    paddingVertical: 4,
-  },
-  courseTab: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 3,
-    borderBottomColor: 'transparent',
-  },
-  courseTabActive: {
-    borderBottomColor: '#667eea',
-  },
-  courseTabText: {
-    fontSize: 14,
-    color: '#999',
-    fontWeight: '600',
-  },
-  courseTabTextActive: {
-    color: '#667eea',
-    fontWeight: '700',
-  },
-  searchContainer: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  searchbar: {
-    elevation: 2,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-  },
-  listContent: {
-    padding: 16,
-    paddingBottom: 32,
-  },
-  announcementCard: {
-    marginBottom: 20,
-    elevation: 8,
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.15,
-    shadowRadius: 15,
-    borderWidth: 1,
-    borderColor: 'rgba(102, 126, 234, 0.1)',
-    overflow: 'hidden',
-  },
-  announcementHeader: {
-    marginBottom: 10,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-  },
-  announcementTitleContainer: {
-    flex: 1,
-    marginRight: 12,
-  },
-  announcementTitle: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: '#1a1a1a',
-    marginBottom: 12,
-    lineHeight: 24,
-  },
-  announcementBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 8,
-    paddingVertical: 2,
-    borderRadius: 12,
-    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-    alignSelf: 'flex-start',
-  },
-  announcementBadgeText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#fff',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  announcementDate: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.9)',
-    fontWeight: '600',
-    letterSpacing: 0.3,
-  },
-  announcementContent: {
-    fontSize: 15,
-    color: '#666',
-    lineHeight: 22,
-    marginBottom: 8,
-  },
-  emptyState: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 80,
-  },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-    marginTop: 16,
-    fontWeight: '500',
-  },
-  fab: {
-    position: 'absolute',
-    margin: 16,
-    right: 0,
-    bottom: 0,
-  },
-  filterContainer: {
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-    paddingVertical: 12,
-  },
-  filterScroll: {
-    paddingHorizontal: 16,
-  },
-  filterTab: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 20,
-    backgroundColor: '#f0f4ff',
-    borderWidth: 2,
-    borderColor: '#667eea',
-    marginRight: 12,
-    minWidth: 80,
-  },
-  filterTabActive: {
-    backgroundColor: '#667eea',
-    borderColor: '#667eea',
-  },
-  filterTabText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#667eea',
-  },
-  filterTabTextActive: {
-    color: '#fff',
-  },
-  announcementActions: {
-    alignItems: 'flex-end',
-    gap: 8,
-  },
-  deleteButton: {
-    padding: 8,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-  },
-  attachmentsContainer: {
-    marginTop: 16,
-  },
-  attachmentSummary: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  attachmentBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    backgroundColor: 'rgba(102, 126, 234, 0.1)',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(102, 126, 234, 0.2)',
-  },
-  attachmentBadgeText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#667eea',
-  },
-  attachmentSection: {
-    marginBottom: 12,
-  },
-  attachmentSectionTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: '#667eea',
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  attachmentScroll: {
-    marginHorizontal: -16,
-    paddingHorizontal: 16,
-  },
-  imageThumbnail: {
-    marginRight: 12,
-    borderRadius: 12,
-    overflow: 'hidden',
-    backgroundColor: '#f8f9fa',
-    position: 'relative',
-    elevation: 3,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-  },
-  imageThumbnailImage: {
-    width: 110,
-    height: 110,
-    borderRadius: 12,
-  },
-  attachmentItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    marginBottom: 10,
-    gap: 12,
-    borderWidth: 1,
-    borderColor: 'rgba(102, 126, 234, 0.08)',
-    elevation: 1,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-  },
-  attachmentItemText: {
-    flex: 1,
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '600',
-  },
-  imageOverlay: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(102, 126, 234, 0.8)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderRadius: 12,
   },
   imageViewerHeader: {
     position: 'absolute',
@@ -721,43 +684,6 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  announcementGradientHeader: {
-    paddingHorizontal: 20,
-    paddingVertical: 16,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  announcementHeaderContent: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  announcementBadgeContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  announcementHeaderActions: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  announcementCardContent: {
-    padding: 20,
-  },
 });
-
-// Reusable Premium Header Component
-const PremiumHeader = ({ title, badge }: any) => (
-  <View style={styles.premiumHeader}>
-    <View style={styles.headerContent}>
-      <Text style={styles.greeting}>{badge} {title}</Text>
-    </View>
-  </View>
-);
 
 export default AnnouncementsScreen;

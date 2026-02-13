@@ -12,6 +12,8 @@ from apps.enrollments.models import Enrollment
 
 from .models import Announcement
 from .serializers import AnnouncementCreateSerializer, AnnouncementListSerializer
+from apps.notifications.utils import create_notification
+from apps.notifications.models import Notification
 
 
 class AnnouncementListCreateView(generics.ListCreateAPIView):
@@ -44,6 +46,38 @@ class AnnouncementListCreateView(generics.ListCreateAPIView):
         serializer = AnnouncementCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         announcement = serializer.save()
+
+        # Trigger notifications for relevant users
+        try:
+            from apps.users.models import User
+            title = f"New Update: {announcement.title}"
+            body = announcement.content[:100] + ("..." if len(announcement.content) > 100 else "")
+            
+            if announcement.course:
+                # Notify students in the course
+                students = User.objects.filter(
+                    enrollments__course=announcement.course,
+                    enrollments__is_active=True
+                ).distinct()
+                type_val = Notification.TypeChoices.ANNOUNCEMENT
+                data = {'course_id': str(announcement.course.id), 'announcement_id': str(announcement.id)}
+            else:
+                # Institutional update: Notify ALL students
+                students = User.objects.filter(role='student')
+                type_val = Notification.TypeChoices.ANNOUNCEMENT
+                data = {'announcement_id': str(announcement.id)}
+
+            for student in students:
+                create_notification(
+                    user=student,
+                    title=title,
+                    body=body,
+                    notification_type=type_val,
+                    data=data
+                )
+        except Exception as e:
+            print(f"Announcement Notification Failure: {e}")
+
         return Response({
             'success': True,
             'message': 'Announcement created.',

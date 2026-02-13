@@ -7,7 +7,7 @@
     "icon": "./assets/images/Logo.png",
     "scheme": "elearningapp",
     "userInterfaceStyle": "automatic",
-        "ios": {
+    "ios": {
       "supportsTablet": true,
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "This app needs access to your photo library to select images for announcements.",
@@ -19,7 +19,7 @@
     },
     "android": {
       "adaptiveIcon": {
-      "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/Logo.png"
       },
       "edgeToEdgeEnabled": true,

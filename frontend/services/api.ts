@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // Find it with: ipconfig (Windows) or ifconfig (Mac/Linux)
 // Example: 'http://192.168.1.100:8000/api'
 const API_BASE_URL = __DEV__
-  ? 'http://192.168.137.1:8000/api'  // Your computer's IP
+  ? 'http://192.168.1.4:8000/api'  // Your computer's IP
   : 'https://your-production-url.com/api';
 
 // For Android Emulator use: 'http://10.0.2.2:8000/api'
@@ -65,6 +65,12 @@ interface ApiResponse<T = any> {
   ok: boolean;
 }
 
+// Auth failure callback (to be set by auth store)
+let onAuthFailure: (() => void) | null = null;
+export const setOnAuthFailure = (callback: () => void) => {
+  onAuthFailure = callback;
+};
+
 async function refreshAccessToken(): Promise<string | null> {
   const tokens = await getTokens();
   if (!tokens?.refresh) return null;
@@ -80,17 +86,18 @@ async function refreshAccessToken(): Promise<string | null> {
       const data = await res.json();
       const newTokens: AuthTokens = {
         access: data.access,
-        refresh: tokens.refresh,
+        refresh: data.refresh || tokens.refresh, // Handle rotation: backend provides new refresh token
       };
       await setTokens(newTokens);
       return data.access;
     }
   } catch (e) {
-    console.error('Token refresh failed:', e);
+    console.error('Token refresh network error:', e);
   }
 
   // Refresh failed — force logout
   await clearTokens();
+  if (onAuthFailure) onAuthFailure();
   return null;
 }
 
@@ -201,14 +208,20 @@ export const authApi = {
   getProfile: () =>
     api.get('/v1/auth/profile/'),
 
-  updateProfile: (data: { name?: string; bio?: string; profile_image?: string }) =>
-    api.put('/v1/auth/profile/', data),
+  updateProfile: (data: any, isFormData: boolean = false) =>
+    api.put('/v1/auth/profile/', data, { isFormData }),
 
-  changePassword: (data: { old_password: string; new_password: string }) =>
+  changePassword: (data: { old_password: string; new_password: string; new_password_confirm: string }) =>
     api.post('/v1/auth/change-password/', data),
 
   updateFCMToken: (fcmToken: string) =>
     api.post('/v1/auth/fcm-token/', { fcm_token: fcmToken }),
+
+  requestPhoneOTP: (phoneNumber?: string) =>
+    api.post('/v1/auth/request-phone-otp/', { phone_number: phoneNumber }),
+
+  verifyPhoneOTP: (otpCode: string, phoneNumber?: string) =>
+    api.post('/v1/auth/verify-phone-otp/', { otp_code: otpCode, phone_number: phoneNumber }),
 };
 
 // ─── Students ────────────────────────────────────────────────────
@@ -228,6 +241,8 @@ export const studentApi = {
   getQuizHistory: () =>
     api.get('/v1/students/quiz-history/'),
 };
+
+
 
 // ─── Teachers ────────────────────────────────────────────────────
 export const teacherApi = {
@@ -463,6 +478,20 @@ export const notificationApi = {
   getUnreadCount: () =>
     api.get('/v1/notifications/unread-count/'),
 
+  getSettings: () =>
+    api.get('/v1/notifications/settings/'),
+
+  updateSettings: (data: Partial<{
+    announcements: boolean;
+    assignments: boolean;
+    quizzes: boolean;
+    courses: boolean;
+    general: boolean;
+    sound: boolean;
+    vibration: boolean;
+    email_notifications: boolean;
+  }>) => api.patch('/v1/notifications/settings/', data),
+
   markAsRead: (id: string | number) =>
     api.post(`/v1/notifications/${id}/read/`),
 
@@ -489,6 +518,20 @@ export const analyticsApi = {
 
   getCourseAnalytics: (courseId: string | number) =>
     api.get(`/v1/analytics/course/${courseId}/`),
+
+  recordActivity: (logId?: string, durationSeconds?: number, isEnding?: boolean, deviceInfo?: string) => {
+    if (!logId) {
+      return api.post('/v1/analytics/user-activity/', { device_info: deviceInfo });
+    }
+    return api.patch('/v1/analytics/user-activity/', {
+      log_id: logId,
+      duration_seconds: durationSeconds,
+      is_ending: isEnding
+    });
+  },
+
+  getActivityLogs: () =>
+    api.get('/v1/analytics/user-activity/'),
 };
 
 // ─── Media ───────────────────────────────────────────────────────

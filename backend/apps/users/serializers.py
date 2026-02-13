@@ -22,8 +22,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'email': user.email,
             'name': user.name,
             'role': user.role,
+            'bio': user.bio,
+            'phone_number': user.phone_number,
             'profile_image': user.profile_image_url,
             'is_email_verified': user.is_email_verified,
+            'is_phone_verified': user.is_phone_verified,
         }
         return data
 
@@ -78,9 +81,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email', 'name', 'role', 'bio', 'phone_number',
             'profile_image', 'profile_image_url',
-            'is_email_verified', 'created_at', 'updated_at',
+            'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'email', 'role', 'is_email_verified', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'email', 'role', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
@@ -127,3 +130,9 @@ class UserListSerializer(serializers.ModelSerializer):
 class FCMTokenSerializer(serializers.Serializer):
     """Serializer for updating FCM push notification token."""
     fcm_token = serializers.CharField(required=True, max_length=255)
+
+
+class PhoneOTPVerifySerializer(serializers.Serializer):
+    """Serializer to verify phone OTP."""
+    otp_code = serializers.CharField(required=True, max_length=4)
+    # We might want to pass phone number too to double check, but requester is authenticated

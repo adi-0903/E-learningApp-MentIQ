@@ -68,6 +68,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     is_email_verified = models.BooleanField(default=False)
+    is_phone_verified = models.BooleanField(default=False)
     email_verification_token = models.CharField(max_length=255, blank=True, default='')
 
     # Metadata
@@ -110,3 +111,18 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         if self.profile_image:
             return self.profile_image.url
         return None
+
+
+class PhoneOTP(TimeStampedModel):
+    """Model to store OTP codes for phone verification."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='phone_otps')
+    otp_code = models.CharField(max_length=6)
+    is_used = models.BooleanField(default=False)
+    expires_at = models.DateTimeField()
+
+    class Meta:
+        db_table = 'phone_otps'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.otp_code}"

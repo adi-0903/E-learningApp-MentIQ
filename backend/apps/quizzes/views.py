@@ -48,6 +48,38 @@ class QuizListCreateView(generics.ListCreateAPIView):
         serializer = QuizCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         quiz = serializer.save()
+
+        # Trigger notifications for enrolled students
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            from apps.users.models import User
+            
+            # Notify students in the course
+            students = User.objects.filter(
+                enrollments__course=quiz.course,
+                enrollments__is_active=True
+            ).distinct()
+            
+            title = f"New Evaluation: {quiz.title}"
+            body = f"A new quiz is available in {quiz.course.title}. Start your mission now."
+            data = {
+                'course_id': str(quiz.course.id),
+                'quiz_id': str(quiz.id),
+                'type': 'quiz'
+            }
+
+            for student in students:
+                create_notification(
+                    user=student,
+                    title=title,
+                    body=body,
+                    notification_type=Notification.TypeChoices.QUIZ,
+                    data=data
+                )
+        except Exception as e:
+            print(f"Quiz Notification Failure: {e}")
+
         return Response({
             'success': True,
             'message': 'Quiz created successfully.',

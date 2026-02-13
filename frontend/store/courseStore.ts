@@ -140,7 +140,7 @@ export const useCourseStore = create<CourseState>((set) => ({
     try {
       const { studentApi } = await import('@/services/api');
       const { data } = await studentApi.getCourses();
-      const results = data.results || data;
+      const results = data.results || data.data || data;
       set({ courses: (Array.isArray(results) ? results : []).map(normalizeCourse) });
     } catch (error) {
       console.error('Error fetching enrolled courses:', error);
@@ -235,7 +235,7 @@ export const useCourseStore = create<CourseState>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await lessonApi.list(courseId);
-      const results = data.results || data;
+      const results = data.results || data.data || data;
       set({ lessons: (Array.isArray(results) ? results : []).map(normalizeLesson) });
     } catch (error) {
       console.error('Error fetching lessons:', error);

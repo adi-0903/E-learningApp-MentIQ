@@ -9,10 +9,15 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
+import random
+from datetime import timedelta
+from django.utils import timezone
+from .models import PhoneOTP
 from .serializers import (
     ChangePasswordSerializer,
     CustomTokenObtainPairSerializer,
     FCMTokenSerializer,
+    PhoneOTPVerifySerializer,
     RegisterSerializer,
     UserProfileSerializer,
     UserUpdateSerializer,
@@ -48,6 +53,9 @@ class RegisterView(generics.CreateAPIView):
                     'email': user.email,
                     'name': user.name,
                     'role': user.role,
+                    'bio': user.bio,
+                    'phone_number': user.phone_number,
+                    'profile_image': user.profile_image_url,
                 },
                 'tokens': {
                     'access': str(refresh.access_token),
@@ -140,4 +148,89 @@ class UpdateFCMTokenView(APIView):
         return Response({
             'success': True,
             'message': 'FCM token updated.'
+        })
+
+
+class RequestPhoneOTPView(APIView):
+    """View to request a phone verification OTP."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        phone_number = request.data.get('phone_number') or user.phone_number
+
+        if not phone_number:
+            return Response({
+                'success': False,
+                'message': 'Phone number is required.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Update user's phone number if provided and different
+        if phone_number != user.phone_number:
+            user.phone_number = phone_number
+            user.is_phone_verified = False
+            user.save(update_fields=['phone_number', 'is_phone_verified'])
+
+        # Generate a 4-digit OTP
+        otp_code = str(random.randint(1000, 9999))
+        expires_at = timezone.now() + timedelta(minutes=10)
+
+        # Invalidate old OTPs
+        PhoneOTP.objects.filter(user=user, is_used=False).update(is_used=True)
+
+        # Save new OTP
+        PhoneOTP.objects.create(
+            user=user,
+            otp_code=otp_code,
+            expires_at=expires_at
+        )
+
+        # SIMULATION: Print to console and return in response for development
+        print(f"DEBUG: Phone OTP for {phone_number}: {otp_code}")
+        
+        return Response({
+            'success': True,
+            'message': f'OTP sent to {phone_number}.',
+            'data': {'otp': otp_code} # Always return OTP in response for development
+        })
+
+
+class VerifyPhoneOTPView(APIView):
+    """View to verify a phone verification OTP."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = PhoneOTPVerifySerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        otp_code = serializer.validated_data['otp_code']
+        user = request.user
+
+
+        # Standard database OTP verification (Fallback)
+        # Find the latest valid OTP
+        otp_obj = PhoneOTP.objects.filter(
+            user=user,
+            otp_code=otp_code,
+            is_used=False,
+            expires_at__gt=timezone.now()
+        ).first()
+
+        if not otp_obj:
+            return Response({
+                'success': False,
+                'message': 'Invalid or expired OTP.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Mark OTP as used and user as verified
+        otp_obj.is_used = True
+        otp_obj.save()
+
+        user.is_phone_verified = True
+        user.save(update_fields=['is_phone_verified'])
+
+        return Response({
+            'success': True,
+            'message': 'Phone number verified successfully.',
+            'data': UserProfileSerializer(user).data
         })

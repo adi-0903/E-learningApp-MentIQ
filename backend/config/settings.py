@@ -20,7 +20,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security Settings
 SECRET_KEY = env.str('SECRET_KEY', 'django-insecure-change-this-in-production')
 DEBUG = env.bool('DEBUG', False)
-ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['localhost', '127.0.0.1', '192.168.137.1'])
+ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', ['localhost', '127.0.0.1', '192.168.137.1', '192.168.1.4'])
 
 # Application definition
 INSTALLED_APPS = [
@@ -192,7 +192,7 @@ SIMPLE_JWT = {
 # CORS Configuration
 CORS_ALLOWED_ORIGINS = env.list(
     'CORS_ALLOWED_ORIGINS',
-    ['http://localhost:3000', 'http://localhost:8081', 'exp://localhost:8081']
+    ['http://localhost:3000', 'http://localhost:8081', 'exp://localhost:8081', 'http://192.168.1.4:8081']
 )
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [

@@ -3,41 +3,45 @@ import { Course, useCourseStore } from '@/store/courseStore';
 import { useProgressStore } from '@/store/progressStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
-import { FlatList, RefreshControl, StyleSheet, TouchableOpacity, View } from 'react-native';
+import { FlatList, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ActivityIndicator, Card, Searchbar, Text } from 'react-native-paper';
+import { Colors, Spacing, AppShadows, BorderRadius, Typography } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 function BrowseCoursesScreen({ navigation }: any) {
   const { courses, isLoading, fetchCourses } = useCourseStore();
   const { user } = useAuthStore();
   const { enrollInCourse } = useProgressStore();
   const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('All');
   const [refreshing, setRefreshing] = useState(false);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
 
+  const CATEGORIES = ['All', 'Technology', 'Business', 'Art', 'Science'];
+
   useEffect(() => {
-    // Fetch all courses created by teachers
-    fetchCourses().then(() => {
-      console.log('BrowseCourses - courses loaded:', courses.length);
-      console.log('BrowseCourses - courses data:', JSON.stringify(courses, null, 2));
-    }).catch(err => {
+    fetchCourses().catch(err => {
       console.error('BrowseCourses - fetch error:', err);
     });
   }, []);
 
   useEffect(() => {
     try {
-      console.log('BrowseCourses - filtering courses, count:', courses.length);
-      const filtered = courses.filter(course =>
-        course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        course.description?.toLowerCase().includes(searchQuery.toLowerCase())
-      );
-      console.log('BrowseCourses - filtered count:', filtered.length);
+      const filtered = courses.filter(course => {
+        const matchesSearch = course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          course.description?.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const matchesCategory = selectedCategory === 'All' ||
+          (course.category && course.category.toLowerCase() === selectedCategory.toLowerCase());
+
+        return matchesSearch && matchesCategory;
+      });
       setFilteredCourses(filtered);
     } catch (error) {
       console.error('Error filtering courses:', error);
       setFilteredCourses(courses);
     }
-  }, [courses, searchQuery]);
+  }, [courses, searchQuery, selectedCategory]);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -45,7 +49,6 @@ function BrowseCoursesScreen({ navigation }: any) {
       await fetchCourses();
     } catch (error) {
       console.error('Error refreshing courses:', error);
-      alert('Failed to refresh courses. Please try again.');
     } finally {
       setRefreshing(false);
     }
@@ -53,16 +56,15 @@ function BrowseCoursesScreen({ navigation }: any) {
 
   const handleEnroll = async (courseId: string) => {
     if (!user?.id) {
-      alert('Please log in to enroll in courses');
+      alert('Please log in to enroll in courses'); // keeping alert for simplicity or could use a custom modal
       return;
     }
-    
+
     try {
       await enrollInCourse(user.id, courseId);
-      alert('Successfully enrolled in course!');
-      // Navigate back to StudentHome to refresh enrolled courses
       navigation.navigate('StudentHome');
     } catch (error) {
+      // Error handling remains same
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
       if (errorMessage.includes('Already enrolled')) {
         alert('You are already enrolled in this course');
@@ -80,85 +82,83 @@ function BrowseCoursesScreen({ navigation }: any) {
           navigation.navigate('CourseDetail', { courseId: course.id });
         }
       }}
+      activeOpacity={0.9}
       style={styles.courseCardContainer}
     >
-      <Card style={styles.courseCard}>
-        <Card.Content style={styles.cardContent}>
-          {/* Course Header */}
+      <View style={[styles.courseCard, AppShadows.light]}>
+        <View style={styles.cardContent}>
+          {/* Header with Icon */}
           <View style={styles.courseHeader}>
             <View style={styles.courseIconContainer}>
-              <MaterialCommunityIcons name="book-open-page-variant" size={32} color="#667eea" />
+              <MaterialCommunityIcons name="book-open-page-variant" size={28} color={Colors.light.primary} />
             </View>
             <View style={styles.courseHeaderText}>
+              <Text style={styles.courseCategory}>{course.category || 'Generate'}</Text>
               <Text style={styles.courseTitle} numberOfLines={2}>
                 {course.title}
               </Text>
-              {course.category && (
-                <View style={styles.categoryBadge}>
-                  <Text style={styles.categoryText}>{course.category}</Text>
-                </View>
-              )}
             </View>
           </View>
 
           {/* Teacher Info */}
           {course.teacherName && (
-            <View style={styles.teacherInfo}>
-              <MaterialCommunityIcons name="account-tie" size={16} color="#667eea" />
-              <Text style={styles.teacherName}>By {course.teacherName}</Text>
-            </View>
+            <Text style={styles.teacherName}>By {course.teacherName}</Text>
           )}
 
-          {/* Description */}
-          {course.description && (
-            <Text style={styles.courseDescription} numberOfLines={3}>
-              {course.description}
-            </Text>
-          )}
-
-          {/* Course Details */}
-          {course.duration && (
-            <View style={styles.courseDetails}>
+          {/* Details Row */}
+          <View style={styles.detailsRow}>
+            {course.duration && (
               <View style={styles.detailItem}>
-                <MaterialCommunityIcons name="clock-outline" size={16} color="#666" />
+                <MaterialCommunityIcons name="clock-outline" size={14} color={Colors.light.textLight} />
                 <Text style={styles.detailText}>{course.duration}</Text>
               </View>
-            </View>
-          )}
+            )}
+          </View>
 
-          {/* Enroll Button */}
-          {user?.role === 'student' && (
+          {/* Divider */}
+          <View style={styles.divider} />
+
+          {/* Action Footer */}
+          <View style={styles.cardFooter}>
             <TouchableOpacity
-              style={styles.enrollButton}
               onPress={(e) => {
                 e.stopPropagation();
                 handleEnroll(course.id);
               }}
+              disabled={user?.role !== 'student'}
             >
-              <Text style={styles.enrollButtonText}>Enroll Now</Text>
-              <MaterialCommunityIcons name="arrow-right" size={18} color="#fff" />
+              <View style={styles.enrollButtonSimple}>
+                <Text style={styles.enrollButtonTextSimple}>Enroll Now</Text>
+                <MaterialCommunityIcons name="arrow-right" size={16} color={Colors.light.primary} />
+              </View>
             </TouchableOpacity>
-          )}
-        </Card.Content>
-      </Card>
+          </View>
+        </View>
+      </View>
     </TouchableOpacity>
   );
 
   if (isLoading && courses.length === 0) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#1976d2" />
+        <ActivityIndicator size="large" color={Colors.light.primary} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.premiumHeader}>
+      <LinearGradient
+        colors={[Colors.light.primaryDark, Colors.light.primary]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.premiumHeader}
+      >
         <View style={styles.headerContent}>
           <Text style={styles.greeting}>🔍 Browse Courses</Text>
+          <Text style={styles.subtitle}>Discover new skills and passions</Text>
         </View>
-      </View>
+      </LinearGradient>
 
       <View style={styles.searchContainer}>
         <Searchbar
@@ -166,7 +166,38 @@ function BrowseCoursesScreen({ navigation }: any) {
           onChangeText={setSearchQuery}
           value={searchQuery}
           style={styles.searchbar}
+          inputStyle={styles.searchInput}
+          iconColor={Colors.light.primary}
+          placeholderTextColor={Colors.light.textLight}
         />
+      </View>
+
+      <View style={styles.filterWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.filterScrollContent}
+        >
+          {CATEGORIES.map((cat) => (
+            <TouchableOpacity
+              key={cat}
+              onPress={() => setSelectedCategory(cat)}
+              style={[
+                styles.filterChip,
+                selectedCategory === cat && styles.filterChipActive
+              ]}
+            >
+              <Text
+                style={[
+                  styles.filterChipText,
+                  selectedCategory === cat && styles.filterChipTextActive
+                ]}
+              >
+                {cat}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </ScrollView>
       </View>
 
       <FlatList
@@ -175,16 +206,17 @@ function BrowseCoursesScreen({ navigation }: any) {
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.light.primary} />
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
             <MaterialCommunityIcons
               name="book-open-variant"
               size={64}
-              color="#ccc"
+              color={Colors.light.textLight}
+              style={{ opacity: 0.5, marginBottom: Spacing.m }}
             />
-            <Text style={styles.emptyStateText}>No courses found</Text>
+            <Text style={styles.emptyStateText}>No courses found matching your search.</Text>
           </View>
         }
       />
@@ -195,172 +227,184 @@ function BrowseCoursesScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Colors.light.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: Colors.light.background,
   },
   premiumHeader: {
-    backgroundColor: '#667eea',
-    paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    minHeight: 100,
+    paddingTop: 60,
+    paddingBottom: 30,
+    paddingHorizontal: Spacing.l,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    marginBottom: Spacing.s,
+    ...AppShadows.medium,
   },
   headerContent: {
     justifyContent: 'center',
     alignItems: 'flex-start',
   },
   greeting: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#fff',
-    letterSpacing: 0.5,
+    ...Typography.h2,
+    color: Colors.light.white,
+    marginBottom: 4,
   },
-  header: {
-    backgroundColor: '#1976d2',
-    padding: 16,
-    paddingTop: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#fff',
-    textAlign: 'center',
-    width: '100%',
+  subtitle: {
+    ...Typography.bodySmall,
+    color: 'rgba(255,255,255,0.8)',
   },
   searchContainer: {
-    padding: 16,
-    backgroundColor: '#fff',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
+    paddingHorizontal: Spacing.l,
+    marginTop: -Spacing.l, // Overlap deeply
+    marginBottom: Spacing.m,
   },
   searchbar: {
-    elevation: 2,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
+    backgroundColor: Colors.light.white,
+    borderRadius: BorderRadius.l,
+    height: 50,
+    ...AppShadows.medium,
+  },
+  searchInput: {
+    ...Typography.body,
+    alignSelf: 'center',
   },
   listContent: {
-    padding: 12,
+    paddingHorizontal: Spacing.l,
+    paddingTop: Spacing.s,
+    paddingBottom: Spacing.xxl,
+  },
+  filterWrapper: {
+    marginBottom: Spacing.m,
+  },
+  filterScrollContent: {
+    paddingHorizontal: Spacing.l,
+    gap: Spacing.s,
+  },
+  filterChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    backgroundColor: Colors.light.white,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    ...AppShadows.light,
+  },
+  filterChipActive: {
+    backgroundColor: Colors.light.primary,
+    borderColor: Colors.light.primary,
+  },
+  filterChipText: {
+    ...Typography.bodySmall,
+    fontWeight: '600',
+    color: Colors.light.textSecondary,
+  },
+  filterChipTextActive: {
+    color: Colors.light.white,
   },
   courseCardContainer: {
-    marginBottom: 16,
+    marginBottom: Spacing.m,
   },
   courseCard: {
-    elevation: 4,
-    backgroundColor: '#ffffff',
-    borderRadius: 16,
+    backgroundColor: Colors.light.white,
+    borderRadius: BorderRadius.l,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   cardContent: {
-    padding: 16,
+    padding: Spacing.m,
   },
   courseHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: Spacing.s,
   },
   courseIconContainer: {
-    width: 56,
-    height: 56,
-    borderRadius: 12,
-    backgroundColor: '#f0f4ff',
+    width: 48,
+    height: 48,
+    borderRadius: BorderRadius.m,
+    backgroundColor: Colors.light.primaryLight,
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
+    marginRight: Spacing.m,
   },
   courseHeaderText: {
     flex: 1,
+    justifyContent: 'center',
+  },
+  courseCategory: {
+    ...Typography.caption,
+    color: Colors.light.primary,
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    marginBottom: 2,
   },
   courseTitle: {
+    ...Typography.h3,
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 6,
-    lineHeight: 24,
-  },
-  categoryBadge: {
-    alignSelf: 'flex-start',
-    backgroundColor: '#e8f0fe',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-  },
-  categoryText: {
-    fontSize: 11,
-    color: '#667eea',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  teacherInfo: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    backgroundColor: '#f8f9ff',
-    padding: 8,
-    borderRadius: 8,
+    color: Colors.light.text,
+    lineHeight: 22,
   },
   teacherName: {
-    fontSize: 14,
-    color: '#667eea',
-    marginLeft: 6,
-    fontWeight: '500',
+    ...Typography.bodySmall,
+    color: Colors.light.textSecondary,
+    marginBottom: Spacing.m,
+    marginLeft: 60 + Spacing.s, // Indent to align with title if icon is 48 + mr 12 + pl 16? No, just keep simple
+    marginTop: -Spacing.s, // Pull up a bit
   },
-  courseDescription: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 14,
-    lineHeight: 20,
-  },
-  courseDetails: {
+  detailsRow: {
     flexDirection: 'row',
-    gap: 16,
-    marginBottom: 14,
+    alignItems: 'center',
+    marginLeft: 60, // align with text
+    gap: Spacing.m,
+    marginBottom: Spacing.m,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
+    gap: 4,
   },
   detailText: {
-    fontSize: 13,
-    color: '#666',
-    fontWeight: '500',
+    ...Typography.caption,
+    color: Colors.light.textLight,
   },
-  enrollButton: {
-    backgroundColor: '#667eea',
+  divider: {
+    height: 1,
+    backgroundColor: Colors.light.divider,
+    marginHorizontal: -Spacing.m, // Extend to edges
+    marginBottom: Spacing.s,
+  },
+  cardFooter: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingTop: 4,
+  },
+  enrollButtonSimple: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    borderRadius: 10,
-    gap: 6,
+    gap: 4,
+    paddingVertical: 4,
+    paddingHorizontal: 8,
   },
-  enrollButtonText: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: 'bold',
+  enrollButtonTextSimple: {
+    ...Typography.bodySmall,
+    color: Colors.light.primary,
+    fontWeight: '700',
   },
   emptyState: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 60,
+    paddingVertical: Spacing.xxl,
+    marginTop: Spacing.xl,
   },
   emptyStateText: {
-    fontSize: 16,
-    color: '#999',
-    marginTop: 16,
+    ...Typography.body,
+    color: Colors.light.textSecondary,
+    marginTop: Spacing.s,
   },
 });
 

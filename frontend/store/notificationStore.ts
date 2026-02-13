@@ -58,17 +58,33 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
   loadSettings: async (_userId: string) => {
     set({ isLoading: true });
     try {
-      // Load settings from AsyncStorage (settings are local preferences)
-      const storedSettings = await AsyncStorage.getItem('notificationSettings');
-      if (storedSettings) {
-        const parsed = JSON.parse(storedSettings);
-        set({ settings: { ...defaultSettings, ...parsed } });
+      // 1. Try to load from API (Source of truth)
+      try {
+        const { data } = await notificationApi.getSettings();
+        if (data) {
+          const apiSettings = {
+            ...defaultSettings,
+            ...data,
+            emailNotifications: data.email_notifications // map snake_case to camelCase
+          };
+          set({ settings: apiSettings });
+          await AsyncStorage.setItem('notificationSettings', JSON.stringify(apiSettings));
+        }
+      } catch (apiError) {
+        console.warn('Nexus: Remote sync failed, using local cache', apiError);
+        // 2. Fallback to AsyncStorage
+        const storedSettings = await AsyncStorage.getItem('notificationSettings');
+        if (storedSettings) {
+          const parsed = JSON.parse(storedSettings);
+          set({ settings: { ...defaultSettings, ...parsed } });
+        }
       }
 
       // Fetch unread count from API
       try {
         const { data } = await notificationApi.getUnreadCount();
-        set({ unreadCount: data.unread_count || data.count || 0 });
+        const count = data.unread_count ?? data.count ?? data.data?.unread_count ?? 0;
+        set({ unreadCount: count });
       } catch {
         const storedCount = await AsyncStorage.getItem('unreadNotificationCount');
         if (storedCount) {
@@ -76,7 +92,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
         }
       }
     } catch (error) {
-      console.error('Error loading notification settings:', error);
+      console.error('Nexus: Link Failure', error);
     } finally {
       set({ isLoading: false });
     }
@@ -87,11 +103,20 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
       const currentSettings = get().settings;
       const updatedSettings = { ...currentSettings, ...newSettings };
 
-      // Save to AsyncStorage
-      await AsyncStorage.setItem('notificationSettings', JSON.stringify(updatedSettings));
+      // 1. Optimistic update
       set({ settings: updatedSettings });
+      await AsyncStorage.setItem('notificationSettings', JSON.stringify(updatedSettings));
+
+      // 2. Sync with Backend
+      const apiPayload: any = { ...newSettings };
+      if (newSettings.emailNotifications !== undefined) {
+        apiPayload.email_notifications = newSettings.emailNotifications;
+        delete apiPayload.emailNotifications;
+      }
+
+      await notificationApi.updateSettings(apiPayload);
     } catch (error) {
-      console.error('Error updating notification settings:', error);
+      console.error('Nexus: Dispatch Update Failure', error);
       throw error;
     }
   },

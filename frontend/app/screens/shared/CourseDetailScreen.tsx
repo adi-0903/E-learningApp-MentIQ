@@ -4,6 +4,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { Alert, FlatList, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ActivityIndicator, Button, Card, Text } from 'react-native-paper';
+import { Colors, Typography, Spacing, AppShadows, BorderRadius } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 function CourseDetailScreen({ route, navigation }: any) {
   const { courseId } = route.params;
@@ -33,7 +35,7 @@ function CourseDetailScreen({ route, navigation }: any) {
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#1976d2" />
+        <ActivityIndicator size="large" color={Colors.light.primary} />
       </View>
     );
   }
@@ -47,11 +49,16 @@ function CourseDetailScreen({ route, navigation }: any) {
   }
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.premiumHeader}>
+    <ScrollView style={styles.container} contentContainerStyle={{ paddingBottom: Spacing.xxl }}>
+      <LinearGradient
+        colors={[Colors.light.primaryDark, Colors.light.primary]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.premiumHeader}
+      >
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <View style={styles.backButtonCircle}>
-            <MaterialCommunityIcons name="chevron-left" size={24} color="#fff" />
+            <MaterialCommunityIcons name="chevron-left" size={24} color={Colors.light.white} />
           </View>
         </TouchableOpacity>
         <View style={styles.headerContent}>
@@ -60,9 +67,16 @@ function CourseDetailScreen({ route, navigation }: any) {
             {course.title}
           </Text>
         </View>
-      </View>
+      </LinearGradient>
 
       <View style={styles.content}>
+        {course.description && (
+          <View style={styles.descriptionContainer}>
+            <Text style={styles.sectionTitle}>About this Course</Text>
+            <Text style={styles.description}>{course.description}</Text>
+          </View>
+        )}
+
         <Text style={styles.sectionTitle}>Course Content</Text>
 
         {/* Lessons Section */}
@@ -72,13 +86,20 @@ function CourseDetailScreen({ route, navigation }: any) {
             <FlatList
               data={lessons}
               renderItem={({ item }) => (
-                <Card style={styles.lessonCard}>
-                  <Card.Content style={styles.lessonContent}>
+                <View style={[styles.lessonCard, AppShadows.light]}>
+                  <View style={styles.lessonContent}>
                     <View style={styles.lessonHeader}>
-                      <MaterialCommunityIcons name="book-open-page-variant" size={24} color="#1976d2" />
+                      <View style={styles.lessonIconContainer}>
+                        <MaterialCommunityIcons name="book-open-page-variant" size={24} color={Colors.light.primary} />
+                      </View>
                       <View style={styles.lessonInfo}>
                         <Text style={styles.lessonTitle} numberOfLines={2}>{item.title}</Text>
-                        {item.duration && <Text style={styles.lessonDuration}>{item.duration} min</Text>}
+                        {item.duration && (
+                          <View style={styles.durationBadge}>
+                            <MaterialCommunityIcons name="clock-outline" size={12} color={Colors.light.textSecondary} />
+                            <Text style={styles.lessonDuration}>{item.duration} min</Text>
+                          </View>
+                        )}
                       </View>
                     </View>
                     {item.description && (
@@ -89,11 +110,13 @@ function CourseDetailScreen({ route, navigation }: any) {
                       onPress={() => navigation.navigate('LessonDetail', { lessonId: item.id, courseId })}
                       style={styles.lessonButton}
                       labelStyle={styles.lessonButtonLabel}
+                      contentStyle={{ height: 40 }}
+                      buttonColor={Colors.light.primary}
                     >
-                      View Lesson
+                      Start Lesson
                     </Button>
-                  </Card.Content>
-                </Card>
+                  </View>
+                </View>
               )}
               keyExtractor={(item) => item.id.toString()}
               scrollEnabled={false}
@@ -101,99 +124,76 @@ function CourseDetailScreen({ route, navigation }: any) {
           </View>
         ) : (
           <View style={styles.emptyLessons}>
-            <MaterialCommunityIcons name="book-open-variant" size={48} color="#ccc" />
+            <MaterialCommunityIcons name="book-open-variant" size={48} color={Colors.light.textLight} style={{ opacity: 0.5 }} />
             <Text style={styles.emptyLessonsText}>No lessons available yet</Text>
           </View>
         )}
 
         {user?.role === 'teacher' && (
-          <>
-            <Card style={styles.actionCard}>
-              <Card.Content style={styles.cardContent}>
-                <View style={styles.iconContainer}>
-                  <MaterialCommunityIcons name="book-open-page-variant" size={28} color="#1976d2" />
-                </View>
-                <View style={styles.cardText}>
-                  <Text style={styles.cardTitle}>Manage Lessons</Text>
-                  <Text style={styles.cardDescription}>Add, edit, or remove lessons</Text>
-                </View>
-                <MaterialCommunityIcons name="chevron-right" size={24} color="#1976d2" />
-              </Card.Content>
-              <Button
-                mode="contained"
-                onPress={() => navigation.navigate('ManageLessons', { courseId })}
-                style={styles.cardButton}
-                labelStyle={styles.buttonLabel}
-              >
-                Go to Lessons
-              </Button>
-            </Card>
+          <View style={styles.actionSection}>
+            <Text style={styles.sectionTitle}>Instructor Actions</Text>
 
-            <Card style={styles.actionCard}>
-              <Card.Content style={styles.cardContent}>
-                <View style={styles.iconContainer}>
-                  <MaterialCommunityIcons name="help-circle" size={28} color="#ff9800" />
-                </View>
-                <View style={styles.cardText}>
-                  <Text style={styles.cardTitle}>Manage Quizzes</Text>
-                  <Text style={styles.cardDescription}>Create and manage quizzes</Text>
-                </View>
-                <MaterialCommunityIcons name="chevron-right" size={24} color="#ff9800" />
-              </Card.Content>
-              <Button
-                mode="contained"
-                onPress={() => navigation.navigate('ManageQuizzes', { courseId })}
-                style={styles.cardButton}
-                labelStyle={styles.buttonLabel}
-              >
-                Go to Quizzes
-              </Button>
-            </Card>
+            <TouchableOpacity
+              style={[styles.actionCard, AppShadows.small]}
+              onPress={() => navigation.navigate('ManageLessons', { courseId })}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: Colors.light.primaryLight }]}>
+                <MaterialCommunityIcons name="book-open-page-variant" size={24} color={Colors.light.primary} />
+              </View>
+              <View style={styles.cardText}>
+                <Text style={styles.cardTitle}>Manage Lessons</Text>
+                <Text style={styles.cardDescription}>Add, edit, or remove lessons</Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={24} color={Colors.light.textLight} />
+            </TouchableOpacity>
 
-            <Card style={styles.actionCard}>
-              <Card.Content style={styles.cardContent}>
-                <View style={styles.iconContainer}>
-                  <MaterialCommunityIcons name="video-outline" size={28} color="#e91e63" />
-                </View>
-                <View style={styles.cardText}>
-                  <Text style={styles.cardTitle}>Manage Video Lectures</Text>
-                  <Text style={styles.cardDescription}>Upload and manage lecture videos</Text>
-                </View>
-                <MaterialCommunityIcons name="chevron-right" size={24} color="#e91e63" />
-              </Card.Content>
-              <Button
-                mode="contained"
-                onPress={() => navigation.navigate('ManageVideoLectures', { courseId })}
-                style={[styles.cardButton, styles.videoButton]}
-                labelStyle={styles.buttonLabel}
-              >
-                Go to Videos
-              </Button>
-            </Card>
-          </>
+            <TouchableOpacity
+              style={[styles.actionCard, AppShadows.small]}
+              onPress={() => navigation.navigate('ManageQuizzes', { courseId })}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: '#FEF3C7' }]}>
+                <MaterialCommunityIcons name="help-circle" size={24} color={Colors.light.warning} />
+              </View>
+              <View style={styles.cardText}>
+                <Text style={styles.cardTitle}>Manage Quizzes</Text>
+                <Text style={styles.cardDescription}>Create and manage quizzes</Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={24} color={Colors.light.textLight} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.actionCard, AppShadows.small]}
+              onPress={() => navigation.navigate('ManageVideoLectures', { courseId })}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: '#FCE7F3' }]}>
+                <MaterialCommunityIcons name="video-outline" size={24} color="#DB2777" />
+              </View>
+              <View style={styles.cardText}>
+                <Text style={styles.cardTitle}>Manage Video Lectures</Text>
+                <Text style={styles.cardDescription}>Upload and manage videos</Text>
+              </View>
+              <MaterialCommunityIcons name="chevron-right" size={24} color={Colors.light.textLight} />
+            </TouchableOpacity>
+          </View>
         )}
 
         {user?.role === 'student' && (
-          <Card style={styles.actionCard}>
-            <Card.Content style={styles.cardContent}>
-              <View style={styles.iconContainer}>
-                <MaterialCommunityIcons name="video-outline" size={28} color="#e91e63" />
+          <View style={styles.actionSection}>
+            <Text style={styles.sectionTitle}>Course Resources</Text>
+            <TouchableOpacity
+              style={[styles.actionCard, AppShadows.small]}
+              onPress={() => navigation.navigate('StudentVideoLectures', { courseId, courseTitle: course.title })}
+            >
+              <View style={[styles.iconContainer, { backgroundColor: '#FCE7F3' }]}>
+                <MaterialCommunityIcons name="play-circle-outline" size={24} color="#DB2777" />
               </View>
               <View style={styles.cardText}>
                 <Text style={styles.cardTitle}>Video Lectures</Text>
-                <Text style={styles.cardDescription}>View course video lectures</Text>
+                <Text style={styles.cardDescription}>Watch recorded sessions</Text>
               </View>
-              <MaterialCommunityIcons name="chevron-right" size={24} color="#e91e63" />
-            </Card.Content>
-            <Button
-              mode="contained"
-              onPress={() => navigation.navigate('StudentVideoLectures', { courseId, courseTitle: course.title })}
-              style={[styles.cardButton, styles.videoButton]}
-              labelStyle={styles.buttonLabel}
-            >
-              View Videos
-            </Button>
-          </Card>
+              <MaterialCommunityIcons name="chevron-right" size={24} color={Colors.light.textLight} />
+            </TouchableOpacity>
+          </View>
         )}
       </View>
     </ScrollView>
@@ -203,28 +203,24 @@ function CourseDetailScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Colors.light.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: Colors.light.background,
   },
   premiumHeader: {
-    backgroundColor: '#667eea',
     paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 16,
+    paddingBottom: 30,
+    paddingHorizontal: Spacing.l,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
+    gap: Spacing.m,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    ...AppShadows.medium,
   },
   backButton: {
     padding: 4,
@@ -233,7 +229,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -241,188 +237,145 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerBadge: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...Typography.caption,
     color: 'rgba(255, 255, 255, 0.8)',
     marginBottom: 4,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  header: {
-    backgroundColor: '#1976d2',
-    padding: 16,
-    paddingTop: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#fff',
-    lineHeight: 28,
+    ...Typography.h2,
+    color: Colors.light.white,
+    lineHeight: 32,
   },
   content: {
-    padding: 16,
+    padding: Spacing.l,
   },
-  detailItem: {
-    fontSize: 13,
-    color: '#666',
-    marginVertical: 4,
-  },
-  courseCard: {
-    backgroundColor: '#fff',
-    elevation: 3,
-    marginBottom: 24,
-  },
-  titleSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
-  },
-  titleIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: '#f0f7ff',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    color: '#1976d2',
-    flex: 1,
+  descriptionContainer: {
+    marginBottom: Spacing.l,
   },
   description: {
-    fontSize: 14,
-    color: '#666',
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  details: {
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: '#e0e0e0',
-  },
-  detailRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    ...Typography.body,
+    color: Colors.light.textSecondary,
+    marginTop: Spacing.s,
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 16,
-    marginTop: 8,
+    ...Typography.h3,
+    color: Colors.light.text,
+    marginBottom: Spacing.m,
+  },
+  actionSection: {
+    marginTop: Spacing.l,
   },
   actionCard: {
-    marginBottom: 16,
-    backgroundColor: '#fff',
-    elevation: 2,
-    borderRadius: 12,
-  },
-  cardContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingBottom: 12,
+    backgroundColor: Colors.light.white,
+    borderRadius: BorderRadius.l,
+    padding: Spacing.m,
+    marginBottom: Spacing.m,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   iconContainer: {
     width: 48,
     height: 48,
-    borderRadius: 12,
-    backgroundColor: '#f0f7ff',
+    borderRadius: BorderRadius.m,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: Spacing.m,
   },
   cardText: {
     flex: 1,
   },
   cardTitle: {
-    fontSize: 15,
+    ...Typography.body,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    color: Colors.light.text,
+    marginBottom: 2,
   },
   cardDescription: {
-    fontSize: 13,
-    color: '#999',
-  },
-  cardButton: {
-    marginTop: 12,
-    marginHorizontal: 16,
-    marginBottom: 12,
-  },
-  buttonLabel: {
-    fontSize: 14,
-    fontWeight: '600',
-    
+    ...Typography.caption,
+    color: Colors.light.textSecondary,
   },
   lessonsSection: {
-    marginBottom: 16,
+    marginBottom: Spacing.l,
   },
   subsectionTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: 12,
+    ...Typography.body,
+    fontWeight: '700',
+    color: Colors.light.textSecondary,
+    marginBottom: Spacing.m,
   },
   lessonCard: {
-    marginBottom: 12,
-    backgroundColor: '#fff',
-    elevation: 2,
-    borderRadius: 12,
+    backgroundColor: Colors.light.white,
+    borderRadius: BorderRadius.l,
+    marginBottom: Spacing.m,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    padding: Spacing.m,
   },
-  lessonContent: {
-    padding: 16,
-  },
+  lessonContent: {},
   lessonHeader: {
     flexDirection: 'row',
+    marginBottom: Spacing.s,
+  },
+  lessonIconContainer: {
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.m,
+    backgroundColor: Colors.light.primaryLight,
+    justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
+    marginRight: Spacing.m,
   },
   lessonInfo: {
     flex: 1,
+    justifyContent: 'center',
   },
   lessonTitle: {
-    fontSize: 15,
+    ...Typography.body,
     fontWeight: '600',
-    color: '#333',
+    color: Colors.light.text,
     marginBottom: 4,
   },
+  durationBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
   lessonDuration: {
-    fontSize: 12,
-    color: '#999',
+    ...Typography.caption,
+    color: Colors.light.textSecondary,
   },
   lessonDescription: {
-    fontSize: 13,
-    color: '#666',
-    marginBottom: 12,
-    lineHeight: 18,
+    ...Typography.bodySmall,
+    color: Colors.light.textSecondary,
+    marginBottom: Spacing.m,
+    marginLeft: 40 + Spacing.m, // Indent
   },
   lessonButton: {
-    marginTop: 8,
+    borderRadius: BorderRadius.m,
+    marginLeft: 40 + Spacing.m, // Indent button too? Maybe full width is better
   },
   lessonButtonLabel: {
-    fontSize: 13,
-    fontWeight: '600',
+    ...Typography.caption,
+    fontWeight: '700',
+    color: Colors.light.white,
   },
   emptyLessons: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 40,
+    paddingVertical: Spacing.xl,
+    backgroundColor: Colors.light.background,
+    borderRadius: BorderRadius.l,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    borderStyle: 'dashed',
   },
   emptyLessonsText: {
-    fontSize: 14,
-    color: '#999',
-    marginTop: 12,
-  },
-  videoButton: {
-    backgroundColor: '#c0afe3',
+    ...Typography.body,
+    color: Colors.light.textSecondary,
+    marginTop: Spacing.s,
   },
 });
 

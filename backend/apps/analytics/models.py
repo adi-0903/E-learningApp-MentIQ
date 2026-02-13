@@ -62,3 +62,23 @@ class CourseAnalytics(TimeStampedModel):
 
     def __str__(self):
         return f"{self.course.title} - {self.date}"
+
+
+class UserActivityLog(TimeStampedModel):
+    """Logs of user activity sessions (how much time spent on app)."""
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='activity_logs'
+    )
+    start_time = models.DateTimeField(auto_now_add=True)
+    end_time = models.DateTimeField(null=True, blank=True)
+    duration_seconds = models.PositiveIntegerField(default=0)  # Total seconds spent in this session
+    device_info = models.CharField(max_length=255, blank=True, default='')
+
+    class Meta:
+        db_table = 'user_activity_logs'
+        ordering = ['-start_time']
+
+    def __str__(self):
+        return f"{self.user.email} - {self.start_time}"

@@ -1,18 +1,36 @@
 import { useAuthStore } from '@/store/authStore';
 import { useNotificationStore } from '@/store/notificationStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useEffect } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useEffect, useRef } from 'react';
+import { ScrollView, StyleSheet, View, Animated, TouchableOpacity, Easing } from 'react-native';
 import { Card, Switch, Text } from 'react-native-paper';
+import { Colors, AppShadows } from '@/constants/theme';
 
 function NotificationSettingsScreen({ navigation }: any) {
   const { user } = useAuthStore();
   const { settings, isLoading, loadSettings, updateSettings } = useNotificationStore();
 
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+
   useEffect(() => {
     if (user?.id) {
       loadSettings(user.id);
     }
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        easing: Easing.out(Easing.back(1.5)),
+        useNativeDriver: true,
+      }),
+    ]).start();
   }, [user?.id, loadSettings]);
 
   const handleToggle = async (key: keyof typeof settings, value: boolean) => {
@@ -21,212 +39,274 @@ function NotificationSettingsScreen({ navigation }: any) {
         await updateSettings(user.id, { [key]: value });
       }
     } catch (error) {
-      console.error('Failed to update setting:', error);
+      console.error('Nexus: Link Failure', error);
     }
   };
 
   const settingSections = [
     {
-      title: 'Content Notifications',
-      icon: 'bell-outline',
+      title: 'Dispatch Clusters',
+      icon: 'tower-fire',
       settings: [
-        { key: 'announcements', label: 'Announcements', description: 'Get notified about new announcements' },
-        { key: 'assignments', label: 'Assignments', description: 'Notifications for new assignments and due dates' },
-        { key: 'quizzes', label: 'Quizzes', description: 'Quiz notifications and reminders' },
-        { key: 'courses', label: 'Courses', description: 'Course updates and new lessons' },
-        { key: 'general', label: 'General', description: 'System updates and important messages' },
+        { key: 'announcements', label: 'Global Dispatch', description: 'System-wide critical broadcasts', icon: 'bullhorn-variant-outline' },
+        { key: 'assignments', label: 'Task Triggers', description: 'Immediate alerts for mission tasks', icon: 'file-document-edit-outline' },
+        { key: 'quizzes', label: 'Evaluation Pulse', description: 'Critical sync for quiz availability', icon: 'brain' },
+        { key: 'courses', label: 'Module Updates', description: 'New knowledge layer available', icon: 'certificate-outline' },
+        { key: 'general', label: 'System Pulse', description: 'Critical system pings and syncs', icon: 'lan-check' },
       ]
     },
     {
-      title: 'Notification Style',
-      icon: 'volume-high',
+      title: 'Signal Haptics',
+      icon: 'vibrate',
       settings: [
-        { key: 'sound', label: 'Sound', description: 'Play notification sounds' },
-        { key: 'vibration', label: 'Vibration', description: 'Vibrate for notifications' },
+        { key: 'sound', label: 'Auditory Alert', description: 'Sonic ping for new data', icon: 'volume-high' },
+        { key: 'vibration', label: 'Tactile Pulse', description: 'Kinetic response on arrival', icon: 'vibrate' },
       ]
     },
     {
-      title: 'External Notifications',
-      icon: 'email-outline',
+      title: 'External Bridges',
+      icon: 'satellite-variant',
       settings: [
-        { key: 'emailNotifications', label: 'Email Notifications', description: 'Receive notifications via email' },
+        { key: 'emailNotifications', label: 'Archival Link', description: 'Mirror dispatch to primary email', icon: 'email-lock' },
       ]
     }
   ];
 
-  // Show loading state while user is being loaded
-  if (!user?.id) {
-    return (
-      <ScrollView style={styles.container}>
-        <View style={styles.premiumHeader}>
-          <View style={styles.headerContent}>
-            <Text style={styles.greeting}>🔔 Notification Settings</Text>
-          </View>
-        </View>
-        <View style={styles.content}>
-          <Card style={styles.infoCard}>
-            <Card.Content>
-              <Text style={styles.infoText}>Loading user information...</Text>
-            </Card.Content>
-          </Card>
-        </View>
-      </ScrollView>
-    );
-  }
+  const isStudent = user?.role === 'student';
+  const themeColors = (isStudent
+    ? ['#064e3b', '#065f46', '#064e3b']
+    : ['#1e1b4b', '#312e81', '#1e1b4b']) as readonly [string, string, ...string[]];
+
+  const accentColor = isStudent ? '#10b981' : '#6366f1';
+  const iconBg = isStudent ? '#ecfdf5' : '#f5f3ff';
+  const iconColor = isStudent ? '#059669' : '#4f46e5';
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.premiumHeader}>
-        <View style={styles.headerContent}>
-          <Text style={styles.greeting}>🔔 Notification Settings</Text>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={themeColors}
+        style={styles.nexusHeader}
+      >
+        <View style={styles.meshWrapper}>
+          <MaterialCommunityIcons
+            name="broadcast"
+            size={300}
+            color={isStudent ? "rgba(16, 185, 129, 0.05)" : "rgba(99, 102, 241, 0.05)"}
+            style={styles.meshIcon}
+          />
         </View>
-      </View>
 
-      <View style={styles.content}>
-        {settingSections.map((section, sectionIndex) => (
-          <Card key={sectionIndex} style={styles.sectionCard}>
-            <Card.Content>
-              <View style={styles.sectionHeader}>
-                <MaterialCommunityIcons
-                  name={section.icon as any}
-                  size={24}
-                  color="#667eea"
-                />
-                <Text style={styles.sectionTitle}>{section.title}</Text>
+        <View style={styles.headerBody}>
+          <View style={styles.signalRow}>
+            <View style={styles.signalBar} />
+            <View style={styles.signalBar} />
+            <View style={[styles.signalBar, { height: 12 }]} />
+            <Text style={styles.nexusLabel}>LINK ACTIVE</Text>
+          </View>
+          <Text style={styles.nexusTitle}>Notification</Text>
+          <Text style={styles.nexusSubtitle}>Configuring real-time system synchronization</Text>
+        </View>
+      </LinearGradient>
+
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <Animated.View style={{ opacity: fadeAnim, transform: [{ translateY: slideAnim }] }}>
+          {settingSections.map((section, sIdx) => (
+            <View key={sIdx} style={styles.clusterWrapper}>
+              <View style={styles.clusterHeader}>
+                <MaterialCommunityIcons name={section.icon as any} size={16} color={accentColor} />
+                <Text style={styles.clusterTitle}>{section.title}</Text>
               </View>
 
-              {section.settings.map((setting, settingIndex) => (
-                <View key={setting.key} style={styles.settingItem}>
-                  <View style={styles.settingInfo}>
-                    <Text style={styles.settingLabel}>{setting.label}</Text>
-                    <Text style={styles.settingDescription}>{setting.description}</Text>
-                  </View>
-                  <Switch
-                    value={Boolean(settings?.[setting.key as keyof typeof settings])}
-                    onValueChange={(value) => handleToggle(setting.key as keyof typeof settings, value)}
-                    color="#667eea"
-                    disabled={isLoading}
-                  />
-                </View>
-              ))}
-            </Card.Content>
-          </Card>
-        ))}
-
-        <Card style={styles.infoCard}>
-          <Card.Content>
-            <View style={styles.infoHeader}>
-              <MaterialCommunityIcons
-                name="information-outline"
-                size={24}
-                color="#ff9800"
-              />
-              <Text style={styles.infoTitle}>About Notifications</Text>
+              <Card style={styles.nexusCard}>
+                <Card.Content style={styles.cardPaddingReset}>
+                  {section.settings.map((setting, idx) => (
+                    <View key={setting.key} style={[styles.dispatchItem, idx === section.settings.length - 1 && styles.noBorder]}>
+                      <View style={[styles.iconCircle, { backgroundColor: iconBg }]}>
+                        <MaterialCommunityIcons name={setting.icon as any} size={20} color={iconColor} />
+                      </View>
+                      <View style={styles.dispatchInfo}>
+                        <Text style={styles.dispatchLabel}>{setting.label}</Text>
+                        <Text style={styles.dispatchDesc}>{setting.description}</Text>
+                      </View>
+                      <Switch
+                        value={Boolean(settings?.[setting.key as keyof typeof settings])}
+                        onValueChange={(value) => handleToggle(setting.key as keyof typeof settings, value)}
+                        color={accentColor}
+                        disabled={isLoading}
+                      />
+                    </View>
+                  ))}
+                </Card.Content>
+              </Card>
             </View>
-            <Text style={styles.infoText}>
-              Customize your notification preferences to stay updated with the content that matters most to you. 
-              You can always change these settings later.
-            </Text>
-          </Card.Content>
-        </Card>
-      </View>
-    </ScrollView>
+          ))}
+
+          {/* Infrastructure Health Tip */}
+          <View style={styles.healthTip}>
+            <LinearGradient colors={['#f8fafc', '#f1f5f9']} style={styles.tipGradient}>
+              <MaterialCommunityIcons name="security" size={20} color="#64748b" />
+              <View style={styles.tipBody}>
+                <Text style={styles.tipTitle}>Infrastructure Secure</Text>
+                <Text style={styles.tipText}>Dispatch clusters are encrypted with TLS 1.3 for maximum transfer integrity.</Text>
+              </View>
+            </LinearGradient>
+          </View>
+        </Animated.View>
+        <View style={styles.bottomSpace} />
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#ffffff',
   },
-  premiumHeader: {
-    backgroundColor: '#667eea',
-    paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    minHeight: 100,
-  },
-  headerContent: {
+  nexusHeader: {
+    height: 175,
+    paddingTop: 20,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    overflow: 'hidden',
     justifyContent: 'center',
-    alignItems: 'flex-start',
   },
-  greeting: {
-    fontSize: 26,
-    fontWeight: '800',
+  meshWrapper: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  meshIcon: {
+    position: 'absolute',
+    right: -60,
+    top: -40,
+  },
+  headerBody: {
+    zIndex: 1,
+  },
+  signalRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    gap: 4,
+    marginBottom: 8,
+  },
+  signalBar: {
+    width: 3,
+    height: 8,
+    backgroundColor: '#10b981',
+    borderRadius: 1,
+  },
+  nexusLabel: {
+    fontSize: 10,
+    fontWeight: '900',
+    color: '#10b981',
+    letterSpacing: 2,
+    marginLeft: 4,
+  },
+  nexusTitle: {
+    fontSize: 34,
+    fontWeight: '900',
     color: '#fff',
-    letterSpacing: 0.5,
+    letterSpacing: -1,
   },
-  content: {
-    padding: 16,
+  nexusSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.6)',
+    marginTop: 4,
+    fontWeight: '500',
   },
-  sectionCard: {
-    marginBottom: 16,
-    elevation: 3,
+  scrollContent: {
+    paddingHorizontal: 20,
+    paddingTop: 30,
+  },
+  clusterWrapper: {
+    marginBottom: 28,
+  },
+  clusterHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginBottom: 12,
+    marginLeft: 4,
+  },
+  clusterTitle: {
+    fontSize: 12,
+    fontWeight: '900',
+    color: '#94a3b8',
+    textTransform: 'uppercase',
+    letterSpacing: 2,
+  },
+  nexusCard: {
+    borderRadius: 24,
     backgroundColor: '#fff',
-    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    ...AppShadows.light,
   },
-  sectionHeader: {
+  cardPaddingReset: {
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+  },
+  dispatchItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 16,
-    gap: 12,
-  },
-  sectionTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333',
-  },
-  settingItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
+    paddingVertical: 18,
     borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomColor: '#f8fafc',
   },
-  settingInfo: {
-    flex: 1,
+  noBorder: {
+    borderBottomWidth: 0,
+  },
+  iconCircle: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    backgroundColor: '#f5f3ff',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 16,
   },
-  settingLabel: {
+  dispatchInfo: {
+    flex: 1,
+  },
+  dispatchLabel: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 4,
+    fontWeight: '800',
+    color: '#1e293b',
   },
-  settingDescription: {
-    fontSize: 13,
-    color: '#666',
-    lineHeight: 18,
+  dispatchDesc: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+    fontWeight: '500',
   },
-  infoCard: {
-    marginTop: 8,
-    elevation: 2,
-    backgroundColor: '#fff',
-    borderRadius: 16,
+  healthTip: {
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginTop: 10,
   },
-  infoHeader: {
+  tipGradient: {
     flexDirection: 'row',
+    padding: 20,
+    gap: 16,
     alignItems: 'center',
-    marginBottom: 12,
-    gap: 12,
   },
-  infoTitle: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#333',
+  tipBody: {
+    flex: 1,
   },
-  infoText: {
+  tipTitle: {
     fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
+    fontWeight: '900',
+    color: '#1e293b',
+  },
+  tipText: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
+    lineHeight: 18,
+    fontWeight: '500',
+  },
+  bottomSpace: {
+    height: 40,
   },
 });
 

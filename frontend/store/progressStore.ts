@@ -98,7 +98,7 @@ export const useProgressStore = create<ProgressState>((set) => ({
   fetchStudentEnrollments: async () => {
     set({ isLoading: true });
     try {
-      const { data } = await studentApi.getCourses();
+      const { data } = await studentApi.getProgress();
       const results = data.results || data;
       set({
         enrollments: (Array.isArray(results) ? results : []).map(normalizeEnrollment),

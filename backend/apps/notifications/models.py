@@ -11,6 +11,7 @@ class Notification(TimeStampedModel):
 
     class TypeChoices(models.TextChoices):
         ANNOUNCEMENT = 'announcement', 'Announcement'
+        ASSIGNMENT = 'assignment', 'Assignment'
         COURSE = 'course', 'Course Update'
         QUIZ = 'quiz', 'Quiz'
         LIVE_CLASS = 'live_class', 'Live Class'
@@ -43,3 +44,30 @@ class Notification(TimeStampedModel):
 
     def __str__(self):
         return f"{'📩' if not self.is_read else '✅'} {self.user.name}: {self.title}"
+
+
+class NotificationSetting(TimeStampedModel):
+    """User preferences for notifications."""
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='notification_settings'
+    )
+    
+    # Types
+    announcements = models.BooleanField(default=True)
+    assignments = models.BooleanField(default=True)
+    quizzes = models.BooleanField(default=True)
+    courses = models.BooleanField(default=True)
+    general = models.BooleanField(default=True)
+    
+    # Styles
+    sound = models.BooleanField(default=True)
+    vibration = models.BooleanField(default=True)
+    email_notifications = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'notification_settings'
+
+    def __str__(self):
+        return f"Settings for {self.user.name}"

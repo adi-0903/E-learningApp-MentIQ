@@ -42,6 +42,38 @@ class CourseLessonsView(generics.ListCreateAPIView):
         serializer = LessonCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         lesson = serializer.save()
+
+        # Trigger notifications for enrolled students
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            from apps.users.models import User
+            
+            # Notify students in the course
+            students = User.objects.filter(
+                enrollments__course=lesson.course,
+                enrollments__is_active=True
+            ).distinct()
+            
+            title = f"Knowledge Sync: {lesson.title}"
+            body = f"A new knowledge layer is available in {lesson.course.title}."
+            data = {
+                'course_id': str(lesson.course.id),
+                'lesson_id': str(lesson.id),
+                'type': 'course'
+            }
+
+            for student in students:
+                create_notification(
+                    user=student,
+                    title=title,
+                    body=body,
+                    notification_type=Notification.TypeChoices.COURSE,
+                    data=data
+                )
+        except Exception as e:
+            print(f"Lesson Notification Failure: {e}")
+
         return Response({
             'success': True,
             'message': 'Lesson created successfully.',

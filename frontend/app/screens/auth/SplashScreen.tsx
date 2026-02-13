@@ -18,26 +18,38 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
   const logoRotateAnim = useRef(new Animated.Value(0)).current;
   const progressAnim = useRef(new Animated.Value(0)).current;
   const textSlideAnim = useRef(new Animated.Value(50)).current;
+  const isAppReady = useRef(false);
   const { getCurrentUser } = useAuthStore();
 
   useEffect(() => {
     // Initialize app while showing splash
     const initializeApp = async () => {
       try {
-        await getCurrentUser();
+        // Enforce a maximum wait time of 5 seconds
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('Initialization timeout')), 5000)
+        );
+
+        await Promise.race([
+          getCurrentUser(),
+          timeoutPromise
+        ]);
       } catch (error) {
         console.error('Failed to initialize app:', error);
+      } finally {
+        isAppReady.current = true;
       }
     };
 
     // Start animations sequence
     startAnimations();
     initializeApp();
-    
-    // Progress bar animation - 3 second duration
+
+    // Progress bar animation - 2 second duration
     const progressInterval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 100) {
+        // Only finish when both animation is done AND app is initialized
+        if (prev >= 100 && isAppReady.current) {
           clearInterval(progressInterval);
           // Delay before finishing to show complete animation
           setTimeout(() => {
@@ -45,12 +57,16 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
           }, 300);
           return 100;
         }
-        return prev + 1.67; // 100 / 60 = 1.67 (for 3 seconds at 50ms intervals)
+
+        // If animation is at 100 but app not ready, stay at 100
+        if (prev >= 100) return 100;
+
+        return prev + 2.5; // (100 / 40 steps = 2.5) for 2 seconds at 50ms intervals
       });
     }, 50);
 
     return () => clearInterval(progressInterval);
-  }, [getCurrentUser]);
+  }, []); // Run on mount only
 
   useEffect(() => {
     // Animate progress bar
@@ -106,7 +122,7 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
       >
-        <Animated.View 
+        <Animated.View
           style={[
             styles.content,
             {
@@ -151,10 +167,10 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
                 style={styles.logoBackground}
               >
                 <View style={styles.logoInner}>
-                  <MaterialCommunityIcons 
-                    name="school" 
-                    size={90} 
-                    color="#fff" 
+                  <MaterialCommunityIcons
+                    name="school"
+                    size={90}
+                    color="#fff"
                   />
                 </View>
               </LinearGradient>
@@ -168,7 +184,7 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
                 }
               ]}
             >
-              <Text style={styles.appName}>MentIQ</Text>
+              <Text style={styles.appName}>EduBloom</Text>
               <Text style={styles.tagline}>Learn • Grow • Excel</Text>
             </Animated.View>
           </View>
@@ -192,12 +208,12 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
               </View>
               <Text style={styles.progressText}>{Math.round(progress)}%</Text>
             </View>
-            
+
             <Text style={styles.loadingText}>
               {progress < 30 ? 'Initializing...' :
-               progress < 60 ? 'Loading Resources...' :
-               progress < 90 ? 'Preparing Experience...' :
-               'Almost Ready!'}
+                progress < 60 ? 'Loading Resources...' :
+                  progress < 90 ? 'Preparing Experience...' :
+                    'Almost Ready!'}
             </Text>
           </View>
 
@@ -268,10 +284,10 @@ function EducationalElement({ icon, position, delay }: EducationalElementProps) 
         },
       ]}
     >
-      <MaterialCommunityIcons 
-        name={icon as any} 
-        size={50} 
-        color="#fff" 
+      <MaterialCommunityIcons
+        name={icon as any}
+        size={50}
+        color="#fff"
       />
     </Animated.View>
   );

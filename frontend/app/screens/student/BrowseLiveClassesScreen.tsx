@@ -19,6 +19,8 @@ import {
   Snackbar,
   Text
 } from 'react-native-paper';
+import { Colors, Typography, Spacing, AppShadows, BorderRadius } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export default function BrowseLiveClassesScreen({ navigation }: any) {
   const { user } = useAuthStore();
@@ -102,15 +104,15 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'active':
-        return '#4CAF50';
+        return Colors.light.success;
       case 'scheduled':
-        return '#2196F3';
+        return Colors.light.primary;
       case 'completed':
-        return '#9E9E9E';
+        return Colors.light.textSecondary;
       case 'cancelled':
-        return '#F44336';
+        return Colors.light.error;
       default:
-        return '#757575';
+        return Colors.light.textSecondary;
     }
   };
 
@@ -130,7 +132,7 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
   };
 
   const renderLiveClassCard = ({ item }: { item: LiveClass }) => (
-    <Card style={styles.card}>
+    <Card style={[styles.card, AppShadows.small]}>
       <Card.Content>
         <View style={styles.cardHeader}>
           <View style={styles.titleContainer}>
@@ -143,7 +145,7 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
             <Chip
               icon={getStatusIcon(item.status)}
               style={{ backgroundColor: getStatusColor(item.status), marginTop: 8 }}
-              textStyle={{ color: '#fff' }}
+              textStyle={{ color: Colors.light.white, ...Typography.caption, fontWeight: '700' }}
             >
               {item.status.toUpperCase()}
             </Chip>
@@ -163,20 +165,20 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
 
         <View style={styles.detailsContainer}>
           <View style={styles.detailRow}>
-            <MaterialCommunityIcons name="calendar" size={16} color="#666" />
+            <MaterialCommunityIcons name="calendar" size={16} color={Colors.light.textSecondary} />
             <Text style={styles.detailText}>
               {format(new Date(item.scheduledStartTime || new Date()), 'MMM dd, yyyy')}
             </Text>
           </View>
           <View style={styles.detailRow}>
-            <MaterialCommunityIcons name="clock" size={16} color="#666" />
+            <MaterialCommunityIcons name="clock" size={16} color={Colors.light.textSecondary} />
             <Text style={styles.detailText}>
               {format(new Date(item.scheduledStartTime || new Date()), 'HH:mm')}
             </Text>
           </View>
           {item.participantCount !== undefined && (
             <View style={styles.detailRow}>
-              <MaterialCommunityIcons name="account-multiple" size={16} color="#666" />
+              <MaterialCommunityIcons name="account-multiple" size={16} color={Colors.light.textSecondary} />
               <Text style={styles.detailText}>
                 {item.participantCount} participant{item.participantCount !== 1 ? 's' : ''}
               </Text>
@@ -191,18 +193,19 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
               onPress={() => handleJoinClass(item)}
               style={styles.joinButton}
               icon="video"
+              buttonColor={Colors.light.error} // Red for LIVE
             >
-              Join Now
+              Join Live
             </Button>
           ) : item.status === 'scheduled' ? (
             <View style={styles.scheduledInfo}>
-              <MaterialCommunityIcons name="information" size={20} color="#2196F3" />
+              <MaterialCommunityIcons name="information" size={20} color={Colors.light.primary} />
               <Text style={styles.scheduledText}>
                 Starts {format(new Date(item.scheduledStartTime || new Date()), 'MMM dd, HH:mm')}
               </Text>
             </View>
           ) : (
-            <Button mode="outlined" disabled>
+            <Button mode="outlined" disabled style={{ borderColor: Colors.light.border }}>
               {item.status.charAt(0).toUpperCase() + item.status.slice(1)}
             </Button>
           )}
@@ -213,12 +216,17 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
 
   return (
     <View style={styles.container}>
-      <View style={styles.premiumHeader}>
+      <LinearGradient
+        colors={[Colors.light.primaryDark, Colors.light.primary]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.premiumHeader}
+      >
         <View style={styles.headerContent}>
           <Text style={styles.greeting}>🎥 Live Classes</Text>
           <Text style={styles.subtitle}>Join live sessions with your teachers</Text>
         </View>
-      </View>
+      </LinearGradient>
 
       {/* <View style={styles.tabContainer}>
         <Button
@@ -239,7 +247,7 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
 
       {isLoading && filteredClasses.length === 0 ? (
         <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" />
+          <ActivityIndicator size="large" color={Colors.light.primary} />
         </View>
       ) : (
         <FlatList
@@ -248,40 +256,45 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.listContent}
           refreshControl={
-            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.light.primary} />
           }
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <View style={styles.comingSoonCard}>
-                <MaterialCommunityIcons
-                  name="clock-outline"
-                  size={64}
-                  color="#667eea"
-                />
-                <Text variant="headlineMedium" style={styles.comingSoonTitle}>
-                  Coming Soon
-                </Text>
-                <Text variant="bodyMedium" style={styles.comingSoonSubtitle}>
-                  Live class streaming feature is being prepared for you
-                </Text>
-                <View style={styles.featureList}>
-                  <View style={styles.featureItem}>
-                    <MaterialCommunityIcons name="check-circle" size={20} color="#4CAF50" />
-                    <Text style={styles.featureText}>Join live classes with teachers</Text>
+                <LinearGradient
+                  colors={[Colors.light.primaryLight, '#fff']}
+                  style={styles.comingSoonGradient}
+                >
+                  <MaterialCommunityIcons
+                    name="clock-outline"
+                    size={64}
+                    color={Colors.light.primary}
+                  />
+                  <Text variant="headlineMedium" style={styles.comingSoonTitle}>
+                    Coming Soon
+                  </Text>
+                  <Text variant="bodyMedium" style={styles.comingSoonSubtitle}>
+                    Live class streaming feature is being prepared for you
+                  </Text>
+                  <View style={styles.featureList}>
+                    <View style={styles.featureItem}>
+                      <MaterialCommunityIcons name="check-circle" size={20} color={Colors.light.success} />
+                      <Text style={styles.featureText}>Join live classes with teachers</Text>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <MaterialCommunityIcons name="check-circle" size={20} color={Colors.light.success} />
+                      <Text style={styles.featureText}>Real-time interaction</Text>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <MaterialCommunityIcons name="check-circle" size={20} color={Colors.light.success} />
+                      <Text style={styles.featureText}>Learn from anywhere</Text>
+                    </View>
+                    <View style={styles.featureItem}>
+                      <MaterialCommunityIcons name="check-circle" size={20} color={Colors.light.success} />
+                      <Text style={styles.featureText}>Access recorded live lectures</Text>
+                    </View>
                   </View>
-                  <View style={styles.featureItem}>
-                    <MaterialCommunityIcons name="check-circle" size={20} color="#4CAF50" />
-                    <Text style={styles.featureText}>Real-time interaction</Text>
-                  </View>
-                  <View style={styles.featureItem}>
-                    <MaterialCommunityIcons name="check-circle" size={20} color="#4CAF50" />
-                    <Text style={styles.featureText}>Learn from anywhere</Text>
-                  </View>
-                  <View style={styles.featureItem}>
-                    <MaterialCommunityIcons name="check-circle" size={20} color="#4CAF50" />
-                    <Text style={styles.featureText}>Access recorded live lectures</Text>
-                  </View>
-                </View>
+                </LinearGradient>
               </View>
             </View>
           }
@@ -292,6 +305,7 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
         duration={3000}
+        style={{ backgroundColor: Colors.light.text }}
       >
         {snackbarMessage}
       </Snackbar>
@@ -302,37 +316,32 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: Colors.light.background,
   },
   premiumHeader: {
-    backgroundColor: '#667eea',
-    paddingTop: 50,
-    paddingBottom: 28,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
+    paddingTop: 60,
+    paddingBottom: 30,
+    paddingHorizontal: Spacing.l,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    ...AppShadows.medium,
   },
   headerContent: {
     gap: 4,
   },
   greeting: {
+    ...Typography.h1,
     fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
+    color: Colors.light.white,
   },
   subtitle: {
-    fontSize: 14,
+    ...Typography.body,
     color: 'rgba(255, 255, 255, 0.9)',
   },
   searchContainer: {
-    paddingHorizontal: 12,
-    paddingVertical: 16,
-    backgroundColor: '#fff',
+    paddingHorizontal: Spacing.m,
+    paddingVertical: Spacing.m,
+    backgroundColor: Colors.light.white,
   },
   searchBar: {
     margin: 0,
@@ -340,17 +349,17 @@ const styles = StyleSheet.create({
   },
   tabContainer: {
     flexDirection: 'row',
-    paddingHorizontal: 12,
-    paddingVertical: 20,
-    paddingTop: 28,
-    gap: 8,
-    backgroundColor: '#fff',
+    paddingHorizontal: Spacing.m,
+    paddingVertical: Spacing.l,
+    paddingTop: Spacing.xl,
+    gap: Spacing.s,
+    backgroundColor: Colors.light.white,
   },
   tabButton: {
     flex: 1,
   },
   tabs: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.light.white,
   },
   loadingContainer: {
     flex: 1,
@@ -358,40 +367,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   listContent: {
-    padding: 12,
+    padding: Spacing.m,
   },
   card: {
-    marginBottom: 12,
-    elevation: 2,
+    marginBottom: Spacing.m,
+    backgroundColor: Colors.light.white,
+    borderRadius: BorderRadius.l,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: Spacing.m,
   },
   titleContainer: {
     flex: 1,
-    marginRight: 12,
+    marginRight: Spacing.m,
   },
   classTitle: {
-    fontWeight: 'bold',
+    ...Typography.h3,
+    fontSize: 18,
     marginBottom: 4,
+    color: Colors.light.text,
   },
   teacherName: {
-    color: '#666',
-    marginBottom: 8,
+    ...Typography.bodySmall,
+    color: Colors.light.textSecondary,
+    marginBottom: Spacing.s,
   },
   description: {
-    color: '#666',
-    marginBottom: 12,
+    ...Typography.bodySmall,
+    color: Colors.light.textSecondary,
+    marginBottom: Spacing.m,
     fontStyle: 'italic',
   },
   detailsContainer: {
-    backgroundColor: '#f9f9f9',
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 12,
+    backgroundColor: Colors.light.background,
+    borderRadius: BorderRadius.m,
+    padding: Spacing.m,
+    marginBottom: Spacing.m,
   },
   detailRow: {
     flexDirection: 'row',
@@ -399,87 +415,77 @@ const styles = StyleSheet.create({
     marginBottom: 6,
   },
   detailText: {
-    marginLeft: 8,
-    color: '#666',
+    marginLeft: Spacing.s,
+    color: Colors.light.textSecondary,
+    ...Typography.caption,
   },
   actionContainer: {
-    marginTop: 12,
+    marginTop: Spacing.s,
   },
   joinButton: {
-    borderRadius: 8,
+    borderRadius: BorderRadius.m,
   },
   scheduledInfo: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#E3F2FD',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: Colors.light.primaryLight,
+    padding: Spacing.m,
+    borderRadius: BorderRadius.m,
   },
   scheduledText: {
-    marginLeft: 12,
-    color: '#2196F3',
+    marginLeft: Spacing.m,
+    color: Colors.light.primary,
     fontWeight: '500',
+    ...Typography.bodySmall,
   },
   emptyContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20,
+    paddingVertical: Spacing.xxl,
+    paddingHorizontal: Spacing.l,
   },
   comingSoonCard: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 32,
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+    backgroundColor: Colors.light.white,
+    borderRadius: BorderRadius.xl,
+    ...AppShadows.medium,
     borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: Colors.light.border,
+    width: '100%',
+    overflow: 'hidden',
+  },
+  comingSoonGradient: {
+    padding: Spacing.xl,
+    alignItems: 'center',
   },
   comingSoonTitle: {
-    marginTop: 16,
+    marginTop: Spacing.m,
     fontWeight: 'bold',
-    color: '#333',
+    color: Colors.light.text,
     textAlign: 'center',
   },
   comingSoonSubtitle: {
-    marginTop: 12,
-    color: '#666',
+    marginTop: Spacing.s,
+    color: Colors.light.textSecondary,
     textAlign: 'center',
     lineHeight: 20,
   },
   featureList: {
-    marginTop: 24,
+    marginTop: Spacing.l,
     width: '100%',
-    gap: 16,
-    paddingHorizontal: 0,
+    gap: Spacing.m,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 0,
+    gap: Spacing.m,
+    paddingVertical: Spacing.s,
     width: '100%',
   },
   featureText: {
-    fontSize: 13,
-    color: '#746d6dd5',
+    color: Colors.light.text,
     fontWeight: '500',
     flex: 1,
     flexWrap: 'wrap',
-  },
-  emptyText: {
-    marginTop: 16,
-    textAlign: 'center',
-  },
-  emptySubtext: {
-    marginTop: 8,
-    textAlign: 'center',
-    color: '#999',
   },
 });

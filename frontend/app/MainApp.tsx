@@ -2,6 +2,7 @@ import { useAuthStore } from '@/store/authStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { Colors } from '@/constants/theme';
 
 // Screens - using absolute imports
 // Student screens
@@ -34,6 +35,7 @@ import ProfileScreen from '@/app/screens/shared/ProfileScreen';
 import QuizResultScreen from '@/app/screens/shared/QuizResultScreen';
 import QuizScreen from '@/app/screens/shared/QuizScreen';
 import NotificationSettingsScreen from './screens/shared/NotificationSettingsScreen';
+import SecurityScreen from '@/app/screens/shared/SecurityScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -68,6 +70,7 @@ function ProfileStack() {
       <Stack.Screen name="ProfileMain" component={ProfileScreen} />
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
+      <Stack.Screen name="Security" component={SecurityScreen} />
     </Stack.Navigator>
   );
 }
@@ -102,17 +105,26 @@ function StudentTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#1976d2',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: Colors.light.primary,
+        tabBarInactiveTintColor: Colors.light.tabIconDefault,
+        tabBarStyle: {
+          borderTopColor: Colors.light.divider,
+          backgroundColor: Colors.light.surface,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        }
       }}
     >
       <Tab.Screen
         name="HomeTab"
         component={StudentStack}
         options={{
-          tabBarLabel: 'Home',
+          tabBarLabel: 'Learn',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home" color={color} size={size} />
+            <MaterialCommunityIcons name="school-outline" color={color} size={size} />
           ),
         }}
       />
@@ -120,9 +132,9 @@ function StudentTabs() {
         name="LiveClassesTab"
         component={BrowseLiveClassesScreen}
         options={{
-          tabBarLabel: 'Live Class',
+          tabBarLabel: 'Live',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="video" color={color} size={size} />
+            <MaterialCommunityIcons name="video-wireless-outline" color={color} size={size} />
           ),
         }}
       />
@@ -130,9 +142,9 @@ function StudentTabs() {
         name="AnnouncementsTab"
         component={AnnouncementsScreen}
         options={{
-          tabBarLabel: 'Announcements',
+          tabBarLabel: 'Updates',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="bell" color={color} size={size} />
+            <MaterialCommunityIcons name="bell-outline" color={color} size={size} />
           ),
         }}
       />
@@ -140,9 +152,9 @@ function StudentTabs() {
         name="ProgressTab"
         component={StudentProgressScreen}
         options={{
-          tabBarLabel: 'Progress',
+          tabBarLabel: 'My Stats',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chart-line" color={color} size={size} />
+            <MaterialCommunityIcons name="chart-timeline-variant" color={color} size={size} />
           ),
         }}
       />
@@ -152,7 +164,7 @@ function StudentTabs() {
         options={{
           tabBarLabel: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account" color={color} size={size} />
+            <MaterialCommunityIcons name="account-circle-outline" color={color} size={size} />
           ),
         }}
       />
@@ -194,8 +206,17 @@ function TeacherTabs() {
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: '#1976d2',
-        tabBarInactiveTintColor: '#999',
+        tabBarActiveTintColor: Colors.light.primary,
+        tabBarInactiveTintColor: Colors.light.tabIconDefault,
+        tabBarStyle: {
+          borderTopColor: Colors.light.divider,
+          backgroundColor: Colors.light.surface,
+          elevation: 8,
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        }
       }}
     >
       <Tab.Screen
@@ -204,7 +225,7 @@ function TeacherTabs() {
         options={{
           tabBarLabel: 'Home',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="home" color={color} size={size} />
+            <MaterialCommunityIcons name="home-variant" color={color} size={size} />
           ),
         }}
       />
@@ -214,7 +235,7 @@ function TeacherTabs() {
         options={{
           tabBarLabel: 'Live Class',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="video" color={color} size={size} />
+            <MaterialCommunityIcons name="video-account" color={color} size={size} />
           ),
         }}
       />
@@ -222,9 +243,9 @@ function TeacherTabs() {
         name="AnnouncementsTab"
         component={TeacherAnnouncementsStack}
         options={{
-          tabBarLabel: 'Announcements',
+          tabBarLabel: 'Updates',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="bell" color={color} size={size} />
+            <MaterialCommunityIcons name="bell-ring" color={color} size={size} />
           ),
         }}
       />
@@ -232,9 +253,9 @@ function TeacherTabs() {
         name="ProgressTab"
         component={TeacherProgressScreen}
         options={{
-          tabBarLabel: 'Progress',
+          tabBarLabel: 'Analytics',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="chart-line" color={color} size={size} />
+            <MaterialCommunityIcons name="chart-box" color={color} size={size} />
           ),
         }}
       />
@@ -244,7 +265,7 @@ function TeacherTabs() {
         options={{
           tabBarLabel: 'Profile',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account" color={color} size={size} />
+            <MaterialCommunityIcons name="account-circle" color={color} size={size} />
           ),
         }}
       />
@@ -252,10 +273,17 @@ function TeacherTabs() {
   );
 }
 
+import { UsageTracker } from '@/components/UsageTracker';
+
 function MainApp() {
   const { user } = useAuthStore();
 
-  return user?.role === 'teacher' ? <TeacherTabs /> : <StudentTabs />;
+  return (
+    <>
+      <UsageTracker />
+      {user?.role === 'teacher' ? <TeacherTabs /> : <StudentTabs />}
+    </>
+  );
 }
 
 export default MainApp;

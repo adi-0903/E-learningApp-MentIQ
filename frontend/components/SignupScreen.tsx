@@ -14,6 +14,7 @@ import {
   View
 } from 'react-native';
 import { ActivityIndicator, Text, TextInput } from 'react-native-paper';
+import { Colors, Typography, AppShadows, BorderRadius, Spacing } from '@/constants/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -34,7 +35,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signup, isLoading } = useAuthStore();
-  
+
   const studentBreathingAnim = useRef(new Animated.Value(1)).current;
   const teacherBreathingAnim = useRef(new Animated.Value(1)).current;
 
@@ -101,7 +102,11 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#667eea', '#764ba2', '#f093fb']}
+        colors={
+          role === 'student'
+            ? [Colors.light.primaryDark, Colors.light.primary, Colors.light.secondaryLight]
+            : ['#1e1b4b', '#4338ca', '#818cf8'] // Deep Indigo gradient for Teacher
+        }
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
@@ -125,16 +130,16 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
                 <View style={styles.roleButtons}>
                   <Animated.View style={{ flex: 1, transform: [{ scale: studentBreathingAnim }] }}>
                     <TouchableOpacity
-                      style={[styles.roleButton, role === 'student' && styles.roleButtonActive]}
+                      style={[styles.roleButton, role === 'student' && styles.roleButtonActiveStudent]}
                       onPress={() => setRole('student')}
                       disabled={isLoading}
                     >
-                      <MaterialCommunityIcons 
-                        name="account-school" 
-                        size={24} 
-                        color={role === 'student' ? '#667eea' : '#999'} 
+                      <MaterialCommunityIcons
+                        name="account-school"
+                        size={24}
+                        color={role === 'student' ? Colors.light.primary : Colors.light.textLight}
                       />
-                      <Text style={[styles.roleButtonText, role === 'student' && styles.roleButtonTextActive]}>
+                      <Text style={[styles.roleButtonText, role === 'student' && styles.roleButtonTextActiveStudent]}>
                         Student
                       </Text>
                     </TouchableOpacity>
@@ -142,16 +147,16 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
 
                   <Animated.View style={{ flex: 1, transform: [{ scale: teacherBreathingAnim }] }}>
                     <TouchableOpacity
-                      style={[styles.roleButton, role === 'teacher' && styles.roleButtonActive]}
+                      style={[styles.roleButton, role === 'teacher' && styles.roleButtonActiveTeacher]}
                       onPress={() => setRole('teacher')}
                       disabled={isLoading}
                     >
-                      <MaterialCommunityIcons 
-                        name="account-tie" 
-                        size={24} 
-                        color={role === 'teacher' ? '#667eea' : '#999'} 
+                      <MaterialCommunityIcons
+                        name="account-tie"
+                        size={24}
+                        color={role === 'teacher' ? '#4338ca' : Colors.light.textLight}
                       />
-                      <Text style={[styles.roleButtonText, role === 'teacher' && styles.roleButtonTextActive]}>
+                      <Text style={[styles.roleButtonText, role === 'teacher' && styles.roleButtonTextActiveTeacher]}>
                         Teacher
                       </Text>
                     </TouchableOpacity>
@@ -161,7 +166,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
 
               {/* Name Input */}
               <View style={styles.inputContainer}>
-                <MaterialCommunityIcons name="account-outline" size={20} color="#999" style={styles.inputIcon} />
+                <MaterialCommunityIcons name="account-outline" size={20} color={Colors.light.textLight} style={styles.inputIcon} />
                 <TextInput
                   placeholder="Full Name"
                   value={name}
@@ -170,15 +175,17 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
                   style={styles.input}
                   underlineColor="transparent"
                   activeUnderlineColor="transparent"
-                  textColor="#333"
-                  placeholderTextColor="#999"
+                  textColor={Colors.light.text}
+                  selectionColor={Colors.light.primary}
+                  cursorColor={Colors.light.primary}
+                  placeholderTextColor={Colors.light.textLight}
                   editable={!isLoading}
                 />
               </View>
 
               {/* Email Input */}
               <View style={styles.inputContainer}>
-                <MaterialCommunityIcons name="email-outline" size={20} color="#999" style={styles.inputIcon} />
+                <MaterialCommunityIcons name="email-outline" size={20} color={Colors.light.textLight} style={styles.inputIcon} />
                 <TextInput
                   placeholder="Email Address"
                   value={email}
@@ -189,15 +196,17 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
                   style={styles.input}
                   underlineColor="transparent"
                   activeUnderlineColor="transparent"
-                  textColor="#333"
-                  placeholderTextColor="#999"
+                  textColor={Colors.light.text}
+                  selectionColor={Colors.light.primary}
+                  cursorColor={Colors.light.primary}
+                  placeholderTextColor={Colors.light.textLight}
                   editable={!isLoading}
                 />
               </View>
 
               {/* Password Input */}
               <View style={styles.inputContainer}>
-                <MaterialCommunityIcons name="lock-outline" size={20} color="#999" style={styles.inputIcon} />
+                <MaterialCommunityIcons name="lock-outline" size={20} color={Colors.light.textLight} style={styles.inputIcon} />
                 <TextInput
                   placeholder="Password"
                   value={password}
@@ -207,13 +216,15 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
                   style={styles.input}
                   underlineColor="transparent"
                   activeUnderlineColor="transparent"
-                  textColor="#333"
-                  placeholderTextColor="#999"
+                  textColor={Colors.light.text}
+                  selectionColor={Colors.light.primary}
+                  cursorColor={Colors.light.primary}
+                  placeholderTextColor={Colors.light.textLight}
                   right={
                     <TextInput.Icon
                       icon={showPassword ? 'eye-off' : 'eye'}
                       onPress={() => setShowPassword(!showPassword)}
-                      color="#999"
+                      color={Colors.light.textLight}
                     />
                   }
                   editable={!isLoading}
@@ -222,7 +233,7 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
 
               {/* Confirm Password Input */}
               <View style={styles.inputContainer}>
-                <MaterialCommunityIcons name="lock-check-outline" size={20} color="#999" style={styles.inputIcon} />
+                <MaterialCommunityIcons name="lock-check-outline" size={20} color={Colors.light.textLight} style={styles.inputIcon} />
                 <TextInput
                   placeholder="Confirm Password"
                   value={confirmPassword}
@@ -232,13 +243,15 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
                   style={styles.input}
                   underlineColor="transparent"
                   activeUnderlineColor="transparent"
-                  textColor="#333"
-                  placeholderTextColor="#999"
+                  textColor={Colors.light.text}
+                  selectionColor={Colors.light.primary}
+                  cursorColor={Colors.light.primary}
+                  placeholderTextColor={Colors.light.textLight}
                   right={
                     <TextInput.Icon
                       icon={showConfirmPassword ? 'eye-off' : 'eye'}
                       onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-                      color="#999"
+                      color={Colors.light.textLight}
                     />
                   }
                   editable={!isLoading}
@@ -252,17 +265,17 @@ export const SignupScreen: React.FC<SignupScreenProps> = ({
                 disabled={isLoading}
               >
                 <LinearGradient
-                  colors={['#667eea', '#764ba2']}
+                  colors={role === 'student' ? [Colors.light.primary, Colors.light.primaryDark] : ['#4338ca', '#1e1b4b']}
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 0 }}
                   style={styles.signupButtonGradient}
                 >
                   {isLoading ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={Colors.light.white} />
                   ) : (
                     <>
                       <Text style={styles.signupButtonText}>Create Account</Text>
-                      <MaterialCommunityIcons name="arrow-right" size={20} color="#fff" />
+                      <MaterialCommunityIcons name="arrow-right" size={20} color={Colors.light.white} />
                     </>
                   )}
                 </LinearGradient>
@@ -300,49 +313,46 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
+    padding: Spacing.l,
     justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 25,
+    marginBottom: Spacing.xl,
   },
   title: {
+    ...Typography.h1,
     fontSize: 38,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 15,
+    color: Colors.light.white,
+    marginBottom: Spacing.m,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
   subtitle: {
+    ...Typography.body,
     fontSize: 15,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 15,
+    backgroundColor: Colors.light.white,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.l,
+    ...AppShadows.medium,
   },
   roleSection: {
-    marginBottom: 20,
+    marginBottom: Spacing.m,
   },
   roleLabel: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#333',
-    marginBottom: 12,
+    ...Typography.body,
+    fontWeight: '700',
+    color: Colors.light.text,
+    marginBottom: Spacing.m,
   },
   roleButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.m,
   },
   roleButton: {
     flex: 1,
@@ -351,34 +361,43 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: BorderRadius.m,
     borderWidth: 2,
-    borderColor: '#e0e0e0',
-    backgroundColor: '#f9f9f9',
+    borderColor: Colors.light.border,
+    backgroundColor: Colors.light.background,
     gap: 8,
   },
-  roleButtonActive: {
-    borderColor: '#667eea',
-    backgroundColor: '#f0f4ff',
+  roleButtonActiveStudent: {
+    borderColor: Colors.light.primary,
+    backgroundColor: Colors.light.primaryLight,
+  },
+  roleButtonActiveTeacher: {
+    borderColor: '#4338ca',
+    backgroundColor: '#eef2ff',
   },
   roleButtonText: {
-    fontSize: 15,
+    ...Typography.bodySmall,
     fontWeight: '600',
-    color: '#999',
+    color: Colors.light.textLight,
   },
-  roleButtonTextActive: {
-    color: '#667eea',
+  roleButtonTextActiveStudent: {
+    color: Colors.light.primary,
+  },
+  roleButtonTextActiveTeacher: {
+    color: '#4338ca',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
+    backgroundColor: Colors.light.background,
+    borderRadius: BorderRadius.m,
     marginBottom: 14,
-    paddingHorizontal: 12,
+    paddingHorizontal: Spacing.s,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   inputIcon: {
-    marginRight: 8,
+    marginRight: Spacing.s,
   },
   input: {
     flex: 1,
@@ -386,9 +405,10 @@ const styles = StyleSheet.create({
     fontSize: 15,
   },
   signupButton: {
-    marginTop: 8,
-    borderRadius: 12,
+    marginTop: Spacing.s,
+    borderRadius: BorderRadius.m,
     overflow: 'hidden',
+    ...AppShadows.light,
   },
   signupButtonDisabled: {
     opacity: 0.6,
@@ -401,7 +421,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   signupButtonText: {
-    color: '#fff',
+    color: Colors.light.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -409,20 +429,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: Spacing.l,
   },
   footerText: {
-    color: '#666',
-    fontSize: 14,
+    ...Typography.bodySmall,
+    color: Colors.light.textSecondary,
   },
   loginLink: {
-    color: '#667eea',
-    fontSize: 14,
+    ...Typography.bodySmall,
+    color: Colors.light.primary,
     fontWeight: 'bold',
   },
   bottomDecoration: {
     alignItems: 'center',
-    marginTop: 24,
+    marginTop: Spacing.l,
   },
   decorationText: {
     color: 'rgba(255, 255, 255, 0.8)',

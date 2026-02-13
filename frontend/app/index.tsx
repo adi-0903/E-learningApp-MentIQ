@@ -1,6 +1,7 @@
 import MainApp from '@/app/MainApp';
 import { LoginScreen } from '@/components/LoginScreen';
 import { SignupScreen } from '@/components/SignupScreen';
+import { OnboardingScreen } from '@/components/OnboardingScreen';
 import { useAuthStore } from '@/store/authStore';
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
@@ -11,14 +12,25 @@ type AuthScreen = 'login' | 'signup';
 
 export default function RootApp() {
   const [showSplash, setShowSplash] = useState(true);
+  const [showOnboarding, setShowOnboarding] = useState(true);
   const [authScreen, setAuthScreen] = useState<AuthScreen>('login');
-  const { isLoggedIn, user } = useAuthStore();
+  const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
+  const user = useAuthStore((s) => s.user);
 
   // Show splash screen first
   if (showSplash) {
     return (
       <PaperProvider>
         <SplashScreen onFinish={() => setShowSplash(false)} />
+      </PaperProvider>
+    );
+  }
+
+  // Show onboarding if not logged in and splash is finished
+  if (showOnboarding && !isLoggedIn) {
+    return (
+      <PaperProvider>
+        <OnboardingScreen onFinish={() => setShowOnboarding(false)} />
       </PaperProvider>
     );
   }

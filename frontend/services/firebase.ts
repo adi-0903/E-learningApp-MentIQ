@@ -1,34 +1,20 @@
-/**
- * Firebase Configuration (Minimal)
- * 
- * Firebase is now only used for:
- * - Push Notifications (FCM) via expo-notifications
- * 
- * All data operations (courses, quizzes, users, etc.) have been
- * migrated to the Django REST API. See services/api.ts.
- */
-
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApp, getApps } from 'firebase/app';
 
 // Firebase configuration
-const firebaseConfig = {
-  apiKey: "AIzaSyAHRRB9jGeYTo5lifbv99QXUPfM3OaUPIk",
-  authDomain: "e-learning-app-6e241.firebaseapp.com",
-  projectId: "e-learning-app-6e241",
-  storageBucket: "e-learning-app-6e241.firebasestorage.app",
-  messagingSenderId: "252662347174",
-  appId: "1:252662347174:web:fd94b2e99968aeb67a0b67",
-  measurementId: "G-0KPV5G1PYY"
+export const firebaseConfig = {
+    apiKey: "AIzaSyCaNIGPrXP-6OwSxx0--spK60FV7vNeZ1w",
+    authDomain: "mentiq-b4f42.firebaseapp.com",
+    projectId: "mentiq-b4f42",
+    storageBucket: "mentiq-b4f42.firebasestorage.app",
+    messagingSenderId: "917542192032",
+    appId: "1:917542192032:web:419f721fa914fe71375ac5",
+    measurementId: "G-L86V5XCRRC"
 };
 
 // Initialize Firebase (only for FCM push notifications)
-let app: any = null;
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 
-try {
-  app = initializeApp(firebaseConfig);
-  console.log('Firebase initialized (FCM only)');
-} catch (error) {
-  console.error('Error initializing Firebase:', error);
-}
+console.log('Firebase initialized (FCM only)');
 
+export { app };
 export default app;

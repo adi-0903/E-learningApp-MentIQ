@@ -8,8 +8,8 @@ from rest_framework.views import APIView
 
 from apps.core.pagination import StandardPagination
 
-from .models import Notification
-from .serializers import NotificationSerializer
+from .models import Notification, NotificationSetting
+from .serializers import NotificationSerializer, NotificationSettingSerializer
 
 
 class NotificationListView(generics.ListAPIView):
@@ -61,3 +61,23 @@ class MarkAllReadView(APIView):
             'success': True,
             'message': f'{count} notifications marked as read.'
         })
+
+
+class NotificationSettingsView(generics.RetrieveUpdateAPIView):
+    """GET/PATCH /api/v1/notifications/settings/"""
+    serializer_class = NotificationSettingSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        settings, _ = NotificationSetting.objects.get_or_create(user=self.request.user)
+        return settings
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({'success': True, 'data': serializer.data})
+
+    def update(self, request, *args, **kwargs):
+        kwargs['partial'] = True
+        response = super().update(request, *args, **kwargs)
+        return Response({'success': True, 'data': response.data})

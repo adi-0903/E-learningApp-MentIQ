@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, FlatList, TouchableOpacity } from 'react-native';
-import { Card, Text, ProgressBar, ActivityIndicator } from 'react-native-paper';
+import { View, StyleSheet, ScrollView, FlatList, TouchableOpacity, Dimensions } from 'react-native';
+import { Card, Text, ProgressBar, ActivityIndicator, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/authStore';
 import { useProgressStore } from '@/store/progressStore';
 import { useCourseStore } from '@/store/courseStore';
+import { Colors, Typography, Spacing, AppShadows, BorderRadius } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 function StudentProgressScreen({ navigation }: any) {
   const { user } = useAuthStore();
@@ -20,7 +24,6 @@ function StudentProgressScreen({ navigation }: any) {
   }, [user?.id]);
 
   useEffect(() => {
-    // Only show courses that have enrollments
     const progress = enrollments
       .map(enrollment => {
         const course = courses.find(c => c.id === enrollment.courseId);
@@ -29,257 +32,261 @@ function StudentProgressScreen({ navigation }: any) {
           courseName: course?.title || 'Unknown Course',
         };
       })
-      .filter(item => item.courseName !== 'Unknown Course'); // Filter out courses not found
+      .filter(item => item.courseName !== 'Unknown Course');
     setCourseProgress(progress);
   }, [enrollments, courses]);
 
-  const renderProgressCard = (item: any) => (
-    <Card key={item.id} style={styles.progressCard}>
-      <Card.Content>
-        <View style={styles.cardHeader}>
-          <Text style={styles.courseName} numberOfLines={2}>
-            {item.courseName}
-          </Text>
-          <Text style={styles.progressText}>
-            {Math.round(item.completionPercentage)}%
-          </Text>
+  const renderProgressCard = ({ item }: { item: any }) => (
+    <Surface style={styles.cardWrapper} elevation={2}>
+      <View style={styles.cardIconBox}>
+        <MaterialCommunityIcons name="book-open-page-variant" size={24} color={Colors.light.primary} />
+      </View>
+      <View style={styles.cardContent}>
+        <Text style={styles.cardTitle} numberOfLines={1}>{item.courseName}</Text>
+        <View style={styles.progressHeader}>
+          <Text style={styles.percentText}>{Math.round(item.completionPercentage)}% Complete</Text>
         </View>
-        <ProgressBar
-          progress={item.completionPercentage / 100}
-          style={styles.progressBar}
-          color={item.completionPercentage >= 100 ? '#4caf50' : '#1976d2'}
-        />
-        <View style={styles.statusRow}>
-          <Text style={styles.statusLabel}>Status:</Text>
-          <Text
-            style={[
-              styles.statusValue,
-              {
-                color:
-                  item.status === 'completed'
-                    ? '#4caf50'
-                    : item.status === 'dropped'
-                    ? '#f44336'
-                    : '#1976d2',
-              },
-            ]}
-          >
-            {item.status ? item.status.charAt(0).toUpperCase() + item.status.slice(1) : 'Active'}
-          </Text>
+        <View style={styles.progressBarContainer}>
+          <LinearGradient
+            colors={[Colors.light.primary, Colors.light.primaryLight]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.progressBarFill, { width: `${item.completionPercentage}%` }]}
+          />
         </View>
-      </Card.Content>
-    </Card>
+        <View style={styles.cardFooter}>
+          <View style={styles.statusChip}>
+            <View style={[styles.dot, { backgroundColor: item.completionPercentage >= 100 ? Colors.light.success : Colors.light.warning }]} />
+            <Text style={styles.statusText}>{item.completionPercentage >= 100 ? 'Completed' : 'In Progress'}</Text>
+          </View>
+          <TouchableOpacity onPress={() => navigation.navigate('CourseDetail', { courseId: item.courseId })}>
+            <MaterialCommunityIcons name="arrow-right-circle" size={24} color={Colors.light.primary} />
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Surface>
   );
 
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#1976d2" />
+        <ActivityIndicator size="large" color={Colors.light.primary} />
       </View>
     );
   }
 
-  const completedCourses = courseProgress.filter(
-    c => c.completionPercentage >= 100
-  ).length;
+  const completedCourses = courseProgress.filter(c => c.completionPercentage >= 100).length;
   const totalCourses = courseProgress.length;
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.premiumHeader}>
-        <View style={styles.headerContent}>
-          <Text style={styles.greeting}>📊 Your Progress</Text>
+    <View style={styles.container}>
+      <LinearGradient
+        colors={[Colors.light.primaryDark, Colors.light.primary]}
+        style={styles.header}
+      >
+        <View style={styles.headerTop}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <MaterialCommunityIcons name="chevron-left" size={32} color="#fff" />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>Learning Progress</Text>
+          <View style={{ width: 32 }} />
         </View>
-      </View>
 
-      <View style={styles.statsContainer}>
-        <Card style={styles.statCard}>
-          <Card.Content style={styles.statContent}>
-            <MaterialCommunityIcons
-              name="book-multiple"
-              size={32}
-              color="#1976d2"
-            />
-            <View style={styles.statInfo}>
-              <Text style={styles.statNumber}>{totalCourses}</Text>
-              <Text style={styles.statLabel}>Enrolled Courses</Text>
-            </View>
-          </Card.Content>
-        </Card>
+        <View style={styles.summaryContainer}>
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryValue}>{totalCourses}</Text>
+            <Text style={styles.summaryLabel}>Enrolled</Text>
+          </View>
+          <View style={styles.summaryDivider} />
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryValue}>{completedCourses}</Text>
+            <Text style={styles.summaryLabel}>Finished</Text>
+          </View>
+          <View style={styles.summaryDivider} />
+          <View style={styles.summaryItem}>
+            <Text style={styles.summaryValue}>
+              {totalCourses > 0 ? Math.round(courseProgress.reduce((acc, c) => acc + c.completionPercentage, 0) / totalCourses) : 0}%
+            </Text>
+            <Text style={styles.summaryLabel}>Overall</Text>
+          </View>
+        </View>
+      </LinearGradient>
 
-        <Card style={styles.statCard}>
-          <Card.Content style={styles.statContent}>
-            <MaterialCommunityIcons
-              name="check-circle"
-              size={32}
-              color="#4caf50"
-            />
-            <View style={styles.statInfo}>
-              <Text style={styles.statNumber}>{completedCourses}</Text>
-              <Text style={styles.statLabel}>Completed</Text>
-            </View>
-          </Card.Content>
-        </Card>
-      </View>
+      <ScrollView style={styles.contentScroll} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        <Text style={styles.sectionTitle}>Course Roadmap</Text>
 
-      <View style={styles.progressSection}>
-        <Text style={styles.sectionTitle}>Course Progress</Text>
         {courseProgress.length === 0 ? (
           <View style={styles.emptyState}>
-            <MaterialCommunityIcons
-              name="book-open-variant"
-              size={64}
-              color="#ccc"
-            />
-            <Text style={styles.emptyText}>No courses enrolled yet</Text>
+            <MaterialCommunityIcons name="flower-outline" size={80} color={Colors.light.textLight} />
+            <Text style={styles.emptyTitle}>Your garden is waiting</Text>
+            <Text style={styles.emptySub}>Start a course to see your progress bloom here.</Text>
           </View>
         ) : (
-          <FlatList
-            data={courseProgress}
-            renderItem={({ item }) => renderProgressCard(item)}
-            keyExtractor={(item) => item.id.toString()}
-            scrollEnabled={false}
-          />
+          courseProgress.map((item) => renderProgressCard({ item }))
         )}
-      </View>
-    </ScrollView>
+
+        <View style={{ height: 100 }} />
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#fff',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  premiumHeader: {
-    backgroundColor: '#667eea',
-    paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    minHeight: 100,
-  },
-  headerContent: {
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  greeting: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#fff',
-    letterSpacing: 0.5,
-  },
   header: {
-    backgroundColor: '#1976d2',
-    padding: 20,
-    paddingTop: 40,
+    paddingTop: 50,
+    paddingBottom: 40,
+    paddingHorizontal: 20,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+  },
+  headerTop: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 30,
   },
   headerTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#fff',
+  },
+  summaryContainer: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderRadius: 20,
+    padding: 20,
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  summaryItem: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  summaryValue: {
     fontSize: 24,
     fontWeight: 'bold',
     color: '#fff',
   },
-  statsContainer: {
-    flexDirection: 'row',
-    padding: 16,
-    gap: 12,
-  },
-  statCard: {
-    flex: 1,
-    elevation: 2,
-    backgroundColor: '#fff',
-  },
-  statContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  statInfo: {
-    flex: 1,
-  },
-  statNumber: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  statLabel: {
+  summaryLabel: {
     fontSize: 12,
-    color: '#999',
-    marginTop: 2,
+    color: 'rgba(255,255,255,0.8)',
+    marginTop: 4,
   },
-  progressSection: {
-    padding: 16,
+  summaryDivider: {
+    width: 1,
+    height: 30,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+  },
+  contentScroll: {
+    flex: 1,
+  },
+  contentContainer: {
+    padding: 20,
   },
   sectionTitle: {
     fontSize: 18,
     fontWeight: 'bold',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    color: '#1e293b',
+    marginBottom: 20,
   },
-  progressCard: {
-    marginBottom: 12,
-    elevation: 2,
+  cardWrapper: {
+    flexDirection: 'row',
     backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 16,
+    marginBottom: 16,
+    alignItems: 'center',
+    gap: 16,
   },
-  cardHeader: {
+  cardIconBox: {
+    width: 50,
+    height: 50,
+    borderRadius: 15,
+    backgroundColor: Colors.light.primaryLight,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  cardContent: {
+    flex: 1,
+  },
+  cardTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#1e293b',
+    marginBottom: 8,
+  },
+  progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
+    marginBottom: 6,
   },
-  courseName: {
-    fontSize: 14,
+  percentText: {
+    fontSize: 12,
+    color: Colors.light.primary,
     fontWeight: '600',
-    color: '#333',
-    flex: 1,
-    marginRight: 8,
   },
-  progressText: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1976d2',
-  },
-  progressBar: {
+  progressBarContainer: {
     height: 8,
+    backgroundColor: '#f1f5f9',
     borderRadius: 4,
+    overflow: 'hidden',
     marginBottom: 12,
   },
-  statusRow: {
+  progressBarFill: {
+    height: '100%',
+    borderRadius: 4,
+  },
+  cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
   },
-  statusLabel: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '600',
+  statusChip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    gap: 6,
   },
-  statusValue: {
-    fontSize: 12,
-    fontWeight: 'bold',
+  dot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '500',
   },
   emptyState: {
     alignItems: 'center',
-    justifyContent: 'center',
     paddingVertical: 60,
   },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-    marginTop: 16,
+  emptyTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#334155',
+    marginTop: 20,
+  },
+  emptySub: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    marginTop: 10,
+    paddingHorizontal: 40,
   },
 });
 

@@ -1,6 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { create } from 'zustand';
-import { authApi, setTokens, clearTokens, getTokens } from '@/services/api';
+import { authApi, setTokens, clearTokens, getTokens, setOnAuthFailure } from '@/services/api';
 
 export interface User {
   id: string;
@@ -8,6 +8,9 @@ export interface User {
   name: string;
   role: 'teacher' | 'student';
   bio?: string;
+  phoneNumber?: string;
+  isEmailVerified?: boolean;
+  isPhoneVerified?: boolean;
   profileImage?: string;
   createdAt?: string;
   updatedAt?: string;
@@ -21,9 +24,11 @@ interface AuthState {
   signup: (email: string, password: string, name: string, role: 'teacher' | 'student') => Promise<void>;
   logout: () => Promise<void>;
   getCurrentUser: () => Promise<User | null>;
-  updateProfile: (name: string, bio: string, profileImageUri?: string) => Promise<void>;
-  changePassword: (oldPassword: string, newPassword: string) => Promise<void>;
+  updateProfile: (name: string, bio: string, phoneNumber?: string, profileImageUri?: string) => Promise<void>;
+  changePassword: (oldPassword: string, newPassword: string, newPasswordConfirm: string) => Promise<void>;
   updateFCMToken: (fcmToken: string) => Promise<void>;
+  requestPhoneOTP: (phoneNumber?: string) => Promise<any>;
+  verifyPhoneOTP: (otpCode: string, phoneNumber?: string) => Promise<any>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -49,6 +54,9 @@ export const useAuthStore = create<AuthState>((set) => ({
         name: data.user?.name || data.user?.first_name || '',
         role: data.user?.role || role,
         bio: data.user?.bio || '',
+        phoneNumber: data.user?.phone_number || data.user?.phoneNumber || '',
+        isEmailVerified: data.user?.is_email_verified || false,
+        isPhoneVerified: data.user?.is_phone_verified || false,
         profileImage: data.user?.profile_image || '',
       };
 
@@ -101,75 +109,91 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   getCurrentUser: async () => {
+    set({ isLoading: true });
     try {
-      // First try to restore from AsyncStorage
-      const cached = await AsyncStorage.getItem('currentUser');
-      if (cached) {
-        const user = JSON.parse(cached) as User;
-        set({ user, isLoggedIn: true });
-
-        // Validate token is still good by fetching profile
-        const tokens = await getTokens();
-        if (tokens?.access) {
-          try {
-            const { data } = await authApi.getProfile();
-            const freshUser: User = {
-              id: String(data.id),
-              email: data.email,
-              name: data.name || data.first_name || user.name,
-              role: data.role || user.role,
-              bio: data.bio || '',
-              profileImage: data.profile_image || '',
-            };
-            set({ user: freshUser, isLoggedIn: true });
-            await AsyncStorage.setItem('currentUser', JSON.stringify(freshUser));
-            return freshUser;
-          } catch {
-            // Token expired and refresh failed
-            await clearTokens();
-            set({ user: null, isLoggedIn: false });
-            await AsyncStorage.removeItem('currentUser');
-            return null;
-          }
-        }
-        return user;
+      // 1. Check if we have tokens at all
+      const tokens = await getTokens();
+      if (!tokens?.access) {
+        await clearTokens();
+        await AsyncStorage.removeItem('currentUser');
+        set({ user: null, isLoggedIn: false, isLoading: false });
+        return null;
       }
-      return null;
+
+      // 2. Try to restore user from cache (for immediate UI responsiveness if needed)
+      const cached = await AsyncStorage.getItem('currentUser');
+      let cachedUser: User | null = null;
+      if (cached) {
+        cachedUser = JSON.parse(cached) as User;
+        // Optional: Set temporary state if you want to avoid flickering
+        // set({ user: cachedUser, isLoggedIn: true });
+      }
+
+      // 3. MUST validate with backend to ensure session is still valid
+      try {
+        const { data } = await authApi.getProfile();
+        const actualData = data.data || data; // Handle both direct and wrapped data
+        const freshUser: User = {
+          id: String(actualData.id),
+          email: actualData.email,
+          name: actualData.name || actualData.first_name || (cachedUser?.name || ''),
+          role: actualData.role || (cachedUser?.role || 'student'),
+          bio: actualData.bio || '',
+          phoneNumber: actualData.phone_number || actualData.phoneNumber || (cachedUser?.phoneNumber || ''),
+          isEmailVerified: actualData.is_email_verified || false,
+          isPhoneVerified: actualData.is_phone_verified || false,
+          profileImage: actualData.profile_image || '',
+        };
+        set({ user: freshUser, isLoggedIn: true, isLoading: false });
+        await AsyncStorage.setItem('currentUser', JSON.stringify(freshUser));
+        return freshUser;
+      } catch (error) {
+        console.error('Session validation failed:', error);
+        // Token is invalid and refresh failed (apiRequest already tried refreshing)
+        await clearTokens();
+        await AsyncStorage.removeItem('currentUser');
+        set({ user: null, isLoggedIn: false, isLoading: false });
+        return null;
+      }
     } catch (error) {
       console.error('Error getting current user:', error);
+      set({ user: null, isLoggedIn: false, isLoading: false });
       return null;
     }
   },
 
-  updateProfile: async (name: string, bio: string, profileImageUri?: string) => {
+  updateProfile: async (name: string, bio: string, phoneNumber?: string, profileImageUri?: string) => {
     set({ isLoading: true });
     try {
       const state = useAuthStore.getState();
       if (!state.user) throw new Error('No user logged in');
 
-      let profileImage = state.user.profileImage;
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('bio', bio);
+      if (phoneNumber) formData.append('phone_number', phoneNumber);
 
-      // If a new image URI is provided, upload it via media API
       if (profileImageUri) {
-        const { mediaApi } = await import('@/services/api');
-        const formData = new FormData();
-        formData.append('file', {
+        // Direct stream of the cryptographic avatar to Cloudinary vault
+        formData.append('profile_image', {
           uri: profileImageUri,
           name: 'profile.jpg',
           type: 'image/jpeg',
         } as any);
-        formData.append('category', 'profile');
-        const { data } = await mediaApi.upload(formData);
-        profileImage = data.url || data.file_url;
       }
 
-      const { data } = await authApi.updateProfile({ name, bio, profile_image: profileImage });
+      console.log('Dispatching secure profile update payload...');
+      const { data } = await authApi.updateProfile(formData, true);
 
+      const actualData = data.data || data;
       const updatedUser: User = {
         ...state.user,
-        name: data.name || name,
-        bio: data.bio || bio,
-        profileImage: data.profile_image || profileImage,
+        name: actualData.name || actualData.first_name || name,
+        bio: actualData.bio || bio,
+        phoneNumber: actualData.phone_number || phoneNumber || (state.user?.phoneNumber || ''),
+        isEmailVerified: actualData.is_email_verified ?? (state.user?.isEmailVerified || false),
+        isPhoneVerified: actualData.is_phone_verified ?? (state.user?.isPhoneVerified || false),
+        profileImage: actualData.profile_image || actualData.profile_image_url || state.user.profileImage,
       };
       set({ user: updatedUser });
       await AsyncStorage.setItem('currentUser', JSON.stringify(updatedUser));
@@ -180,11 +204,47 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  changePassword: async (oldPassword: string, newPassword: string) => {
-    await authApi.changePassword({ old_password: oldPassword, new_password: newPassword });
+  changePassword: async (oldPassword: string, newPassword: string, newPasswordConfirm: string) => {
+    await authApi.changePassword({
+      old_password: oldPassword,
+      new_password: newPassword,
+      new_password_confirm: newPasswordConfirm
+    });
   },
 
   updateFCMToken: async (fcmToken: string) => {
     await authApi.updateFCMToken(fcmToken);
   },
+
+  requestPhoneOTP: async (phoneNumber?: string) => {
+    const { data } = await authApi.requestPhoneOTP(phoneNumber);
+    return data;
+  },
+
+  verifyPhoneOTP: async (otpCode: string, phoneNumber?: string) => {
+    set({ isLoading: true });
+    try {
+      const { data } = await authApi.verifyPhoneOTP(otpCode, phoneNumber);
+      const user = useAuthStore.getState().user;
+      if (user && data.data) {
+        const updatedUser: User = {
+          ...user,
+          phoneNumber: data.data.phone_number || phoneNumber || user.phoneNumber,
+          isPhoneVerified: data.data.is_phone_verified,
+        };
+        set({ user: updatedUser });
+        await AsyncStorage.setItem('currentUser', JSON.stringify(updatedUser));
+      }
+      return data;
+    } finally {
+      set({ isLoading: false });
+    }
+  },
 }));
+
+// ─── Global Auth Error Listener ──────────────────────────────────
+// Automatically log out when the API service detects an expired/invalid session
+setOnAuthFailure(() => {
+  useAuthStore.setState({ user: null, isLoggedIn: false });
+  AsyncStorage.removeItem('currentUser');
+});

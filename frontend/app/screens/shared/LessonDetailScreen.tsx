@@ -12,6 +12,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/authStore';
 import { useCourseStore } from '@/store/courseStore';
 import { useProgressStore } from '@/store/progressStore';
+import { Colors, Typography, Spacing, AppShadows, BorderRadius } from '@/constants/theme';
+import { LinearGradient } from 'expo-linear-gradient';
 
 function LessonDetailScreen({ route, navigation }: any) {
   const { lessonId, courseId } = route.params;
@@ -87,7 +89,7 @@ function LessonDetailScreen({ route, navigation }: any) {
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#1976d2" />
+        <ActivityIndicator size="large" color={Colors.light.primary} />
       </View>
     );
   }
@@ -103,10 +105,15 @@ function LessonDetailScreen({ route, navigation }: any) {
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
       {/* Premium Header */}
-      <View style={styles.premiumHeader}>
+      <LinearGradient
+        colors={[Colors.light.primaryDark, Colors.light.primary]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.premiumHeader}
+      >
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
           <View style={styles.backButtonCircle}>
-            <MaterialCommunityIcons name="chevron-left" size={24} color="#fff" />
+            <MaterialCommunityIcons name="chevron-left" size={24} color={Colors.light.white} />
           </View>
         </TouchableOpacity>
         <View style={styles.headerContent}>
@@ -114,55 +121,46 @@ function LessonDetailScreen({ route, navigation }: any) {
           <Text style={styles.headerTitle} numberOfLines={2}>
             {lesson.title}
           </Text>
+          {lesson.duration && (
+            <View style={styles.durationContainer}>
+              <MaterialCommunityIcons name="clock-outline" size={14} color="rgba(255,255,255,0.8)" />
+              <Text style={styles.durationText}>{lesson.duration} minutes</Text>
+            </View>
+          )}
         </View>
-      </View>
+      </LinearGradient>
 
       <View style={styles.content}>
         {/* Video Section */}
         {lesson.videoUrl && (
-          <Card style={styles.videoCard}>
-            <Card.Content style={styles.videoContent}>
+          <TouchableOpacity
+            activeOpacity={0.9}
+            onPress={handleOpenVideo}
+            style={[styles.videoCard, AppShadows.medium]}
+          >
+            <LinearGradient
+              colors={[Colors.light.primary, Colors.light.primaryDark]}
+              style={styles.videoGradient}
+            >
               <View style={styles.videoIconContainer}>
-                <MaterialCommunityIcons
-                  name="play-circle"
-                  size={56}
-                  color="#fff"
-                />
+                <MaterialCommunityIcons name="play-circle" size={56} color={Colors.light.white} />
               </View>
-              <Text style={styles.videoText}>Video Lesson</Text>
-              <Text style={styles.videoSubtext}>Click to play the video content</Text>
-              <Button
-                mode="contained"
-                onPress={handleOpenVideo}
-                style={styles.playButton}
-                labelStyle={styles.playButtonLabel}
-              >
-                ▶ Play Video
-              </Button>
-            </Card.Content>
-          </Card>
-        )}
-
-        {/* Duration and Info */}
-        {lesson.duration && (
-          <View style={styles.infoBar}>
-            <MaterialCommunityIcons name="clock-outline" size={18} color="#1976d2" />
-            <Text style={styles.infoText}>{lesson.duration} minutes</Text>
-          </View>
+              <Text style={styles.videoText}>Watch Lesson Video</Text>
+              <Text style={styles.videoSubtext}>Tap to start playing</Text>
+            </LinearGradient>
+          </TouchableOpacity>
         )}
 
         {/* Description Section */}
         {lesson.description && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <MaterialCommunityIcons name="text-box-outline" size={20} color="#1976d2" />
+              <MaterialCommunityIcons name="text-box-outline" size={20} color={Colors.light.primary} />
               <Text style={styles.sectionTitle}>Description</Text>
             </View>
-            <Card style={styles.card}>
-              <Card.Content>
-                <Text style={styles.description}>{lesson.description}</Text>
-              </Card.Content>
-            </Card>
+            <View style={[styles.card, AppShadows.light]}>
+              <Text style={styles.description}>{lesson.description}</Text>
+            </View>
           </View>
         )}
 
@@ -170,14 +168,12 @@ function LessonDetailScreen({ route, navigation }: any) {
         {lesson.content && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <MaterialCommunityIcons name="book-open-page-variant" size={20} color="#1976d2" />
+              <MaterialCommunityIcons name="book-open-page-variant" size={20} color={Colors.light.primary} />
               <Text style={styles.sectionTitle}>Lesson Content</Text>
             </View>
-            <Card style={styles.card}>
-              <Card.Content>
-                <Text style={styles.contentText}>{lesson.content}</Text>
-              </Card.Content>
-            </Card>
+            <View style={[styles.card, AppShadows.light]}>
+              <Text style={styles.contentText}>{lesson.content}</Text>
+            </View>
           </View>
         )}
 
@@ -185,42 +181,32 @@ function LessonDetailScreen({ route, navigation }: any) {
         {lesson.fileUrl && (
           <View style={styles.section}>
             <View style={styles.sectionHeader}>
-              <MaterialCommunityIcons name="file-document-outline" size={20} color="#ff9800" />
+              <MaterialCommunityIcons name="file-document-outline" size={20} color={Colors.light.warning} />
               <Text style={styles.sectionTitle}>Resources</Text>
             </View>
-            <Card style={styles.fileCard}>
-              <Card.Content style={styles.fileContent}>
-                <View style={styles.fileIconContainer}>
-                  <MaterialCommunityIcons
-                    name="file-document"
-                    size={32}
-                    color="#fff"
-                  />
-                </View>
-                <View style={styles.fileInfo}>
-                  <Text style={styles.fileName}>{lesson.fileType || 'Attached File'}</Text>
-                  <Text style={styles.fileSize}>Tap to download</Text>
-                </View>
-                <TouchableOpacity
-                  style={styles.downloadButton}
-                  onPress={() => {
-                    if (isValidUrl(lesson.fileUrl)) {
-                      Linking.openURL(lesson.fileUrl).catch(() => {
-                        Alert.alert('Error', 'Could not open file');
-                      });
-                    } else {
-                      Alert.alert('Error', 'Invalid file URL');
-                    }
-                  }}
-                >
-                  <MaterialCommunityIcons
-                    name="download"
-                    size={24}
-                    color="#fff"
-                  />
-                </TouchableOpacity>
-              </Card.Content>
-            </Card>
+            <TouchableOpacity
+              onPress={() => {
+                if (isValidUrl(lesson.fileUrl)) {
+                  Linking.openURL(lesson.fileUrl).catch(() => {
+                    Alert.alert('Error', 'Could not open file');
+                  });
+                } else {
+                  Alert.alert('Error', 'Invalid file URL');
+                }
+              }}
+              style={[styles.fileCard, AppShadows.small]}
+            >
+              <View style={[styles.fileIconContainer, { backgroundColor: '#FFF7ED' }]}>
+                <MaterialCommunityIcons name="file-document" size={32} color={Colors.light.warning} />
+              </View>
+              <View style={styles.fileInfo}>
+                <Text style={styles.fileName}>{lesson.fileType || 'Attached File'}</Text>
+                <Text style={styles.fileSize}>Tap to download material</Text>
+              </View>
+              <View style={styles.downloadButton}>
+                <MaterialCommunityIcons name="download" size={20} color={Colors.light.white} />
+              </View>
+            </TouchableOpacity>
           </View>
         )}
 
@@ -228,12 +214,16 @@ function LessonDetailScreen({ route, navigation }: any) {
         {user?.role === 'student' && (
           <View style={styles.studentActions}>
             <Button
-              mode={isCompleted ? 'outlined' : 'contained'}
+              mode="contained"
               onPress={handleMarkComplete}
-              style={[styles.completeButton, isCompleted && styles.completedButton]}
+              style={[
+                styles.completeButton,
+                isCompleted ? { backgroundColor: Colors.light.success } : { backgroundColor: Colors.light.primary }
+              ]}
               labelStyle={styles.completeButtonLabel}
+              icon={isCompleted ? "check" : undefined}
             >
-              {isCompleted ? '✓ Completed' : 'Mark as Complete'}
+              {isCompleted ? 'Completed' : 'Mark as Complete'}
             </Button>
           </View>
         )}
@@ -245,28 +235,24 @@ function LessonDetailScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: Colors.light.background,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: Colors.light.background,
   },
   premiumHeader: {
-    backgroundColor: '#667eea',
     paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 16,
+    paddingBottom: 30,
+    paddingHorizontal: Spacing.l,
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
+    gap: Spacing.m,
+    borderBottomLeftRadius: 30,
+    borderBottomRightRadius: 30,
+    ...AppShadows.medium,
   },
   backButton: {
     padding: 4,
@@ -275,7 +261,7 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
   },
@@ -283,186 +269,138 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   headerBadge: {
-    fontSize: 12,
-    fontWeight: '600',
+    ...Typography.caption,
     color: 'rgba(255, 255, 255, 0.8)',
     marginBottom: 4,
     textTransform: 'uppercase',
-    letterSpacing: 0.5,
   },
   headerTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: '#fff',
-    lineHeight: 28,
+    ...Typography.h2,
+    color: Colors.light.white,
+    lineHeight: 32,
   },
-  header: {
-    backgroundColor: '#1976d2',
-    padding: 16,
-    paddingTop: 50,
-    paddingBottom: 20,
+  durationContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
+    marginTop: Spacing.s,
+    gap: 4,
+  },
+  durationText: {
+    ...Typography.caption,
+    color: 'rgba(255, 255, 255, 0.85)',
   },
   content: {
-    padding: 20,
-    paddingBottom: 40,
+    padding: Spacing.l,
+    paddingBottom: Spacing.xxl,
   },
   section: {
-    marginBottom: 28,
+    marginBottom: Spacing.l,
   },
   sectionHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 12,
-    marginBottom: 14,
+    gap: Spacing.s,
+    marginBottom: Spacing.m,
   },
   sectionTitle: {
-    fontSize: 17,
-    fontWeight: '700',
-    color: '#667eea',
+    ...Typography.h3,
+    color: Colors.light.text,
   },
   card: {
-    marginBottom: 0,
-    elevation: 2,
-    backgroundColor: '#fff',
-    borderRadius: 16,
+    backgroundColor: Colors.light.white,
+    borderRadius: BorderRadius.l,
+    padding: Spacing.m,
     borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: Colors.light.border,
   },
   videoCard: {
-    marginBottom: 24,
-    elevation: 6,
-    backgroundColor: '#fff',
-    borderRadius: 20,
+    marginBottom: Spacing.l,
+    borderRadius: BorderRadius.xl,
     overflow: 'hidden',
-    borderWidth: 0,
   },
-  videoContent: {
+  videoGradient: {
     alignItems: 'center',
-    paddingVertical: 48,
-    paddingHorizontal: 20,
-    backgroundColor: '#667eea',
+    paddingVertical: Spacing.xl,
+    paddingHorizontal: Spacing.l,
   },
   videoIconContainer: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 80,
+    height: 80,
+    borderRadius: 40,
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: Spacing.m,
   },
   videoText: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#fff',
-    marginBottom: 6,
+    ...Typography.h3,
+    color: Colors.light.white,
+    marginBottom: 4,
   },
   videoSubtext: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.85)',
-    marginBottom: 20,
-  },
-  playButton: {
-    marginTop: 16,
-    paddingVertical: 6,
-    backgroundColor: '#fff',
-  },
-  playButtonLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#667eea',
-  },
-  infoBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: '#e8eef7',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderRadius: 12,
-    marginBottom: 24,
-    borderLeftWidth: 4,
-    borderLeftColor: '#667eea',
-  },
-  infoText: {
-    fontSize: 14,
-    color: '#667eea',
-    fontWeight: '600',
+    ...Typography.bodySmall,
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   description: {
-    fontSize: 15,
-    color: '#444',
+    ...Typography.body,
+    color: Colors.light.text,
     lineHeight: 24,
   },
   contentText: {
-    fontSize: 15,
-    color: '#444',
+    ...Typography.body,
+    color: Colors.light.text,
     lineHeight: 24,
   },
   fileCard: {
-    marginBottom: 0,
-    elevation: 2,
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
-  },
-  fileContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    paddingVertical: 18,
-    paddingHorizontal: 16,
+    backgroundColor: Colors.light.white,
+    borderRadius: BorderRadius.l,
+    padding: Spacing.m,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   fileIconContainer: {
-    width: 64,
-    height: 64,
-    borderRadius: 16,
-    backgroundColor: '#fff3e0',
+    width: 56,
+    height: 56,
+    borderRadius: BorderRadius.m,
     justifyContent: 'center',
     alignItems: 'center',
+    marginRight: Spacing.m,
   },
   fileInfo: {
     flex: 1,
   },
   fileName: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 4,
+    ...Typography.body,
+    fontWeight: '600',
+    color: Colors.light.text,
+    marginBottom: 2,
   },
   fileSize: {
-    fontSize: 13,
-    color: '#999',
+    ...Typography.caption,
+    color: Colors.light.textSecondary,
   },
   downloadButton: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: '#667eea',
+    width: 40,
+    height: 40,
+    borderRadius: BorderRadius.circle,
+    backgroundColor: Colors.light.primary,
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 3,
   },
   studentActions: {
-    marginTop: 40,
-    marginBottom: 24,
+    marginTop: Spacing.m,
+    marginBottom: Spacing.l,
   },
   completeButton: {
-    marginTop: 0,
-    marginBottom: 0,
-    paddingVertical: 10,
-    borderRadius: 12,
-  },
-  completedButton: {
-    borderColor: '#4caf50',
+    borderRadius: BorderRadius.l,
+    paddingVertical: 4,
   },
   completeButtonLabel: {
-    fontSize: 16,
+    ...Typography.body,
     fontWeight: '700',
+    color: Colors.light.white,
   },
 });
 

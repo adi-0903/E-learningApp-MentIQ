@@ -3,18 +3,19 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useEffect, useRef, useState } from 'react';
 import {
-    Alert,
-    Animated,
-    Dimensions,
-    Image,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    TouchableOpacity,
-    View
+  Alert,
+  Animated,
+  Dimensions,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View
 } from 'react-native';
 import { ActivityIndicator, Text, TextInput } from 'react-native-paper';
+import { Colors, Typography, AppShadows, BorderRadius, Spacing } from '@/constants/theme';
 
 const { width } = Dimensions.get('window');
 
@@ -22,6 +23,9 @@ interface LoginScreenProps {
   onLoginSuccess: () => void;
   onNavigateToSignup: () => void;
 }
+
+import * as LocalAuthentication from 'expo-local-authentication';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
   onLoginSuccess,
@@ -31,10 +35,51 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<'teacher' | 'student'>('student');
+  const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const { login, isLoading } = useAuthStore();
-  
+
   const studentBreathingAnim = useRef(new Animated.Value(1)).current;
   const teacherBreathingAnim = useRef(new Animated.Value(1)).current;
+
+  useEffect(() => {
+    const checkBiometricSettings = async () => {
+      const enabled = await AsyncStorage.getItem('biometric_enabled');
+      if (enabled === 'true') {
+        setIsBiometricEnabled(true);
+        // Optionally auto-trigger on mount for better UX
+        // handleBiometricLogin(); 
+      }
+    };
+    checkBiometricSettings();
+  }, []);
+
+  const handleBiometricLogin = async () => {
+    try {
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Login with Biometrics',
+        fallbackLabel: 'Use Password',
+      });
+
+      if (result.success) {
+        const savedEmail = await AsyncStorage.getItem('last_user_email');
+        const savedPass = await AsyncStorage.getItem('last_user_pass');
+        const savedRole = (await AsyncStorage.getItem('last_user_role')) as 'teacher' | 'student';
+
+        if (savedEmail && savedPass) {
+          setEmail(savedEmail);
+          setPassword(savedPass);
+          setRole(savedRole || 'student');
+
+          await login(savedEmail, savedPass, savedRole || 'student');
+          onLoginSuccess();
+        } else {
+          Alert.alert('Setup Required', 'Please login with your password once to link biometrics.');
+        }
+      }
+    } catch (error) {
+      console.error('Biometric login error:', error);
+    }
+  };
 
   useEffect(() => {
     const startBreathingAnimation = (animValue: Animated.Value) => {
@@ -79,6 +124,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
     try {
       await login(email, password, role);
+      // If login successful, save credentials if biometrics is intended to be used
+      await AsyncStorage.setItem('last_user_email', email);
+      await AsyncStorage.setItem('last_user_pass', password);
+      await AsyncStorage.setItem('last_user_role', role);
+
       onLoginSuccess();
     } catch (error) {
       Alert.alert('Login Failed', (error as Error).message);
@@ -88,7 +138,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   return (
     <View style={styles.container}>
       <LinearGradient
-        colors={['#667eea', '#764ba2', '#f093fb']}
+        colors={
+          role === 'student'
+            ? [Colors.light.primaryDark, Colors.light.primary, Colors.light.secondaryLight]
+            : ['#1e1b4b', '#4338ca', '#818cf8'] // Deep Indigo gradient for Teacher
+        }
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.gradient}
@@ -104,7 +158,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 source={require('@/assets/images/Logo.png')}
                 style={styles.logoImage}
               />
-              <Text style={styles.title}>MentIQ</Text>
+              <Text style={styles.title}>EduBloom</Text>
               <Text style={styles.subtitle}>Where Mentorship Meets Intelligence</Text>
             </View>
 
@@ -116,16 +170,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 <View style={styles.roleButtons}>
                   <Animated.View style={{ flex: 1, transform: [{ scale: studentBreathingAnim }] }}>
                     <TouchableOpacity
-                      style={[styles.roleButton, role === 'student' && styles.roleButtonActive]}
+                      style={[styles.roleButton, role === 'student' && styles.roleButtonActiveStudent]}
                       onPress={() => setRole('student')}
                       disabled={isLoading}
                     >
-                      <MaterialCommunityIcons 
-                        name="account-school" 
-                        size={24} 
-                        color={role === 'student' ? '#667eea' : '#999'} 
+                      <MaterialCommunityIcons
+                        name="account-school"
+                        size={24}
+                        color={role === 'student' ? Colors.light.primary : Colors.light.textLight}
                       />
-                      <Text style={[styles.roleButtonText, role === 'student' && styles.roleButtonTextActive]}>
+                      <Text style={[styles.roleButtonText, role === 'student' && styles.roleButtonTextActiveStudent]}>
                         Student
                       </Text>
                     </TouchableOpacity>
@@ -133,16 +187,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
                   <Animated.View style={{ flex: 1, transform: [{ scale: teacherBreathingAnim }] }}>
                     <TouchableOpacity
-                      style={[styles.roleButton, role === 'teacher' && styles.roleButtonActive]}
+                      style={[styles.roleButton, role === 'teacher' && styles.roleButtonActiveTeacher]}
                       onPress={() => setRole('teacher')}
                       disabled={isLoading}
                     >
-                      <MaterialCommunityIcons 
-                        name="account-tie" 
-                        size={24} 
-                        color={role === 'teacher' ? '#667eea' : '#999'} 
+                      <MaterialCommunityIcons
+                        name="account-tie"
+                        size={24}
+                        color={role === 'teacher' ? '#4338ca' : Colors.light.textLight}
                       />
-                      <Text style={[styles.roleButtonText, role === 'teacher' && styles.roleButtonTextActive]}>
+                      <Text style={[styles.roleButtonText, role === 'teacher' && styles.roleButtonTextActiveTeacher]}>
                         Teacher
                       </Text>
                     </TouchableOpacity>
@@ -152,7 +206,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
               {/* Email Input */}
               <View style={styles.inputContainer}>
-                <MaterialCommunityIcons name="email-outline" size={20} color="#999" style={styles.inputIcon} />
+                <MaterialCommunityIcons name="email-outline" size={20} color={Colors.light.textLight} style={styles.inputIcon} />
                 <TextInput
                   placeholder="Email Address"
                   value={email}
@@ -163,15 +217,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   style={styles.input}
                   underlineColor="transparent"
                   activeUnderlineColor="transparent"
-                  textColor="#333"
-                  placeholderTextColor="#999"
+                  textColor={Colors.light.text}
+                  selectionColor={Colors.light.primary}
+                  cursorColor={Colors.light.primary}
+                  placeholderTextColor={Colors.light.textLight}
                   editable={!isLoading}
                 />
               </View>
 
               {/* Password Input */}
               <View style={styles.inputContainer}>
-                <MaterialCommunityIcons name="lock-outline" size={20} color="#999" style={styles.inputIcon} />
+                <MaterialCommunityIcons name="lock-outline" size={20} color={Colors.light.textLight} style={styles.inputIcon} />
                 <TextInput
                   placeholder="Password"
                   value={password}
@@ -181,41 +237,59 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   style={styles.input}
                   underlineColor="transparent"
                   activeUnderlineColor="transparent"
-                  textColor="#333"
-                  placeholderTextColor="#999"
+                  textColor={Colors.light.text}
+                  selectionColor={Colors.light.primary}
+                  cursorColor={Colors.light.primary}
+                  placeholderTextColor={Colors.light.textLight}
                   right={
                     <TextInput.Icon
                       icon={showPassword ? 'eye-off' : 'eye'}
                       onPress={() => setShowPassword(!showPassword)}
-                      color="#999"
+                      color={Colors.light.textLight}
                     />
                   }
                   editable={!isLoading}
                 />
               </View>
 
-              {/* Login Button */}
-              <TouchableOpacity
-                style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
-                onPress={handleLogin}
-                disabled={isLoading}
-              >
-                <LinearGradient
-                  colors={['#667eea', '#764ba2']}
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 0 }}
-                  style={styles.loginButtonGradient}
+              {/* Login Actions */}
+              <View style={styles.loginActions}>
+                <TouchableOpacity
+                  style={[styles.loginButton, isLoading && styles.loginButtonDisabled]}
+                  onPress={handleLogin}
+                  disabled={isLoading}
                 >
-                  {isLoading ? (
-                    <ActivityIndicator color="#fff" />
-                  ) : (
-                    <>
-                      <Text style={styles.loginButtonText}>Sign In</Text>
-                      <MaterialCommunityIcons name="arrow-right" size={20} color="#fff" />
-                    </>
-                  )}
-                </LinearGradient>
-              </TouchableOpacity>
+                  <LinearGradient
+                    colors={role === 'student' ? [Colors.light.primary, Colors.light.primaryDark] : ['#4338ca', '#1e1b4b']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                    style={styles.loginButtonGradient}
+                  >
+                    {isLoading ? (
+                      <ActivityIndicator color={Colors.light.white} />
+                    ) : (
+                      <>
+                        <Text style={styles.loginButtonText}>Sign In</Text>
+                        <MaterialCommunityIcons name="arrow-right" size={20} color={Colors.light.white} />
+                      </>
+                    )}
+                  </LinearGradient>
+                </TouchableOpacity>
+
+                {isBiometricEnabled && (
+                  <TouchableOpacity
+                    style={styles.biometricBtn}
+                    onPress={handleBiometricLogin}
+                    disabled={isLoading}
+                  >
+                    <MaterialCommunityIcons
+                      name="fingerprint"
+                      size={36}
+                      color={role === 'student' ? Colors.light.primary : '#4338ca'}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
 
               {/* Sign Up Link */}
               <View style={styles.footer}>
@@ -249,56 +323,52 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    padding: 24,
+    padding: Spacing.l,
     justifyContent: 'center',
   },
   header: {
     alignItems: 'center',
-    marginBottom: 50,
+    marginBottom: Spacing.xxl,
   },
   logoImage: {
     width: 160,
     height: 120,
     resizeMode: 'contain',
-    marginBottom: 10,
+    marginBottom: Spacing.s,
     alignSelf: 'center',
   },
   title: {
+    ...Typography.h1,
     fontSize: 42,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 8,
+    color: Colors.light.white,
+    marginBottom: Spacing.s,
     textShadowColor: 'rgba(0, 0, 0, 0.3)',
     textShadowOffset: { width: 0, height: 2 },
     textShadowRadius: 4,
   },
   subtitle: {
-    fontSize: 16,
+    ...Typography.body,
     color: 'rgba(255, 255, 255, 0.9)',
     textAlign: 'center',
   },
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 24,
-    padding: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 10 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 15,
+    backgroundColor: Colors.light.white,
+    borderRadius: BorderRadius.xl,
+    padding: Spacing.l,
+    ...AppShadows.medium,
   },
   roleSection: {
-    marginBottom: 24,
+    marginBottom: Spacing.l,
   },
   roleLabel: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#333',
-    marginBottom: 12,
+    ...Typography.body,
+    fontWeight: '700',
+    color: Colors.light.text,
+    marginBottom: Spacing.m,
   },
   roleButtons: {
     flexDirection: 'row',
-    gap: 12,
+    gap: Spacing.m,
   },
   roleButton: {
     flex: 1,
@@ -307,44 +377,71 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    borderRadius: 12,
+    borderRadius: BorderRadius.m,
     borderWidth: 2,
-    borderColor: '#e0e0e0',
-    backgroundColor: '#f9f9f9',
+    borderColor: Colors.light.border,
+    backgroundColor: Colors.light.background,
     gap: 8,
   },
-  roleButtonActive: {
-    borderColor: '#667eea',
-    backgroundColor: '#f0f4ff',
+  roleButtonActiveStudent: {
+    borderColor: Colors.light.primary,
+    backgroundColor: Colors.light.primaryLight,
+  },
+  roleButtonActiveTeacher: {
+    borderColor: '#4338ca',
+    backgroundColor: '#eef2ff',
   },
   roleButtonText: {
-    fontSize: 15,
+    ...Typography.bodySmall,
     fontWeight: '600',
-    color: '#999',
+    color: Colors.light.textLight,
   },
-  roleButtonTextActive: {
-    color: '#667eea',
+  roleButtonTextActiveStudent: {
+    color: Colors.light.primary,
+  },
+  roleButtonTextActiveTeacher: {
+    color: '#4338ca',
   },
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f5f5f5',
-    borderRadius: 12,
-    marginBottom: 16,
-    paddingHorizontal: 12,
+    backgroundColor: Colors.light.background,
+    borderRadius: BorderRadius.m,
+    marginBottom: Spacing.m,
+    paddingHorizontal: Spacing.s,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
   },
   inputIcon: {
-    marginRight: 8,
+    marginRight: Spacing.s,
   },
   input: {
     flex: 1,
     backgroundColor: 'transparent',
     fontSize: 15,
   },
+  loginActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.m,
+  },
   loginButton: {
-    marginTop: 8,
-    borderRadius: 12,
+    flex: 1,
+    marginTop: Spacing.s,
+    borderRadius: BorderRadius.m,
     overflow: 'hidden',
+    ...AppShadows.light,
+  },
+  biometricBtn: {
+    marginTop: Spacing.s,
+    width: 56,
+    height: 56,
+    borderRadius: BorderRadius.m,
+    backgroundColor: Colors.light.background,
+    borderWidth: 1,
+    borderColor: Colors.light.border,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   loginButtonDisabled: {
     opacity: 0.6,
@@ -357,7 +454,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   loginButtonText: {
-    color: '#fff',
+    color: Colors.light.white,
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -365,20 +462,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: Spacing.l,
   },
   footerText: {
-    color: '#666',
-    fontSize: 14,
+    ...Typography.bodySmall,
+    color: Colors.light.textSecondary,
   },
   signupLink: {
-    color: '#667eea',
-    fontSize: 14,
+    ...Typography.bodySmall,
+    color: Colors.light.primary,
     fontWeight: 'bold',
   },
   bottomDecoration: {
     alignItems: 'center',
-    marginTop: 30,
+    marginTop: Spacing.xl,
   },
   decorationText: {
     color: 'rgba(255, 255, 255, 0.8)',
