@@ -13,6 +13,10 @@ export interface Course {
   cover_image?: string;
   duration?: string;
   level?: string;
+  is_published?: boolean;
+  isPublished?: boolean;
+  student_count?: number;
+  lesson_count?: number;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -48,6 +52,10 @@ function normalizeCourse(raw: any): Course {
     coverImage: raw.cover_image || raw.coverImage || '',
     duration: raw.duration || '',
     level: raw.level || '',
+    is_published: raw.is_published,
+    isPublished: raw.is_published ?? raw.isPublished,
+    student_count: raw.total_students ?? raw.student_count ?? raw.students_count ?? 0,
+    lesson_count: raw.total_lessons ?? raw.lesson_count ?? raw.lessons_count ?? 0,
     createdAt: raw.created_at || raw.createdAt,
     updatedAt: raw.updated_at || raw.updatedAt,
   };
@@ -152,7 +160,8 @@ export const useCourseStore = create<CourseState>((set) => ({
   getCourseById: async (courseId) => {
     try {
       const { data } = await courseApi.get(courseId);
-      return normalizeCourse(data);
+      const courseData = data.data || data;
+      return normalizeCourse(courseData);
     } catch (error) {
       console.error('Error fetching course:', error);
       return null;
@@ -247,7 +256,8 @@ export const useCourseStore = create<CourseState>((set) => ({
   getLessonById: async (lessonId) => {
     try {
       const { data } = await lessonApi.get(lessonId);
-      return normalizeLesson(data);
+      const lessonData = data.data || data;
+      return normalizeLesson(lessonData);
     } catch (error) {
       console.error('Error fetching lesson:', error);
       return null;

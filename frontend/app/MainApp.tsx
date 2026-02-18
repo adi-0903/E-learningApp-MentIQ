@@ -6,36 +6,40 @@ import { Colors } from '@/constants/theme';
 
 // Screens - using absolute imports
 // Student screens
-import BrowseCoursesScreen from '@/app/screens/student/BrowseCoursesScreen';
-import BrowseLiveClassesScreen from '@/app/screens/student/BrowseLiveClassesScreen';
-import StudentHomeScreen from '@/app/screens/student/StudentHomeScreen';
-import StudentProgressScreen from '@/app/screens/student/StudentProgressScreen';
-import StudentVideoLecturesScreen from '@/app/screens/student/StudentVideoLecturesScreen';
+import BrowseCoursesScreen from './screens/student/BrowseCoursesScreen';
+import BrowseLiveClassesScreen from './screens/student/BrowseLiveClassesScreen';
+import StudentHomeScreen from './screens/student/StudentHomeScreen';
+import StudentProgressScreen from './screens/student/StudentProgressScreen';
+import StudentVideoLecturesScreen from './screens/student/StudentVideoLecturesScreen';
+import AllQuizzesScreen from './screens/student/AllQuizzesScreen';
+import CourseLessonsScreen from './screens/shared/CourseLessonsScreen';
 
 // Teacher screens
-import CreateAnnouncementScreen from '@/app/screens/teacher/CreateAnnouncementScreen';
-import CreateCourseScreen from '@/app/screens/teacher/CreateCourseScreen';
-import CreateLessonScreen from '@/app/screens/teacher/CreateLessonScreen';
-import CreateLiveClassScreen from '@/app/screens/teacher/CreateLiveClassScreen';
-import CreateQuizScreen from '@/app/screens/teacher/CreateQuizScreen';
-import ManageLessonsScreen from '@/app/screens/teacher/ManageLessonsScreen';
-import ManageLiveClassesScreen from '@/app/screens/teacher/ManageLiveClassesScreen';
-import ManageQuizzesScreen from '@/app/screens/teacher/ManageQuizzesScreen';
-import ManageVideoLecturesScreen from '@/app/screens/teacher/ManageVideoLecturesScreen';
-import MyCoursesScreen from '@/app/screens/teacher/MyCoursesScreen';
-import TeacherHomeScreen from '@/app/screens/teacher/TeacherHomeScreen';
-import TeacherProgressScreen from '@/app/screens/teacher/TeacherProgressScreen';
+import CreateAnnouncementScreen from './screens/teacher/CreateAnnouncementScreen';
+import CreateCourseScreen from './screens/teacher/CreateCourseScreen';
+import CreateLessonScreen from './screens/teacher/CreateLessonScreen';
+import CreateLiveClassScreen from './screens/teacher/CreateLiveClassScreen';
+import CreateQuizScreen from './screens/teacher/CreateQuizScreen';
+import ManageLessonsScreen from './screens/teacher/ManageLessonsScreen';
+import ManageLiveClassesScreen from './screens/teacher/ManageLiveClassesScreen';
+import ManageQuizzesScreen from './screens/teacher/ManageQuizzesScreen';
+import ManageVideoLecturesScreen from './screens/teacher/ManageVideoLecturesScreen';
+import MyCoursesScreen from './screens/teacher/MyCoursesScreen';
+import TeacherHomeScreen from './screens/teacher/TeacherHomeScreen';
+import TeacherProgressScreen from './screens/teacher/TeacherProgressScreen';
+import StudentDetailScreen from './screens/teacher/StudentDetailScreen';
 
 // Shared screens
-import AboutScreen from '@/app/screens/shared/AboutScreen';
-import AnnouncementsScreen from '@/app/screens/shared/AnnouncementsScreen';
-import CourseDetailScreen from '@/app/screens/shared/CourseDetailScreen';
-import LessonDetailScreen from '@/app/screens/shared/LessonDetailScreen';
-import ProfileScreen from '@/app/screens/shared/ProfileScreen';
-import QuizResultScreen from '@/app/screens/shared/QuizResultScreen';
-import QuizScreen from '@/app/screens/shared/QuizScreen';
+import AboutScreen from './screens/shared/AboutScreen';
+import AnnouncementsScreen from './screens/shared/AnnouncementsScreen';
+import CourseDetailScreen from './screens/shared/CourseDetailScreen';
+import LessonDetailScreen from './screens/shared/LessonDetailScreen';
+import ProfileScreen from './screens/shared/ProfileScreen';
+import QuizResultScreen from './screens/shared/QuizResultScreen';
+import QuizScreen from './screens/shared/QuizScreen';
 import NotificationSettingsScreen from './screens/shared/NotificationSettingsScreen';
-import SecurityScreen from '@/app/screens/shared/SecurityScreen';
+import SecurityScreen from './screens/shared/SecurityScreen';
+import QuizAnalysisScreen from './screens/shared/QuizAnalysisScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -54,7 +58,10 @@ function StudentStack() {
       <Stack.Screen name="LessonDetail" component={LessonDetailScreen} />
       <Stack.Screen name="Quiz" component={QuizScreen} />
       <Stack.Screen name="QuizResult" component={QuizResultScreen} />
+      <Stack.Screen name="QuizAnalysis" component={QuizAnalysisScreen} />
       <Stack.Screen name="StudentVideoLectures" component={StudentVideoLecturesScreen} />
+      <Stack.Screen name="AllQuizzes" component={AllQuizzesScreen} />
+      <Stack.Screen name="CourseLessons" component={CourseLessonsScreen} />
     </Stack.Navigator>
   );
 }
@@ -95,6 +102,42 @@ function TeacherStack() {
       <Stack.Screen name="ManageLiveClasses" component={ManageLiveClassesScreen} />
       <Stack.Screen name="CreateLiveClass" component={CreateLiveClassScreen} />
       <Stack.Screen name="ManageVideoLectures" component={ManageVideoLecturesScreen} />
+      <Stack.Screen name="StudentDetail" component={StudentDetailScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Teacher Progress Stack
+function TeacherProgressStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="TeacherProgressMain" component={TeacherProgressScreen} />
+      <Stack.Screen name="StudentDetail" component={StudentDetailScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Student Progress Stack
+function StudentProgressStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="StudentProgressMain" component={StudentProgressScreen} />
+      <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
+      <Stack.Screen name="LessonDetail" component={LessonDetailScreen} />
+      <Stack.Screen name="Quiz" component={QuizScreen} />
+      <Stack.Screen name="QuizResult" component={QuizResultScreen} />
+      <Stack.Screen name="QuizAnalysis" component={QuizAnalysisScreen} />
+      <Stack.Screen name="StudentVideoLectures" component={StudentVideoLecturesScreen} />
+      <Stack.Screen name="AllQuizzes" component={AllQuizzesScreen} />
+      <Stack.Screen name="CourseLessons" component={CourseLessonsScreen} />
     </Stack.Navigator>
   );
 }
@@ -150,7 +193,7 @@ function StudentTabs() {
       />
       <Tab.Screen
         name="ProgressTab"
-        component={StudentProgressScreen}
+        component={StudentProgressStack}
         options={{
           tabBarLabel: 'My Stats',
           tabBarIcon: ({ color, size }) => (
@@ -182,6 +225,7 @@ function TeacherLiveClassesStack() {
     >
       <Stack.Screen name="ManageLiveClassesMain" component={ManageLiveClassesScreen} />
       <Stack.Screen name="CreateLiveClass" component={CreateLiveClassScreen} />
+      <Stack.Screen name="CourseLessons" component={CourseLessonsScreen} />
     </Stack.Navigator>
   );
 }
@@ -251,7 +295,7 @@ function TeacherTabs() {
       />
       <Tab.Screen
         name="ProgressTab"
-        component={TeacherProgressScreen}
+        component={TeacherProgressStack}
         options={{
           tabBarLabel: 'Analytics',
           tabBarIcon: ({ color, size }) => (

@@ -13,11 +13,17 @@ function BrowseCoursesScreen({ navigation }: any) {
   const { user } = useAuthStore();
   const { enrollInCourse } = useProgressStore();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
   const [filteredCourses, setFilteredCourses] = useState<Course[]>([]);
 
-  const CATEGORIES = ['All', 'Technology', 'Business', 'Art', 'Science'];
+  const CATEGORIES = [
+    { label: 'All', value: 'all' },
+    { label: 'Technology', value: 'technology' },
+    { label: 'Business', value: 'business' },
+    { label: 'Art', value: 'art' },
+    { label: 'Science', value: 'science' },
+  ];
 
   useEffect(() => {
     fetchCourses().catch(err => {
@@ -31,8 +37,8 @@ function BrowseCoursesScreen({ navigation }: any) {
         const matchesSearch = course.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
           course.description?.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesCategory = selectedCategory === 'All' ||
-          (course.category && course.category.toLowerCase() === selectedCategory.toLowerCase());
+        const matchesCategory = selectedCategory === 'all' ||
+          (course.category && course.category.toLowerCase() === selectedCategory);
 
         return matchesSearch && matchesCategory;
       });
@@ -180,20 +186,20 @@ function BrowseCoursesScreen({ navigation }: any) {
         >
           {CATEGORIES.map((cat) => (
             <TouchableOpacity
-              key={cat}
-              onPress={() => setSelectedCategory(cat)}
+              key={cat.value}
+              onPress={() => setSelectedCategory(cat.value)}
               style={[
                 styles.filterChip,
-                selectedCategory === cat && styles.filterChipActive
+                selectedCategory === cat.value && styles.filterChipActive
               ]}
             >
               <Text
                 style={[
                   styles.filterChipText,
-                  selectedCategory === cat && styles.filterChipTextActive
+                  selectedCategory === cat.value && styles.filterChipTextActive
                 ]}
               >
-                {cat}
+                {cat.label}
               </Text>
             </TouchableOpacity>
           ))}

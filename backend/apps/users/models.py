@@ -62,6 +62,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         blank=True,
         null=True,
     )
+    profile_avatar = models.CharField(max_length=255, blank=True, default='', help_text='URL or ID of selected avatar')
     phone_number = models.CharField(max_length=20, blank=True, default='')
 
     # Status fields
@@ -75,11 +76,30 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     last_login_ip = models.GenericIPAddressField(null=True, blank=True)
     fcm_token = models.CharField(max_length=255, blank=True, default='',
                                   help_text='Firebase Cloud Messaging token for push notifications')
+    
+    # Unique teacher ID
+    teacher_id = models.CharField(
+        max_length=5, 
+        unique=True, 
+        blank=True, 
+        null=True,
+        help_text="5-digit unique ID for teachers"
+    )
 
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['name']
+
+    def save(self, *args, **kwargs):
+        if self.role == self.RoleChoices.TEACHER and not self.teacher_id:
+            import random
+            while True:
+                tid = str(random.randint(10000, 99999))
+                if not User.objects.filter(teacher_id=tid).exists():
+                    self.teacher_id = tid
+                    break
+        super().save(*args, **kwargs)
 
     class Meta:
         db_table = 'users'

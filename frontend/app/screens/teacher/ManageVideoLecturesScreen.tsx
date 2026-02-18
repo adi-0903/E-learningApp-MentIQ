@@ -1,27 +1,50 @@
 import { Lesson, useCourseStore } from '@/store/courseStore';
+import { mediaApi } from '@/services/api';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
-import { Alert, FlatList, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
-import { ActivityIndicator, Button, FAB, Text, TextInput } from 'react-native-paper';
+import {
+  Alert,
+  FlatList,
+  Modal,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  View,
+  Dimensions,
+  StatusBar
+} from 'react-native';
+import { ActivityIndicator, Button, FAB, Text, TextInput, Surface } from 'react-native-paper';
+import { AppShadows, Colors } from '@/constants/theme';
 
-// Using existing Lesson interface from courseStore
+const { width } = Dimensions.get('window');
+
+const PREMIUM = {
+  bg: '#f8fafc',
+  slate: '#1e293b',
+  indigo: '#4f46e5',
+  violet: '#6366f1',
+  textMain: '#0f172a',
+  textSub: '#64748b',
+  cardBg: '#ffffff',
+  accent: '#eff6ff'
+};
 
 export default function ManageVideoLecturesScreen({ route, navigation }: any) {
-  const { courseId } = route?.params || {};
-  
-  // Validate route parameters
+  const { courseId, courseTitle } = route?.params || {};
+
   if (!courseId) {
     return (
       <View style={styles.centerContainer}>
-        <Text>Invalid course ID</Text>
+        <Text variant="titleMedium" style={{ color: PREMIUM.textSub }}>Invalid course ID</Text>
       </View>
     );
   }
-  
-  const { lessons, isLoading, fetchLessons, deleteLesson } = useCourseStore();
+
+  const { lessons, isLoading, fetchLessons, deleteLesson, createLesson } = useCourseStore();
   const [showForm, setShowForm] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
@@ -30,315 +53,349 @@ export default function ManageVideoLecturesScreen({ route, navigation }: any) {
   });
 
   useEffect(() => {
-    if (courseId) {
-      fetchLessons(courseId).catch(error => {
-        console.error('Error fetching lessons:', error);
-        Alert.alert('Error', 'Failed to load video lectures');
-      });
-    }
+    fetchLessons(courseId);
   }, [courseId]);
-
-  // Removed loadVideos function - now using course store
 
   const pickVideoFile = async () => {
     try {
       const result = await DocumentPicker.getDocumentAsync({
-        type: ['video/*', 'image/*', '*/*'],
+        type: ['video/*'],
         copyToCacheDirectory: true,
         multiple: false,
       });
 
       if (!result.canceled && result.assets && result.assets.length > 0) {
-        const file = result.assets[0];
-        
-        // Check if the selected file is a video
-        const videoExtensions = ['.mp4', '.avi', '.mov', '.mkv', '.wmv', '.flv', '.webm', '.m4v'];
-        const fileName = file.name.toLowerCase();
-        const isVideo = videoExtensions.some(ext => fileName.endsWith(ext)) || 
-                       file.mimeType?.startsWith('video/');
-        
-        if (!isVideo) {
-          Alert.alert('Invalid File', 'Please select a video file (MP4, AVI, MOV, etc.)');
-          return;
-        }
-        
-        setFormData({ ...formData, videoFile: file });
+        setFormData({ ...formData, videoFile: result.assets[0] });
       }
     } catch (error) {
-      console.error('Error picking video:', error);
       Alert.alert('Error', 'Failed to pick video file');
     }
   };
 
   const handleAddVideo = async () => {
-    if (!formData.title.trim()) {
-      Alert.alert('Error', 'Title is required');
-      return;
-    }
+    if (!formData.title.trim() || !formData.videoFile) return;
 
+    setIsUploading(true);
     try {
-      // Note: Video file upload would need to be implemented with Firebase Storage
-      // For now, we'll create a lesson entry with the video file info
-      const videoUrl = formData.videoFile?.uri || '';
-      
-      // This would need to be implemented based on the course store's createLesson method
-      // For now, showing the structure
-      Alert.alert('Info', 'Video upload functionality needs to be implemented with Firebase Storage');
-      
-      setFormData({ title: '', description: '', videoFile: null, duration: '' });
+      // 1. Prepare Media Upload
+      const mediaData = new FormData();
+      mediaData.append('file', {
+        uri: formData.videoFile.uri,
+        name: formData.videoFile.name,
+        type: formData.videoFile.mimeType || 'video/mp4',
+      } as any);
+      mediaData.append('title', formData.title);
+      mediaData.append('course', courseId);
+
+      // 2. Upload to Media Vault
+      const uploadRes = await mediaApi.upload(mediaData);
+      let videoUrl = uploadRes.data.data.file_url;
+
+      // Ensure videoUrl is an absolute URL (Django URLField requirement)
+      if (videoUrl && videoUrl.startsWith('/')) {
+        const rootUrl = API_BASE_URL.replace('/api', '');
+        videoUrl = `${rootUrl}${videoUrl}`;
+      }
+
+      // 3. Create Lesson Linked to Video
+      await createLesson({
+        course: courseId,
+        title: formData.title,
+        description: formData.description,
+        video_url: videoUrl,
+        sequence_number: lessons.length + 1,
+        content: formData.description, // Optional
+      });
+
+      // 4. Finalize
+      await fetchLessons(courseId);
       setShowForm(false);
-    } catch (error) {
-      console.error('Error adding video:', error);
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to add video lecture');
+      setFormData({
+        title: '',
+        description: '',
+        videoFile: null,
+        duration: '',
+      });
+      Alert.alert('Success', 'Lecture published to curriculum vault.');
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      Alert.alert('Upload Failed', error.message || 'Could not publish video. Please try again.');
+    } finally {
+      setIsUploading(false);
     }
   };
 
   const handleDeleteVideo = async (lessonId: string) => {
-    Alert.alert('Delete Video', 'Are you sure you want to delete this video?', [
-      { text: 'Cancel', onPress: () => {} },
+    Alert.alert('Archive Video', 'Are you sure you want to remove this lecture? This action is irreversible.', [
+      { text: 'Cancel', style: 'cancel' },
       {
-        text: 'Delete',
+        text: 'Archive',
+        style: 'destructive',
         onPress: async () => {
           try {
             await deleteLesson(lessonId);
-            await fetchLessons(courseId);
-            Alert.alert('Success', 'Video deleted successfully');
+            fetchLessons(courseId);
           } catch (error) {
-            console.error('Error deleting video:', error);
-            Alert.alert('Error', error instanceof Error ? error.message : 'Failed to delete video');
+            Alert.alert('Error', 'Failed to delete video');
           }
         },
       },
     ]);
   };
 
-  const renderVideoItem = (lesson: Lesson) => (
-    <View key={lesson.id} style={styles.videoCard}>
-      <View style={styles.videoContent}>
-        <View style={styles.videoHeader}>
-          <View style={styles.videoHeaderLeft}>
-            <View style={styles.videoIconContainer}>
-              <MaterialCommunityIcons name="video" size={20} color="#667eea" />
-            </View>
-            <View style={styles.videoTitleContainer}>
-              <Text style={styles.videoTitle} numberOfLines={2}>{lesson.title}</Text>
-              <Text style={styles.videoDuration}>{lesson.duration || 'N/A'} min</Text>
+  const renderVideoItem = ({ item }: { item: Lesson }) => (
+    <Surface style={styles.videoCard} elevation={1}>
+      <View style={styles.videoCardContent}>
+        <View style={styles.cardMain}>
+          <View style={styles.playIconBox}>
+            <LinearGradient
+              colors={[PREMIUM.indigo, PREMIUM.violet]}
+              style={styles.iconGradient}
+            >
+              <MaterialCommunityIcons name="play" size={20} color="#fff" />
+            </LinearGradient>
+          </View>
+          <View style={styles.textInfo}>
+            <Text style={styles.videoTitle} numberOfLines={1}>{item.title}</Text>
+            <View style={styles.metaBadgeRow}>
+              <View style={styles.badge}>
+                <MaterialCommunityIcons name="clock-outline" size={12} color={PREMIUM.indigo} />
+                <Text style={styles.badgeText}>{item.duration || '0'}m</Text>
+              </View>
+              <View style={[styles.badge, { backgroundColor: '#f1f5f9' }]}>
+                <Text style={[styles.badgeText, { color: '#64748b' }]}>Lecture</Text>
+              </View>
             </View>
           </View>
           <TouchableOpacity
-            onPress={() => handleDeleteVideo(lesson.id)}
-            style={styles.deleteButton}
+            style={styles.trashBtn}
+            onPress={() => handleDeleteVideo(item.id)}
           >
-            <MaterialCommunityIcons name="delete-outline" size={20} color="#f44336" />
+            <MaterialCommunityIcons name="delete-outline" size={20} color="#ef4444" />
           </TouchableOpacity>
         </View>
-        
-        {lesson.description && (
-          <Text style={styles.videoDescription} numberOfLines={2}>
-            {lesson.description}
-          </Text>
+
+        {item.description && (
+          <Text style={styles.cardDesc} numberOfLines={2}>{item.description}</Text>
         )}
-        
-        <View style={styles.videoMetaContainer}>
-          <View style={styles.metaItem}>
-            <MaterialCommunityIcons name="calendar" size={14} color="#999" />
-            <Text style={styles.metaText}>
-              {lesson.createdAt ? new Date(lesson.createdAt).toLocaleDateString() : 'N/A'}
+
+        <View style={styles.cardFooter}>
+          <View style={styles.footerItem}>
+            <MaterialCommunityIcons name="calendar-range" size={14} color={PREMIUM.textSub} />
+            <Text style={styles.footerText}>
+              {item.createdAt ? new Date(item.createdAt).toLocaleDateString() : 'Recent'}
             </Text>
           </View>
-          <View style={styles.metaItem}>
-            <MaterialCommunityIcons name="folder" size={14} color="#999" />
-            <Text style={styles.metaText}>Video Lecture</Text>
+          <View style={styles.activeStatus}>
+            <View style={styles.statusDot} />
+            <Text style={styles.statusText}>Active</Text>
           </View>
         </View>
       </View>
-    </View>
+    </Surface>
   );
-
-  if (isLoading) {
-    return (
-      <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#667eea" />
-      </View>
-    );
-  }
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
       <LinearGradient
-        colors={['#667eea', '#764ba2']}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.premiumHeader}
+        colors={['#1e1b4b', '#312e81']}
+        style={styles.header}
       >
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerTitle}>Manage Video Lectures</Text>
-          <Text style={styles.headerSubtitle}>Upload and manage lecture videos</Text>
+        <View style={styles.headerTop}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+            <MaterialCommunityIcons name="chevron-left" size={28} color="#fff" />
+          </TouchableOpacity>
+
+          <View style={styles.headerText}>
+            <Text style={styles.headerTitle}>Lecture Vault</Text>
+            <Text style={styles.headerSubtitle} numberOfLines={1}>{courseTitle || 'Curriculum Assets'}</Text>
+          </View>
         </View>
+
+        <Surface style={styles.statsSurface} elevation={0}>
+          <View style={styles.statItem}>
+            <Text style={styles.statVal}>{lessons.length}</Text>
+            <Text style={styles.statLab}>Lectures</Text>
+          </View>
+          <View style={styles.statDivider} />
+          <View style={styles.statItem}>
+            <Text style={styles.statVal}>
+              {lessons.reduce((acc, curr) => acc + (curr.duration || 0), 0)}m
+            </Text>
+            <Text style={styles.statLab}>Runtime</Text>
+          </View>
+        </Surface>
       </LinearGradient>
 
-      <FlatList
-        data={lessons}
-        renderItem={({ item }) => renderVideoItem(item)}
-        keyExtractor={(item) => item.id}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={
-          <View style={styles.emptyState}>
-            <MaterialCommunityIcons name="video-off" size={64} color="#ccc" />
-            <Text style={styles.emptyText}>No video lectures yet</Text>
-          </View>
-        }
-      />
-
-      <Modal visible={showForm} animationType="slide" transparent>
-        <View style={styles.modalContainer}>
-          <LinearGradient
-            colors={['#667eea', '#764ba2']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.modalHeaderGradient}
-          >
-            <View style={styles.modalHeader}>
-              <View style={styles.modalHeaderContent}>
-                <View style={styles.modalHeaderIcon}>
-                  <MaterialCommunityIcons name="video-plus" size={24} color="#fff" />
-                </View>
-                <View>
-                  <Text style={styles.modalTitle}>Add Video Lecture</Text>
-                  <Text style={styles.modalSubtitle}>Upload a new lecture video</Text>
-                </View>
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={PREMIUM.indigo} />
+          <Text style={styles.loadingText}>Synchronizing Vault...</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={lessons}
+          renderItem={renderVideoItem}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={styles.listContent}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <View style={styles.emptyVault}>
+              <View style={styles.emptyIconBox}>
+                <MaterialCommunityIcons name="video-plus-outline" size={60} color="#cbd5e1" />
               </View>
-              <TouchableOpacity 
-                onPress={() => setShowForm(false)}
-                style={styles.closeButton}
-              >
-                <MaterialCommunityIcons name="close" size={24} color="#fff" />
-              </TouchableOpacity>
+              <Text style={styles.emptyTitle}>Vault is Empty</Text>
+              <Text style={styles.emptySubtitle}>Start populating your curriculum by uploading professional video lectures.</Text>
             </View>
-          </LinearGradient>
+          }
+        />
+      )}
 
-          <View style={styles.modalContent}>
-            <ScrollView showsVerticalScrollIndicator={false}>
-              <View style={styles.formSection}>
+      <Modal visible={showForm} animationType="slide" transparent statusBarTranslucent>
+        <View style={styles.modalOverlay}>
+          <TouchableOpacity
+            style={styles.modalDismiss}
+            activeOpacity={1}
+            onPress={() => setShowForm(false)}
+          />
+          <Surface style={styles.modalCard} elevation={5}>
+            <View style={styles.dragHandle} />
+
+            <LinearGradient
+              colors={[PREMIUM.indigo, PREMIUM.violet]}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.modalHeaderGradient}
+            >
+              <View style={styles.modalHeaderInner}>
+                <View style={styles.modalIconBox}>
+                  <MaterialCommunityIcons name="rocket-launch" size={24} color="#fff" />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.modalTitleText}>Curriculum Asset</Text>
+                  <Text style={styles.modalSubtitle}>Configure your new video lecture</Text>
+                </View>
+                <TouchableOpacity onPress={() => setShowForm(false)} style={styles.modalCloseCircle}>
+                  <MaterialCommunityIcons name="close" size={20} color="#fff" />
+                </TouchableOpacity>
+              </View>
+            </LinearGradient>
+
+            <ScrollView showsVerticalScrollIndicator={false} style={styles.formScroll}>
+              <View style={styles.inputStack}>
                 <View style={styles.inputGroup}>
-                  <View style={styles.inputLabel}>
-                    <MaterialCommunityIcons name="text" size={16} color="#667eea" />
-                    <Text style={styles.inputLabelText}>Video Title</Text>
-                  </View>
                   <TextInput
                     value={formData.title}
                     onChangeText={(text) => setFormData({ ...formData, title: text })}
-                    style={styles.input}
-                    mode="outlined"
-                    placeholder="Enter video title"
-                    placeholderTextColor="#999"
+                    placeholder="e.g. Advanced System Design"
+                    style={styles.textInput}
+                    mode="flat"
+                    underlineColor="transparent"
+                    activeUnderlineColor={PREMIUM.indigo}
+                    textColor={PREMIUM.textMain}
+                    placeholderTextColor={PREMIUM.textSub}
+                    left={<TextInput.Icon icon="format-text" color={PREMIUM.indigo} />}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <View style={styles.inputLabel}>
-                    <MaterialCommunityIcons name="text-box" size={16} color="#667eea" />
-                    <Text style={styles.inputLabelText}>Description</Text>
-                  </View>
                   <TextInput
                     value={formData.description}
                     onChangeText={(text) => setFormData({ ...formData, description: text })}
-                    style={[styles.input, styles.textArea]}
-                    mode="outlined"
+                    placeholder="Briefly describe the learning outcomes..."
                     multiline
                     numberOfLines={3}
-                    placeholder="Describe the video content"
-                    placeholderTextColor="#999"
+                    style={styles.textArea}
+                    mode="flat"
+                    underlineColor="transparent"
+                    activeUnderlineColor={PREMIUM.indigo}
+                    textColor={PREMIUM.textMain}
+                    placeholderTextColor={PREMIUM.textSub}
+                    left={<TextInput.Icon icon="text-long" color={PREMIUM.indigo} />}
                   />
                 </View>
 
                 <View style={styles.inputGroup}>
-                  <View style={styles.inputLabel}>
-                    <MaterialCommunityIcons name="file-video" size={16} color="#667eea" />
-                    <Text style={styles.inputLabelText}>Video File</Text>
+                  <View style={styles.labelRow}>
+                    <MaterialCommunityIcons name="video-wireless" size={16} color={PREMIUM.indigo} />
+                    <Text style={styles.inputLabel}>Primary Source</Text>
                   </View>
                   <TouchableOpacity
+                    style={[styles.uploadBox, formData.videoFile && styles.uploadBoxActive]}
                     onPress={pickVideoFile}
-                    style={styles.filePickerCard}
+                    activeOpacity={0.7}
                   >
-                    <View style={styles.filePickerContent}>
-                      <View style={styles.filePickerIcon}>
-                        <MaterialCommunityIcons 
-                          name={formData.videoFile ? "check-circle" : "cloud-upload"} 
-                          size={32} 
-                          color={formData.videoFile ? "#4caf50" : "#667eea"} 
-                        />
-                      </View>
-                      <View style={styles.filePickerText}>
-                        <Text style={styles.filePickerTitle}>
-                          {formData.videoFile ? formData.videoFile.name : 'Choose Video File'}
-                        </Text>
-                        <Text style={styles.filePickerSubtitle}>
-                          {formData.videoFile ? 'File selected' : 'Tap to select from device'}
-                        </Text>
-                      </View>
-                      <MaterialCommunityIcons 
-                        name="chevron-right" 
-                        size={20} 
-                        color="#999" 
+                    <View style={[styles.uploadIconCircle, formData.videoFile && { backgroundColor: '#d1fae5' }]}>
+                      <MaterialCommunityIcons
+                        name={formData.videoFile ? "check-decagram" : "cloud-upload-outline"}
+                        size={28}
+                        color={formData.videoFile ? "#10b981" : PREMIUM.indigo}
                       />
                     </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.uploadTitle}>
+                        {formData.videoFile ? 'Video Linked Successfully' : 'Select Video File'}
+                      </Text>
+                      <Text style={styles.uploadSub} numberOfLines={1}>
+                        {formData.videoFile ? formData.videoFile.name : 'MP4, MOV, or AVI (Max 500MB)'}
+                      </Text>
+                    </View>
+                    {!formData.videoFile && <MaterialCommunityIcons name="chevron-right" size={24} color="#cbd5e1" />}
                   </TouchableOpacity>
                 </View>
 
-                <View style={styles.inputGroup}>
-                  <View style={styles.inputLabel}>
-                    <MaterialCommunityIcons name="clock" size={16} color="#667eea" />
-                    <Text style={styles.inputLabelText}>Duration (minutes)</Text>
+                <View style={styles.rowInputs}>
+                  <View style={{ flex: 1 }}>
+                    <TextInput
+                      value={formData.duration}
+                      onChangeText={(text) => setFormData({ ...formData, duration: text })}
+                      placeholder="e.g. 15"
+                      keyboardType="numeric"
+                      style={styles.textInput}
+                      mode="flat"
+                      underlineColor="transparent"
+                      activeUnderlineColor={PREMIUM.indigo}
+                      textColor={PREMIUM.textMain}
+                      placeholderTextColor={PREMIUM.textSub}
+                      left={<TextInput.Icon icon="timer-outline" color={PREMIUM.indigo} />}
+                    />
                   </View>
-                  <TextInput
-                    value={formData.duration}
-                    onChangeText={(text) => setFormData({ ...formData, duration: text })}
-                    style={styles.input}
-                    mode="outlined"
-                    placeholder="e.g., 15"
-                    placeholderTextColor="#999"
-                    keyboardType="numeric"
-                  />
                 </View>
               </View>
-            </ScrollView>
 
-            <View style={styles.modalActions}>
-              <Button
-                mode="outlined"
-                onPress={() => {
-                  setShowForm(false);
-                  setFormData({ title: '', description: '', videoFile: null, duration: '' });
-                }}
-                style={styles.cancelButton}
-                contentStyle={styles.buttonContent}
-              >
-                Cancel
-              </Button>
-              <Button
-                mode="contained"
+              <TouchableOpacity
+                style={[styles.publishBtn, (!formData.title || !formData.videoFile || isUploading) && styles.publishBtnDisabled]}
                 onPress={handleAddVideo}
-                style={styles.submitButton}
-                contentStyle={styles.buttonContent}
-                disabled={!formData.title.trim() || !formData.videoFile}
+                disabled={!formData.title || !formData.videoFile || isUploading}
               >
-                <MaterialCommunityIcons name="upload" size={18} color="#fff" />
-                <Text style={styles.submitButtonText}> Upload Video</Text>
-              </Button>
-            </View>
-          </View>
+                <LinearGradient
+                  colors={[PREMIUM.indigo, PREMIUM.violet]}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 0 }}
+                  style={styles.publishGradient}
+                >
+                  {isUploading ? (
+                    <ActivityIndicator color="#fff" size="small" />
+                  ) : (
+                    <MaterialCommunityIcons name="cloud-upload" size={20} color="#fff" />
+                  )}
+                  <Text style={styles.publishBtnText}>
+                    {isUploading ? 'Securing Asset...' : 'Publish to Curriculum'}
+                  </Text>
+                </LinearGradient>
+              </TouchableOpacity>
+            </ScrollView>
+          </Surface>
         </View>
       </Modal>
 
       <FAB
         icon="plus"
-        label="Add Video"
+        label="Add Lecture"
         onPress={() => setShowForm(true)}
         style={styles.fab}
+        color="#fff"
       />
     </View>
   );
@@ -347,268 +404,378 @@ export default function ManageVideoLecturesScreen({ route, navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: PREMIUM.bg,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#fff',
   },
-  premiumHeader: {
+  header: {
     paddingTop: 50,
-    paddingBottom: 28,
-    paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingHorizontal: 24,
+    borderBottomRightRadius: 32,
+    zIndex: 10,
+  },
+  headerTop: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
+    gap: 16,
+    marginBottom: 16,
   },
-  backButton: {
-    marginRight: 16,
-    padding: 8,
+  backBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  headerContent: {
+  headerText: {
     flex: 1,
   },
   headerTitle: {
-    fontSize: 28,
-    fontWeight: 'bold',
+    fontSize: 22,
+    fontWeight: '900',
     color: '#fff',
-    marginBottom: 4,
+    letterSpacing: -0.5,
   },
   headerSubtitle: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  statsSurface: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 16,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  statItem: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  statVal: {
+    fontSize: 16,
+    fontWeight: '900',
+    color: '#fff',
+  },
+  statLab: {
+    fontSize: 10,
+    color: 'rgba(255,255,255,0.6)',
+    fontWeight: '700',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+  },
+  statDivider: {
+    width: 1,
+    height: 24,
+    backgroundColor: 'rgba(255,255,255,0.15)',
   },
   listContent: {
-    padding: 16,
+    padding: 24,
+    paddingTop: 30,
+    paddingBottom: 100,
   },
   videoCard: {
     backgroundColor: '#fff',
-    borderRadius: 12,
-    marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    borderRadius: 24,
+    marginBottom: 20,
     borderWidth: 1,
-    borderColor: '#f0f0f0',
+    borderColor: '#f1f5f9',
+    ...AppShadows.small,
   },
-  videoContent: {
+  videoCardContent: {
     padding: 16,
   },
-  videoHeader: {
+  cardMain: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 8,
+    alignItems: 'center',
+    gap: 16,
+    marginBottom: 12,
   },
-  videoHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
+  playIconBox: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    overflow: 'hidden',
+  },
+  iconGradient: {
     flex: 1,
-    marginRight: 12,
-  },
-  videoIconContainer: {
-    width: 40,
-    height: 40,
-    borderRadius: 10,
-    backgroundColor: '#f0f4ff',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 12,
-    marginTop: 2,
   },
-  videoTitleContainer: {
+  textInfo: {
     flex: 1,
   },
   videoTitle: {
     fontSize: 16,
-    fontWeight: 'bold',
-    color: '#333',
-    lineHeight: 22,
+    fontWeight: '800',
+    color: PREMIUM.textMain,
+    marginBottom: 4,
   },
-  videoDuration: {
-    fontSize: 13,
-    color: '#667eea',
-    fontWeight: '600',
-    marginTop: 2,
+  metaBadgeRow: {
+    flexDirection: 'row',
+    gap: 8,
   },
-  deleteButton: {
-    padding: 8,
-    backgroundColor: '#ffebee',
+  badge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#eff6ff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: 8,
   },
-  videoDescription: {
-    fontSize: 14,
-    color: '#666',
-    lineHeight: 20,
-    marginBottom: 12,
+  badgeText: {
+    fontSize: 10,
+    fontWeight: '800',
+    color: PREMIUM.indigo,
   },
-  videoMetaContainer: {
+  trashBtn: {
+    padding: 8,
+    borderRadius: 10,
+    backgroundColor: '#fef2f2',
+  },
+  cardDesc: {
+    fontSize: 13,
+    color: PREMIUM.textSub,
+    lineHeight: 18,
+    marginBottom: 16,
+  },
+  cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    paddingTop: 12,
+    borderTopWidth: 1,
+    borderTopColor: '#f1f5f9',
   },
-  metaItem: {
+  footerItem: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 6,
   },
-  metaText: {
-    fontSize: 12,
-    color: '#999',
-    marginLeft: 4,
+  footerText: {
+    fontSize: 11,
+    color: PREMIUM.textSub,
+    fontWeight: '600',
   },
-  emptyState: {
+  activeStatus: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 60,
+    gap: 4,
   },
-  emptyText: {
-    fontSize: 16,
-    color: '#999',
-    marginTop: 16,
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: '#10b981',
   },
-  modalContainer: {
+  statusText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#10b981',
+  },
+  loadingContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 12,
+    fontSize: 14,
+    color: PREMIUM.textSub,
+    fontWeight: '600',
+  },
+  emptyVault: {
+    alignItems: 'center',
+    paddingTop: 60,
+  },
+  emptyIconBox: {
+    width: 100,
+    height: 100,
+    borderRadius: 50,
+    backgroundColor: '#f1f5f9',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '900',
+    color: PREMIUM.textMain,
+    marginBottom: 8,
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: PREMIUM.textSub,
+    textAlign: 'center',
+    paddingHorizontal: 40,
+    lineHeight: 20,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(15, 23, 42, 0.7)',
     justifyContent: 'flex-end',
   },
-  modalHeaderGradient: {
-    paddingTop: 20,
-    paddingHorizontal: 20,
-    paddingBottom: 24,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  modalHeaderContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  modalDismiss: {
     flex: 1,
   },
-  modalHeaderIcon: {
+  modalCard: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 32,
+    maxHeight: '90%',
+  },
+  dragHandle: {
+    width: 40,
+    height: 4,
+    backgroundColor: '#e2e8f0',
+    borderRadius: 2,
+    alignSelf: 'center',
+    marginTop: 12,
+  },
+  modalHeaderGradient: {
+    marginTop: 12,
+    paddingVertical: 24,
+    paddingHorizontal: 24,
+  },
+  modalHeaderInner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+  },
+  modalIconBox: {
     width: 48,
     height: 48,
-    borderRadius: 24,
-    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.2)',
     justifyContent: 'center',
     alignItems: 'center',
-    marginRight: 16,
   },
-  modalTitle: {
+  modalTitleText: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: '900',
     color: '#fff',
   },
   modalSubtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
-    marginTop: 2,
+    fontSize: 12,
+    color: 'rgba(255,255,255,0.7)',
+    fontWeight: '600',
   },
-  closeButton: {
-    padding: 8,
+  modalCloseCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
-  modalContent: {
-    backgroundColor: '#fff',
-    paddingHorizontal: 20,
-    paddingBottom: 20,
-    maxHeight: '85%',
+  formScroll: {
+    padding: 24,
   },
-  formSection: {
-    paddingTop: 20,
+  inputStack: {
+    gap: 24,
   },
   inputGroup: {
-    marginBottom: 20,
+    gap: 12,
+  },
+  labelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
   },
   inputLabel: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '800',
+    color: PREMIUM.textMain,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
-  inputLabelText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333',
-    marginLeft: 8,
-  },
-  input: {
-    backgroundColor: '#f8f9fa',
+  textInput: {
+    backgroundColor: PREMIUM.bg,
+    borderRadius: 12,
+    fontSize: 15,
+    color: PREMIUM.textMain,
   },
   textArea: {
-    height: 80,
-  },
-  filePickerCard: {
-    backgroundColor: '#f8f9fa',
-    borderWidth: 2,
-    borderColor: '#e9ecef',
+    backgroundColor: PREMIUM.bg,
     borderRadius: 12,
+    minHeight: 100,
+    fontSize: 15,
+    color: PREMIUM.textMain,
+  },
+  uploadBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 16,
+    borderWidth: 2,
+    borderStyle: 'dashed',
+    borderColor: '#e2e8f0',
+    borderRadius: 20,
     padding: 16,
-    flexDirection: 'row',
+    backgroundColor: PREMIUM.bg,
+  },
+  uploadBoxActive: {
+    borderColor: '#10b981',
+    backgroundColor: '#f0fdf4',
+    borderStyle: 'solid',
+  },
+  uploadIconCircle: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#eff6ff',
+    justifyContent: 'center',
     alignItems: 'center',
   },
-  filePickerContent: {
+  uploadTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: PREMIUM.textMain,
+  },
+  uploadSub: {
+    fontSize: 12,
+    color: PREMIUM.textSub,
+    fontWeight: '500',
+  },
+  rowInputs: {
     flexDirection: 'row',
-    alignItems: 'center',
-    flex: 1,
+    gap: 16,
+    marginBottom: 10,
   },
-  filePickerIcon: {
-    marginRight: 16,
+  publishBtn: {
+    marginTop: 10,
+    marginBottom: 40,
+    ...AppShadows.medium,
   },
-  filePickerText: {
-    flex: 1,
+  publishBtnDisabled: {
+    opacity: 0.5,
   },
-  filePickerTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333',
-    marginBottom: 2,
-  },
-  filePickerSubtitle: {
-    fontSize: 13,
-    color: '#666',
-  },
-  modalActions: {
-    flexDirection: 'row',
-    gap: 12,
-    paddingTop: 20,
-    borderTopWidth: 1,
-    borderTopColor: '#e9ecef',
-  },
-  buttonContent: {
+  publishGradient: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 4,
+    gap: 10,
+    paddingVertical: 18,
+    borderRadius: 18,
   },
-  submitButton: {
-    flex: 1,
-    backgroundColor: '#667eea',
-  },
-  submitButtonText: {
+  publishBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600',
-    marginLeft: 8,
-  },
-  cancelButton: {
-    flex: 1,
-    borderColor: '#667eea',
+    fontWeight: '900',
   },
   fab: {
     position: 'absolute',
-    margin: 16,
+    margin: 24,
     right: 0,
-    bottom: 0,
+    bottom: 20,
+    backgroundColor: PREMIUM.indigo,
+    borderRadius: 20,
   },
 });

@@ -122,26 +122,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
-    // Unified Identity Verification Protocol
-    if (role === 'student' || role === 'teacher') {
-      const hasHardware = await LocalAuthentication.hasHardwareAsync();
-      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
-
-      if (hasHardware && isEnrolled) {
-        console.log(`Initiating Biometric Identity Handshake for ${role}...`);
-        const result = await LocalAuthentication.authenticateAsync({
-          promptMessage: 'Security Verification Required',
-          cancelLabel: 'Cancel Sign In',
-          disableDeviceFallback: false,
-        });
-
-        if (!result.success) {
-          console.log('Biometric handshake failed or aborted.');
-          return; // Block login if biometric verification fails
-        }
-        console.log('Identity verified. Proceeding with cryptographic dispatch...');
-      }
-    }
 
     try {
       await login(email, password, role);
@@ -228,11 +208,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <View style={styles.inputContainer}>
                 <MaterialCommunityIcons name="email-outline" size={20} color={Colors.light.textLight} style={styles.inputIcon} />
                 <TextInput
-                  placeholder="Email Address"
+                  placeholder={role === 'teacher' ? "Email Address or 5-digit ID" : "Email Address"}
                   value={email}
                   onChangeText={setEmail}
                   mode="flat"
-                  keyboardType="email-address"
+                  keyboardType={email.match(/^\d+$/) ? "number-pad" : "email-address"}
                   autoCapitalize="none"
                   style={styles.input}
                   underlineColor="transparent"

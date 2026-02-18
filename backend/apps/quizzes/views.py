@@ -198,14 +198,22 @@ class QuizSubmitView(APIView):
                 status=status.HTTP_404_NOT_FOUND,
             )
 
-        # Check max attempts
-        if quiz.max_attempts > 0:
-            attempt_count = QuizAttempt.objects.filter(student=request.user, quiz=quiz).count()
-            if attempt_count >= quiz.max_attempts:
-                return Response(
-                    {'success': False, 'error': {'message': f'Maximum attempts ({quiz.max_attempts}) reached.'}},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+        # 3 attempts limit within 24 hours logic
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        one_day_ago = timezone.now() - timedelta(hours=24)
+        recent_attempts = QuizAttempt.objects.filter(
+            student=request.user, 
+            quiz=quiz, 
+            completed_at__gte=one_day_ago
+        ).count()
+        
+        if recent_attempts >= 3:
+            return Response(
+                {'success': False, 'error': {'message': 'You have used all 3 attempts for today. Mission will renew in 24 hours.'}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
 
         serializer = QuizSubmitSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -258,3 +266,16 @@ class QuizAttemptsView(generics.ListAPIView):
             queryset = queryset.filter(student=user)
 
         return queryset.order_by('-completed_at')
+
+
+class AllQuizAttemptsView(generics.ListAPIView):
+    """
+    GET /api/v1/quizzes/attempts/all/
+    Student: see all their attempts across all quizzes.
+    """
+    serializer_class = QuizAttemptSerializer
+    permission_classes = [IsAuthenticated, IsStudent]
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        return QuizAttempt.objects.filter(student=self.request.user).select_related('quiz', 'quiz__course').order_by('-completed_at')

@@ -28,8 +28,8 @@ function normalizeAnnouncement(raw: any): Announcement {
     title: raw.title,
     content: raw.content || '',
     attachments: raw.attachments,
-    createdAt: raw.created_at || raw.createdAt,
-    updatedAt: raw.updated_at || raw.updatedAt,
+    createdAt: raw.created_at || raw.createdAt || new Date().toISOString(),
+    updatedAt: raw.updated_at || raw.updatedAt || new Date().toISOString(),
   };
 }
 
@@ -59,7 +59,7 @@ export const useAnnouncementStore = create<AnnouncementState>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await announcementApi.list();
-      const results = data.results || data;
+      const results = data.data || data.results || data;
       const all = (Array.isArray(results) ? results : []).map(normalizeAnnouncement);
       set({ announcements: all.filter(a => String(a.courseId) === String(courseId)) });
     } catch (error) {
@@ -73,7 +73,7 @@ export const useAnnouncementStore = create<AnnouncementState>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await announcementApi.list();
-      const results = data.results || data;
+      const results = data.data || data.results || data;
       const all = (Array.isArray(results) ? results : []).map(normalizeAnnouncement);
       set({ announcements: all.filter(a => !a.courseId) });
     } catch (error) {
@@ -87,7 +87,7 @@ export const useAnnouncementStore = create<AnnouncementState>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await announcementApi.list();
-      const results = data.results || data;
+      const results = data.data || data.results || data;
       const all = (Array.isArray(results) ? results : []).map(normalizeAnnouncement);
       set({ announcements: all.filter(a => a.courseId) });
     } catch (error) {
@@ -101,7 +101,7 @@ export const useAnnouncementStore = create<AnnouncementState>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await announcementApi.list();
-      const results = data.results || data;
+      const results = data.data || data.results || data;
       set({ announcements: (Array.isArray(results) ? results : []).map(normalizeAnnouncement) });
     } catch (error) {
       console.error('Error fetching all announcements:', error);

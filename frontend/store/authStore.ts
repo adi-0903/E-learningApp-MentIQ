@@ -12,6 +12,8 @@ export interface User {
   isEmailVerified?: boolean;
   isPhoneVerified?: boolean;
   profileImage?: string;
+  profileAvatar?: string;
+  teacherId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -24,7 +26,7 @@ interface AuthState {
   signup: (email: string, password: string, name: string, role: 'teacher' | 'student') => Promise<void>;
   logout: () => Promise<void>;
   getCurrentUser: () => Promise<User | null>;
-  updateProfile: (name: string, bio: string, phoneNumber?: string, profileImageUri?: string) => Promise<void>;
+  updateProfile: (name: string, bio: string, phoneNumber?: string, profileImageUri?: string, profileAvatar?: string) => Promise<void>;
   changePassword: (oldPassword: string, newPassword: string, newPasswordConfirm: string) => Promise<void>;
   updateFCMToken: (fcmToken: string) => Promise<void>;
   requestPhoneOTP: (phoneNumber?: string) => Promise<any>;
@@ -58,6 +60,8 @@ export const useAuthStore = create<AuthState>((set) => ({
         isEmailVerified: data.user?.is_email_verified || false,
         isPhoneVerified: data.user?.is_phone_verified || false,
         profileImage: data.user?.profile_image_url || data.user?.profile_image || '',
+        profileAvatar: data.user?.profile_avatar || '',
+        teacherId: data.user?.teacher_id || '',
       };
 
       // Verify role matches
@@ -143,6 +147,8 @@ export const useAuthStore = create<AuthState>((set) => ({
           isEmailVerified: actualData.is_email_verified || false,
           isPhoneVerified: actualData.is_phone_verified || false,
           profileImage: actualData.profile_image_url || actualData.profile_image || '',
+          profileAvatar: actualData.profile_avatar || '',
+          teacherId: actualData.teacher_id || '',
         };
         set({ user: freshUser, isLoggedIn: true, isLoading: false });
         await AsyncStorage.setItem('currentUser', JSON.stringify(freshUser));
@@ -162,7 +168,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  updateProfile: async (name: string, bio: string, phoneNumber?: string, profileImageUri?: string) => {
+  updateProfile: async (name: string, bio: string, phoneNumber?: string, profileImageUri?: string, profileAvatar?: string) => {
     set({ isLoading: true });
     try {
       const state = useAuthStore.getState();
@@ -172,6 +178,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       formData.append('name', name);
       formData.append('bio', bio);
       if (phoneNumber) formData.append('phone_number', phoneNumber);
+      if (profileAvatar) formData.append('profile_avatar', profileAvatar);
 
       if (profileImageUri) {
         // Direct stream of the cryptographic avatar to Cloudinary vault
@@ -194,6 +201,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         isEmailVerified: actualData.is_email_verified ?? (state.user?.isEmailVerified || false),
         isPhoneVerified: actualData.is_phone_verified ?? (state.user?.isPhoneVerified || false),
         profileImage: actualData.profile_image_url || actualData.profile_image || (state.user?.profileImage || ''),
+        profileAvatar: actualData.profile_avatar || (state.user?.profileAvatar || ''),
       };
       set({ user: updatedUser });
       await AsyncStorage.setItem('currentUser', JSON.stringify(updatedUser));

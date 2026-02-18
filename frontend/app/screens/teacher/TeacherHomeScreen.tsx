@@ -20,8 +20,8 @@ function TeacherHomeScreen({ navigation }: any) {
   return (
     <View style={styles.container}>
       <TeacherDashboard
-        onCoursePress={(courseId) =>
-          navigation.navigate('CourseDetail', { courseId })
+        onCoursePress={(courseId, courseTitle) =>
+          navigation.navigate('CourseDetail', { courseId, courseTitle })
         }
         onCreateCoursePress={() => navigation.navigate('CreateCourse')}
         onCreateAnnouncementPress={() => navigation.navigate('CreateAnnouncement')}

@@ -2,10 +2,10 @@ import { useAuthStore } from '@/store/authStore';
 import { useCourseStore } from '@/store/courseStore';
 import { useProgressStore } from '@/store/progressStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useState } from 'react';
 import {
   FlatList,
-  RefreshControl,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -13,13 +13,11 @@ import {
 } from 'react-native';
 import {
   ActivityIndicator,
-  Avatar,
   Card,
   ProgressBar,
   Searchbar,
   Text,
 } from 'react-native-paper';
-// Removed date-fns import - using native Date methods
 
 interface StudentProgress {
   studentId: string;
@@ -35,27 +33,24 @@ interface StudentProgress {
   totalTimeSpent?: number;
 }
 
-function TeacherProgressScreen({ navigation }: any) {
+function TeacherProgressScreen({ navigation, route }: any) {
   const { user } = useAuthStore();
   const { fetchTeacherStudentProgress, fetchCourseStudentProgress } = useProgressStore();
   const { courses, fetchTeacherCourses } = useCourseStore();
-  
-  // Check if user is authenticated
-  if (!user?.id) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text>Please log in to view progress data</Text>
-      </View>
-    );
-  }
-  
+
   const [studentProgress, setStudentProgress] = useState<StudentProgress[]>([]);
   const [filteredProgress, setFilteredProgress] = useState<StudentProgress[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedCourse, setSelectedCourse] = useState<string | null>(null);
+  const [selectedCourse, setSelectedCourse] = useState<string | null>(route.params?.courseId || null);
   const [viewMode, setViewMode] = useState<'overview' | 'detailed'>('overview');
+
+  useEffect(() => {
+    if (route.params?.courseId) {
+      setSelectedCourse(route.params.courseId);
+    }
+  }, [route.params?.courseId]);
 
   useEffect(() => {
     loadData();
@@ -64,22 +59,45 @@ function TeacherProgressScreen({ navigation }: any) {
         console.error('Error fetching teacher courses:', error);
       });
     }
-  }, [user?.id]);
+  }, [user?.id, selectedCourse]);
 
   useEffect(() => {
     filterProgress();
-  }, [studentProgress, searchQuery, selectedCourse]);
+  }, [studentProgress, searchQuery]);
+
+  const normalizeProgress = (raw: any): StudentProgress => {
+    return {
+      studentId: String(raw.student_id || raw.studentId || ''),
+      studentName: raw.student_name || raw.studentName || 'Unknown Student',
+      studentEmail: raw.student_email || raw.studentEmail || 'No email',
+      courseId: String(raw.course_id || raw.courseId || selectedCourse || ''),
+      courseTitle: raw.course_title || raw.courseTitle || (selectedCourse ? courses.find(c => c.id === selectedCourse)?.title : '') || 'Various Courses',
+      completionPercentage: raw.progress_percentage || raw.completion_percentage || raw.average_progress || 0,
+      enrolledAt: raw.enrolled_at || raw.enrolledAt || '',
+      status: raw.status || 'active',
+      totalLessons: raw.total_lessons || 0,
+      completedLessons: raw.lessons_completed || raw.completed_lessons || 0,
+      totalTimeSpent: raw.total_time_spent || raw.totalTimeSpent || 0,
+    };
+  };
 
   const loadData = async () => {
     if (!user?.id) return;
-    
+
     setIsLoading(true);
     try {
-      const progress = await fetchTeacherStudentProgress(user.id);
-      setStudentProgress(progress);
+      let progress;
+      if (selectedCourse) {
+        progress = await fetchCourseStudentProgress(selectedCourse);
+      } else {
+        progress = await fetchTeacherStudentProgress();
+      }
+
+      const normalized = (Array.isArray(progress) ? progress : []).map(normalizeProgress);
+      setStudentProgress(normalized);
     } catch (error) {
       console.error('Error loading progress data:', error);
-      // You could add a snackbar or alert here for user feedback
+      setStudentProgress([]);
     } finally {
       setIsLoading(false);
     }
@@ -96,19 +114,18 @@ function TeacherProgressScreen({ navigation }: any) {
   };
 
   const filterProgress = () => {
-    let filtered = studentProgress;
-
-    // Filter by course if selected
-    if (selectedCourse) {
-      filtered = filtered.filter(p => p.courseId === selectedCourse);
+    if (!Array.isArray(studentProgress)) {
+      setFilteredProgress([]);
+      return;
     }
 
-    // Filter by search query
+    let filtered = [...studentProgress];
+
     if (searchQuery) {
       filtered = filtered.filter(p =>
-        p.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.courseTitle.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        p.studentEmail.toLowerCase().includes(searchQuery.toLowerCase())
+        (p.studentName || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.courseTitle || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (p.studentEmail || '').toLowerCase().includes(searchQuery.toLowerCase())
       );
     }
 
@@ -116,40 +133,43 @@ function TeacherProgressScreen({ navigation }: any) {
   };
 
   const getProgressColor = (percentage: number) => {
-    if (percentage >= 80) return '#4caf50';
-    if (percentage >= 60) return '#ff9800';
-    if (percentage >= 40) return '#ffeb3b';
-    return '#f44336';
+    if (percentage >= 80) return '#10b981'; // Emerald
+    if (percentage >= 50) return '#f59e0b'; // Amber
+    if (percentage > 0) return '#ef4444'; // Red
+    return '#94a3b8'; // Slate
   };
 
   const getProgressStatus = (percentage: number) => {
-    if (percentage >= 90) return 'Excellent';
-    if (percentage >= 70) return 'Good';
-    if (percentage >= 50) return 'Average';
-    if (percentage >= 25) return 'Needs Attention';
-    return 'Just Started';
+    if (percentage >= 100) return 'Completed';
+    if (percentage >= 80) return 'Excelling';
+    if (percentage >= 50) return 'Steady';
+    if (percentage > 0) return 'Started';
+    return 'Not Started';
   };
 
-  const formatTimeSpent = (seconds?: number) => {
-    if (!seconds || seconds <= 0) return '0 min';
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
+  const formatTimeSpent = (seconds: number = 0) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    return h > 0 ? `${h}h ${m}m` : `${m}m`;
   };
 
   const renderOverviewCard = (item: StudentProgress) => (
-    <Card style={styles.progressCard}>
-      <Card.Content>
+    <TouchableOpacity
+      onPress={() => navigation.navigate('StudentDetail', { studentId: item.studentId, courseId: item.courseId })}
+      activeOpacity={0.8}
+      style={styles.premiumCard}
+    >
+      <View style={styles.cardContent}>
         <View style={styles.cardHeader}>
           <View style={styles.studentInfo}>
-            <Avatar.Text
-              size={40}
-              label={item.studentName ? item.studentName.charAt(0).toUpperCase() : 'S'}
-              style={[styles.avatar, { backgroundColor: getProgressColor(item.completionPercentage) }]}
-            />
+            <LinearGradient
+              colors={['#f0f4ff', '#e0e7ff']}
+              style={styles.avatarContainer}
+            >
+              <Text style={styles.avatarText}>
+                {(item.studentName || 'S').charAt(0).toUpperCase()}
+              </Text>
+            </LinearGradient>
             <View style={styles.studentDetails}>
               <Text style={styles.studentName} numberOfLines={1}>
                 {item.studentName || 'Unknown Student'}
@@ -159,196 +179,184 @@ function TeacherProgressScreen({ navigation }: any) {
               </Text>
             </View>
           </View>
-          <View style={styles.progressInfo}>
+          <View style={[styles.progressBadge, { backgroundColor: getProgressColor(item.completionPercentage) + '15', borderColor: getProgressColor(item.completionPercentage) + '30' }]}>
             <Text style={[styles.progressPercentage, { color: getProgressColor(item.completionPercentage) }]}>
               {Math.round(item.completionPercentage)}%
             </Text>
-            <View style={[styles.statusChip, { backgroundColor: getProgressColor(item.completionPercentage) + '20' }]}>
-              <Text style={[styles.statusText, { color: getProgressColor(item.completionPercentage) }]}>
-                {getProgressStatus(item.completionPercentage)}
-              </Text>
-            </View>
-          </View>
-        </View>
-
-        <View style={styles.progressSection}>
-          <ProgressBar
-            progress={item.completionPercentage / 100}
-            color={getProgressColor(item.completionPercentage)}
-            style={styles.progressBar}
-          />
-          <View style={styles.lessonStats}>
-            <View style={styles.statItem}>
-              <MaterialCommunityIcons name="book-open" size={16} color="#666" />
-              <Text style={styles.statText}>
-                {item.completedLessons}/{item.totalLessons} Lessons
-              </Text>
-            </View>
-            <View style={styles.statItem}>
-              <MaterialCommunityIcons name="calendar" size={16} color="#666" />
-              <Text style={styles.statText}>
-                Enrolled {new Date(item.enrolledAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </Text>
-            </View>
-          </View>
-        </View>
-      </Card.Content>
-    </Card>
-  );
-
-  const renderDetailedCard = (item: StudentProgress) => (
-    <Card style={styles.detailedCard}>
-      <Card.Content>
-        <View style={styles.detailedHeader}>
-          <Avatar.Text
-            size={50}
-            label={(item.studentName || 'S').charAt(0).toUpperCase()}
-            style={[styles.avatar, { backgroundColor: getProgressColor(item.completionPercentage) }]}
-          />
-          <View style={styles.detailedInfo}>
-            <Text style={styles.detailedStudentName}>{item.studentName || 'Unknown Student'}</Text>
-            <Text style={styles.detailedEmail}>{item.studentEmail || 'No email'}</Text>
-            <Text style={styles.detailedCourse}>{item.courseTitle}</Text>
-          </View>
-          <View style={styles.detailedProgress}>
-            <Text style={[styles.detailedPercentage, { color: getProgressColor(item.completionPercentage) }]}>
-              {Math.round(item.completionPercentage)}%
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.detailedStats}>
-          <View style={styles.detailedStatItem}>
-            <MaterialCommunityIcons name="book-check" size={20} color="#4caf50" />
-            <Text style={styles.detailedStatLabel}>Completed</Text>
-            <Text style={styles.detailedStatValue}>{item.completedLessons}</Text>
-          </View>
-          <View style={styles.detailedStatItem}>
-            <MaterialCommunityIcons name="book-outline" size={20} color="#ff9800" />
-            <Text style={styles.detailedStatLabel}>Remaining</Text>
-            <Text style={styles.detailedStatValue}>{item.totalLessons - item.completedLessons}</Text>
-          </View>
-          <View style={styles.detailedStatItem}>
-            <MaterialCommunityIcons name="clock-outline" size={20} color="#2196f3" />
-            <Text style={styles.detailedStatLabel}>Time Spent</Text>
-            <Text style={styles.detailedStatValue}>{formatTimeSpent(item.totalTimeSpent || 0)}</Text>
           </View>
         </View>
 
         <ProgressBar
           progress={item.completionPercentage / 100}
           color={getProgressColor(item.completionPercentage)}
-          style={styles.detailedProgressBar}
+          style={styles.progressBar}
         />
-      </Card.Content>
-    </Card>
+
+        <View style={styles.cardFooter}>
+          <View style={styles.miniStat}>
+            <MaterialCommunityIcons name="book-open-outline" size={14} color="#94a3b8" />
+            <Text style={styles.miniStatText}>
+              {item.completedLessons}/{item.totalLessons} Lessons
+            </Text>
+          </View>
+          <View style={styles.statusBadge}>
+            <View style={[styles.statusDot, { backgroundColor: getProgressColor(item.completionPercentage) }]} />
+            <Text style={[styles.statusLabel, { color: getProgressColor(item.completionPercentage) }]}>
+              {getProgressStatus(item.completionPercentage).toUpperCase()}
+            </Text>
+          </View>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
+
+  const renderDetailedCard = (item: StudentProgress) => (
+    <TouchableOpacity
+      onPress={() => navigation.navigate('StudentDetail', { studentId: item.studentId, courseId: item.courseId })}
+      activeOpacity={0.7}
+      style={styles.compactCard}
+    >
+      <View style={styles.compactLeft}>
+        <LinearGradient
+          colors={['#4338ca', '#6366f1']}
+          style={styles.smallAvatar}
+        >
+          <Text style={styles.smallAvatarText}>
+            {(item.studentName || 'S').charAt(0).toUpperCase()}
+          </Text>
+        </LinearGradient>
+        <View style={styles.compactInfo}>
+          <Text style={styles.compactStudentName} numberOfLines={1}>
+            {item.studentName || 'Unknown Student'}
+          </Text>
+          <View style={styles.registeredRow}>
+            <Text style={styles.registeredLabel}>Registered in:</Text>
+            <Text style={styles.registeredCourse} numberOfLines={1}>
+              {item.courseTitle}
+            </Text>
+          </View>
+        </View>
+      </View>
+      <View style={styles.compactRight}>
+        <View style={[styles.miniProgressCircle, { borderColor: getProgressColor(item.completionPercentage) }]}>
+          <Text style={[styles.miniPercentText, { color: getProgressColor(item.completionPercentage) }]}>
+            {Math.round(item.completionPercentage)}%
+          </Text>
+        </View>
+        <MaterialCommunityIcons name="chevron-right" size={20} color="#cbd5e1" />
+      </View>
+    </TouchableOpacity>
   );
 
   const renderEmptyState = () => (
-    <View style={styles.emptyState}>
-      <MaterialCommunityIcons name="chart-line" size={64} color="#ccc" />
-      <Text style={styles.emptyText}>No student progress data</Text>
-      <Text style={styles.emptySubtext}>
-        Students will appear here once they enroll in your courses
+    <View style={styles.emptyContainer}>
+      <View style={styles.emptyIconCircle}>
+        <MaterialCommunityIcons name="chart-bar" size={60} color="#4338ca" />
+      </View>
+      <Text style={styles.emptyTitle}>No Data Yet</Text>
+      <Text style={styles.emptySubtitle}>
+        Once students enroll and start learning, their progress will appear here.
       </Text>
     </View>
   );
 
-  if (isLoading && studentProgress.length === 0) {
+  if (!user?.id) {
     return (
       <View style={styles.centerContainer}>
-        <ActivityIndicator size="large" color="#667eea" />
-        <Text style={styles.loadingText}>Loading progress data...</Text>
+        <Text>Please log in to view progress data</Text>
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      {/* Premium Header */}
-      <View style={styles.premiumHeader}>
-        <View style={styles.headerContent}>
-          <Text style={styles.greeting}>📊 Student Progress</Text>
-          <Text style={styles.subtitle}>Track your students' learning journey</Text>
+      <LinearGradient colors={['#1e1b4b', '#312e81', '#4338ca']} style={styles.header}>
+        <View style={styles.headerTop}>
+          <View>
+            <Text style={styles.headerTitle}>Student Insights</Text>
+            <Text style={styles.headerSubtitle}>Track engagement & performance</Text>
+          </View>
+          <TouchableOpacity onPress={onRefresh} style={styles.refreshBtn}>
+            <MaterialCommunityIcons name="refresh" size={20} color="rgba(255,255,255,0.7)" />
+          </TouchableOpacity>
         </View>
-      </View>
 
-      {/* Controls */}
-      <View style={styles.controlsContainer}>
-        <Searchbar
-          placeholder="Search students or courses..."
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          style={styles.searchbar}
-          placeholderTextColor="#999"
-        />
+        <View style={styles.searchContainer}>
+          <Searchbar
+            placeholder="Search students..."
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+            style={styles.searchBar}
+            inputStyle={styles.searchInput}
+            iconColor="#94a3b8"
+            placeholderTextColor="#94a3b8"
+          />
+        </View>
+      </LinearGradient>
 
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.filterScroll}>
+      <View style={styles.filterSection}>
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.courseScroll}>
           <TouchableOpacity
-            style={[styles.filterChip, selectedCourse === null && styles.filterChipActive]}
+            style={[styles.courseChip, !selectedCourse && styles.activeChip]}
             onPress={() => setSelectedCourse(null)}
           >
-            <Text style={[styles.filterChipText, selectedCourse === null && styles.filterChipTextActive]}>
-              All Courses
-            </Text>
+            <Text style={[styles.chipText, !selectedCourse && styles.activeChipText]}>All Courses</Text>
           </TouchableOpacity>
-          
           {courses.map((course) => (
             <TouchableOpacity
               key={course.id}
-              style={[styles.filterChip, selectedCourse === course.id && styles.filterChipActive]}
+              style={[styles.courseChip, selectedCourse === course.id && styles.activeChip]}
               onPress={() => setSelectedCourse(course.id)}
             >
-              <Text style={[styles.filterChipText, selectedCourse === course.id && styles.filterChipTextActive]} numberOfLines={1}>
+              <Text style={[styles.chipText, selectedCourse === course.id && styles.activeChipText]}>
                 {course.title}
               </Text>
             </TouchableOpacity>
           ))}
         </ScrollView>
 
-        <View style={styles.viewModeContainer}>
+        <View style={styles.modeSelector}>
           <TouchableOpacity
-            style={[styles.viewModeButton, viewMode === 'overview' && styles.viewModeButtonActive]}
+            style={[styles.modeBtn, viewMode === 'overview' && styles.activeMode]}
             onPress={() => setViewMode('overview')}
           >
-            <MaterialCommunityIcons 
-              name="view-grid" 
-              size={16} 
-              color={viewMode === 'overview' ? '#fff' : '#667eea'} 
+            <MaterialCommunityIcons
+              name="view-grid"
+              size={20}
+              color={viewMode === 'overview' ? '#4338ca' : '#94a3b8'}
             />
-            <Text style={[styles.viewModeText, viewMode === 'overview' && styles.viewModeTextActive]}>
-              Overview
-            </Text>
           </TouchableOpacity>
-          
           <TouchableOpacity
-            style={[styles.viewModeButton, viewMode === 'detailed' && styles.viewModeButtonActive]}
+            style={[styles.modeBtn, viewMode === 'detailed' && styles.activeMode]}
             onPress={() => setViewMode('detailed')}
           >
-            <MaterialCommunityIcons 
-              name="view-list" 
-              size={16} 
-              color={viewMode === 'detailed' ? '#fff' : '#667eea'} 
+            <MaterialCommunityIcons
+              name="format-list-bulleted"
+              size={20}
+              color={viewMode === 'detailed' ? '#4338ca' : '#94a3b8'}
             />
-            <Text style={[styles.viewModeText, viewMode === 'detailed' && styles.viewModeTextActive]}>
-              Detailed
-            </Text>
           </TouchableOpacity>
         </View>
       </View>
 
-      {/* Progress List */}
-      <FlatList
-        data={filteredProgress}
-        renderItem={({ item }) => viewMode === 'overview' ? renderOverviewCard(item) : renderDetailedCard(item)}
-        keyExtractor={(item) => `${item.studentId}-${item.courseId}`}
-        contentContainerStyle={styles.listContent}
-        ListEmptyComponent={renderEmptyState}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={['#667eea']} />
-        }
-        showsVerticalScrollIndicator={false}
-      />
+      {isLoading ? (
+        <View style={styles.centerContainer}>
+          <ActivityIndicator size="large" color="#4338ca" />
+        </View>
+      ) : (
+        <FlatList
+          data={filteredProgress}
+          renderItem={({ item }) =>
+            viewMode === 'overview' ? renderOverviewCard(item) : renderDetailedCard(item)
+          }
+          keyExtractor={(item) => `${item.studentId}-${item.courseId}`}
+          contentContainerStyle={styles.listContainer}
+          onRefresh={onRefresh}
+          refreshing={refreshing}
+          ListEmptyComponent={renderEmptyState}
+          showsVerticalScrollIndicator={false}
+        />
+      )}
     </View>
   );
 }
@@ -356,136 +364,164 @@ function TeacherProgressScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f8fafc',
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f8f9fa',
   },
-  loadingText: {
-    marginTop: 16,
-    fontSize: 16,
-    color: '#666',
-  },
-  premiumHeader: {
-    backgroundColor: '#667eea',
-    paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
+  header: {
+    paddingTop: 60,
+    paddingBottom: 40,
+    borderBottomRightRadius: 80,
     elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#000',
     shadowOpacity: 0.3,
-    shadowRadius: 12,
+    shadowRadius: 10,
   },
-  headerContent: {
-    justifyContent: 'center',
-    alignItems: 'flex-start',
-  },
-  greeting: {
-    fontSize: 26,
-    fontWeight: '800',
-    color: '#fff',
-    letterSpacing: 0.5,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-    marginTop: 4,
-  },
-  controlsContainer: {
-    backgroundColor: '#fff',
-    paddingVertical: 16,
-    paddingHorizontal: 20,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e0e0e0',
-  },
-  searchbar: {
-    elevation: 2,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    marginBottom: 16,
-  },
-  filterScroll: {
-    marginBottom: 16,
-  },
-  filterChip: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 20,
-    backgroundColor: '#f0f4ff',
-    borderWidth: 1,
-    borderColor: '#667eea',
-    marginRight: 12,
-  },
-  filterChipActive: {
-    backgroundColor: '#667eea',
-  },
-  filterChipText: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#667eea',
-  },
-  filterChipTextActive: {
-    color: '#fff',
-  },
-  viewModeContainer: {
+  headerTop: {
     flexDirection: 'row',
-    backgroundColor: '#f0f4ff',
-    borderRadius: 12,
-    padding: 4,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    paddingHorizontal: 24,
+    marginBottom: 24,
   },
-  viewModeButton: {
-    flex: 1,
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: '900',
+    color: '#fff',
+    letterSpacing: -0.5,
+  },
+  headerSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.6)',
+    fontWeight: '500',
+    marginTop: 2,
+  },
+  refreshBtn: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  searchContainer: {
+    paddingHorizontal: 24,
+  },
+  searchBar: {
+    borderRadius: 20,
+    elevation: 0,
+    backgroundColor: '#fff',
+    height: 54,
+  },
+  searchInput: {
+    fontSize: 16,
+    color: '#1e293b',
+  },
+  filterSection: {
+    marginTop: 24,
+    paddingHorizontal: 20,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 8,
-    borderRadius: 8,
+    gap: 12,
   },
-  viewModeButtonActive: {
-    backgroundColor: '#667eea',
+  courseScroll: {
+    flex: 1,
   },
-  viewModeText: {
-    fontSize: 12,
+  courseChip: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    marginRight: 8,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+  },
+  activeChip: {
+    backgroundColor: '#4338ca',
+    borderColor: '#4338ca',
+  },
+  chipText: {
+    color: '#64748b',
+    fontSize: 13,
     fontWeight: '600',
-    color: '#667eea',
   },
-  viewModeTextActive: {
+  activeChipText: {
     color: '#fff',
   },
-  listContent: {
-    padding: 20,
-    paddingBottom: 40,
-  },
-  progressCard: {
-    marginBottom: 16,
-    elevation: 3,
+  modeSelector: {
+    flexDirection: 'row',
     backgroundColor: '#fff',
     borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#667eea',
-    minHeight: 120,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    elevation: 2,
+  },
+  modeBtn: {
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderRadius: 8,
+  },
+  activeMode: {
+    backgroundColor: '#f5f3ff',
+    borderWidth: 1,
+    borderColor: '#e0e7ff',
+  },
+  listContainer: {
+    paddingHorizontal: 20,
+    paddingTop: 20,
+    paddingBottom: 40,
+  },
+  premiumCard: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    marginBottom: 12,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    elevation: 4,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 12,
+  },
+  cardContent: {
+    padding: 16,
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    alignItems: 'center',
     marginBottom: 16,
-    minHeight: 50,
   },
   studentInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
     flex: 1,
+    marginRight: 8,
   },
-  avatar: {
-    marginRight: 12,
+  avatarContainer: {
+    width: 44,
+    height: 44,
+    borderRadius: 14,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#4338ca',
   },
   studentDetails: {
     flex: 1,
@@ -493,148 +529,216 @@ const styles = StyleSheet.create({
   studentName: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#333',
-    marginBottom: 2,
+    color: '#0f172a',
   },
   courseName: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 13,
+    color: '#64748b',
+    fontWeight: '500',
+    marginTop: 1,
   },
-  progressInfo: {
-    alignItems: 'flex-end',
-    justifyContent: 'space-between',
-    minWidth: 90,
-    paddingLeft: 8,
+  progressBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    minWidth: 42,
+    alignItems: 'center',
   },
   progressPercentage: {
-    fontSize: 18,
-    fontWeight: '800',
-    marginBottom: 8,
+    fontSize: 13,
+    fontWeight: '900',
   },
-  statusChip: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 12,
+  miniStat: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 32,
+    gap: 4,
   },
-  statusText: {
+  miniStatText: {
     fontSize: 12,
-    fontWeight: '600',
-    lineHeight: 16,
-    textAlign: 'center',
-  },
-  progressSection: {
-    marginTop: 12,
-    paddingTop: 8,
+    color: '#64748b',
+    fontWeight: '500',
   },
   progressBar: {
     height: 6,
     borderRadius: 3,
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#f1f5f9',
+    marginBottom: 12,
   },
-  lessonStats: {
+  cardFooter: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 12,
+    alignItems: 'center',
   },
-  statItem: {
+  statusBadge: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 4,
+    gap: 6,
+    backgroundColor: '#f8fafc',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
-  statText: {
-    fontSize: 12,
-    color: '#666',
-    fontWeight: '500',
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
   },
-  detailedCard: {
+  statusLabel: {
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 0.5,
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingVertical: 16,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#f1f5f9',
     marginBottom: 16,
-    elevation: 3,
-    backgroundColor: '#fff',
-    borderRadius: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#667eea',
   },
-  detailedHeader: {
-    flexDirection: 'row',
+  gridItem: {
     alignItems: 'center',
-    marginBottom: 20,
-  },
-  detailedInfo: {
     flex: 1,
-    marginLeft: 16,
   },
-  detailedStudentName: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: '#333',
-    marginBottom: 2,
+  verticalDivider: {
+    width: 1,
+    height: '80%',
+    backgroundColor: '#e2e8f0',
   },
-  detailedEmail: {
-    fontSize: 12,
-    color: '#666',
+  gridLabel: {
+    fontSize: 11,
+    textTransform: 'uppercase',
+    color: '#94a3b8',
+    fontWeight: '600',
     marginBottom: 4,
   },
-  detailedCourse: {
-    fontSize: 14,
-    color: '#667eea',
-    fontWeight: '600',
-  },
-  detailedProgress: {
-    alignItems: 'center',
-  },
-  detailedPercentage: {
-    fontSize: 24,
-    fontWeight: '800',
-  },
-  detailedStats: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    marginBottom: 20,
-    paddingVertical: 16,
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-  },
-  detailedStatItem: {
-    alignItems: 'center',
-    gap: 4,
-  },
-  detailedStatLabel: {
-    fontSize: 10,
-    color: '#666',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-  },
-  detailedStatValue: {
+  gridValue: {
     fontSize: 16,
     fontWeight: '700',
-    color: '#333',
+    color: '#0f172a',
   },
-  detailedProgressBar: {
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: '#e0e0e0',
+  detailedFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 8,
   },
-  emptyState: {
+  footerCourse: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#4338ca',
+  },
+  footerPercent: {
+    fontSize: 13,
+    fontWeight: '800',
+  },
+  compactCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: '#fff',
+    padding: 12,
+    borderRadius: 16,
+    marginBottom: 10,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.04,
+    shadowRadius: 8,
+  },
+  compactLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    flex: 1,
+  },
+  smallAvatar: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  smallAvatarText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '800',
+  },
+  compactInfo: {
+    flex: 1,
+  },
+  compactStudentName: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
+  registeredRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
+  registeredLabel: {
+    fontSize: 11,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  registeredCourse: {
+    fontSize: 11,
+    color: '#4338ca',
+    fontWeight: '700',
+    flex: 1,
+  },
+  compactRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  miniProgressCircle: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    borderWidth: 2,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+  },
+  miniPercentText: {
+    fontSize: 9,
+    fontWeight: '900',
+  },
+  emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 80,
-  },
-  emptyText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#999',
-    marginTop: 16,
-  },
-  emptySubtext: {
-    fontSize: 14,
-    color: '#ccc',
-    marginTop: 8,
-    textAlign: 'center',
+    marginTop: 80,
     paddingHorizontal: 40,
   },
+  emptyIconCircle: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: '#f5f3ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 24,
+  },
+  emptyTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#1e1b4b',
+    textAlign: 'center',
+  },
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#64748b',
+    textAlign: 'center',
+    marginTop: 12,
+    lineHeight: 20,
+  }
 });
 
 export default TeacherProgressScreen;

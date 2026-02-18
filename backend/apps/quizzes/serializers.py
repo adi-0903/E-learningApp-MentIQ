@@ -32,6 +32,8 @@ class QuizQuestionWithAnswerSerializer(serializers.ModelSerializer):
 
 class QuizQuestionCreateSerializer(serializers.ModelSerializer):
     """Create/update a quiz question."""
+    quiz = serializers.PrimaryKeyRelatedField(queryset=Quiz.objects.all(), required=False)
+
     class Meta:
         model = QuizQuestion
         fields = [
@@ -71,9 +73,20 @@ class QuizDetailSerializer(serializers.ModelSerializer):
         ]
 
 
+class QuizQuestionInlineSerializer(serializers.ModelSerializer):
+    """Question serializer for nested creation inside a quiz (no quiz FK needed)."""
+    class Meta:
+        model = QuizQuestion
+        fields = [
+            'question_text', 'option_a', 'option_b',
+            'option_c', 'option_d', 'correct_answer',
+            'sequence_number', 'explanation',
+        ]
+
+
 class QuizCreateSerializer(serializers.ModelSerializer):
     """Create a quiz."""
-    questions = QuizQuestionCreateSerializer(many=True, required=False)
+    questions = QuizQuestionInlineSerializer(many=True, required=False)
 
     class Meta:
         model = Quiz

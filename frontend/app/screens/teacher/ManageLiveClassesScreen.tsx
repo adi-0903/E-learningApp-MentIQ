@@ -1,6 +1,7 @@
 import { useAuthStore } from '@/store/authStore';
 import { LiveClass, useLiveClassStore } from '@/store/liveClassStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { format } from 'date-fns';
 import { useCallback, useEffect, useState } from 'react';
 import {
@@ -14,8 +15,8 @@ import {
 import {
   Button,
   Card,
-  Chip,
   Dialog,
+  FAB,
   Portal,
   Snackbar,
   Text,
@@ -130,118 +131,82 @@ export default function ManageLiveClassesScreen({ navigation }: any) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active':
-        return '#4CAF50';
-      case 'scheduled':
-        return '#2196F3';
-      case 'completed':
-        return '#9E9E9E';
-      case 'cancelled':
-        return '#F44336';
-      default:
-        return '#757575';
+      case 'active': return '#10b981';
+      case 'scheduled': return '#4338ca';
+      case 'completed': return '#64748b';
+      case 'cancelled': return '#ef4444';
+      default: return '#94a3b8';
     }
   };
 
-  const getStatusIcon = (status: string) => {
+  const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'active':
-        return 'play-circle';
-      case 'scheduled':
-        return 'calendar-clock';
-      case 'completed':
-        return 'check-circle';
-      case 'cancelled':
-        return 'close-circle';
-      default:
-        return 'help-circle';
+      case 'active': return 'LIVE NOW';
+      case 'scheduled': return 'UPCOMING';
+      case 'completed': return 'ENDED';
+      case 'cancelled': return 'CANCELLED';
+      default: return status.toUpperCase();
     }
   };
 
-  const renderLiveClassCard = ({ item }: { item: LiveClass }) => (
-    <Card style={styles.card}>
+  const renderPremiumLiveClassCard = ({ item }: { item: LiveClass }) => (
+    <Card style={styles.premiumCard}>
       <Card.Content>
         <View style={styles.cardHeader}>
-          <View style={styles.titleContainer}>
-            <Text variant="titleMedium" style={styles.classTitle}>
-              {item.title}
+          <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
+            <View style={[styles.statusDot, { backgroundColor: getStatusColor(item.status) }]} />
+            <Text style={[styles.statusText, { color: getStatusColor(item.status) }]}>
+              {getStatusLabel(item.status)}
             </Text>
-            <View style={styles.statusContainer}>
-              <Chip
-                icon={getStatusIcon(item.status)}
-                style={{ backgroundColor: getStatusColor(item.status), marginRight: 126 }}
-                textStyle={{ color: '#fff' }}
-              >
-                {item.status.toUpperCase()}
-              </Chip>
-              <TouchableOpacity
-                onPress={() => showConfirmDialog('delete', item)}
-                style={styles.deleteIconContainer}
-              >
-                <MaterialCommunityIcons
-                  name="trash-can-outline"
-                  size={20}
-                  color="#F44336"
-                />
-              </TouchableOpacity>
-            </View>
           </View>
-          <MaterialCommunityIcons
-            name={getStatusIcon(item.status)}
-            size={32}
-            color={getStatusColor(item.status)}
-          />
+          <TouchableOpacity onPress={() => showConfirmDialog('delete', item)}>
+            <MaterialCommunityIcons name="dots-horizontal" size={24} color="#94a3b8" />
+          </TouchableOpacity>
         </View>
 
+        <Text style={styles.classTitle} numberOfLines={2}>{item.title}</Text>
+
         {item.description && (
-          <Text variant="bodySmall" style={styles.description}>
+          <Text style={styles.classDescription} numberOfLines={2}>
             {item.description}
           </Text>
         )}
 
-        <View style={styles.detailsContainer}>
-          <View style={styles.detailRow}>
-            <MaterialCommunityIcons name="calendar" size={16} color="#666" />
-            <Text style={styles.detailText}>
+        <View style={styles.infoGrid}>
+          <View style={styles.infoItem}>
+            <MaterialCommunityIcons name="calendar-month-outline" size={18} color="#64748b" />
+            <Text style={styles.infoText}>
               {format(new Date(item.scheduledStartTime || new Date()), 'MMM dd, yyyy')}
             </Text>
           </View>
-          <View style={styles.detailRow}>
-            <MaterialCommunityIcons name="clock" size={16} color="#666" />
-            <Text style={styles.detailText}>
+          <View style={styles.infoItem}>
+            <MaterialCommunityIcons name="clock-outline" size={18} color="#64748b" />
+            <Text style={styles.infoText}>
               {format(new Date(item.scheduledStartTime || new Date()), 'HH:mm')}
             </Text>
           </View>
-          {item.participantCount !== undefined && (
-            <View style={styles.detailRow}>
-              <MaterialCommunityIcons name="account-multiple" size={16} color="#666" />
-              <Text style={styles.detailText}>
-                {item.participantCount} participant{item.participantCount !== 1 ? 's' : ''}
-              </Text>
-            </View>
-          )}
         </View>
 
-        <View style={styles.actionButtons}>
+        <View style={styles.actionRow}>
           {item.status === 'scheduled' && (
             <>
-              <View style={styles.buttonRow}>
-                <Button
-                  mode="contained"
-                  onPress={() => showConfirmDialog('start', item)}
-                  style={styles.actionButton}
-                  icon="play"
-                >
-                  Start
-                </Button>
-                <Button
-                  mode="outlined"
-                  onPress={() => showConfirmDialog('cancel', item)}
-                  style={styles.actionButton}
-                >
-                  Cancel
-                </Button>
-              </View>
+              <Button
+                mode="contained"
+                onPress={() => showConfirmDialog('start', item)}
+                style={[styles.actionBtn, { backgroundColor: '#4338ca' }]}
+                labelStyle={styles.btnLabel}
+              >
+                Start Class
+              </Button>
+              <Button
+                mode="outlined"
+                onPress={() => showConfirmDialog('cancel', item)}
+                style={[styles.actionBtn, { borderColor: '#ef4444' }]}
+                textColor="#ef4444"
+                labelStyle={styles.btnLabel}
+              >
+                Cancel
+              </Button>
             </>
           )}
           {item.status === 'active' && (
@@ -249,39 +214,33 @@ export default function ManageLiveClassesScreen({ navigation }: any) {
               <Button
                 mode="contained"
                 onPress={() => navigation.navigate('LiveClassRoom', { classId: item.id })}
-                style={styles.actionButton}
-                icon="play"
+                style={[styles.actionBtn, { backgroundColor: '#10b981' }]}
+                labelStyle={styles.btnLabel}
               >
                 Join Room
               </Button>
               <Button
-                mode="contained-tonal"
+                mode="contained"
                 onPress={() => showConfirmDialog('end', item)}
-                style={styles.actionButton}
+                style={[styles.actionBtn, { backgroundColor: '#ef4444' }]}
+                labelStyle={styles.btnLabel}
               >
                 End Class
               </Button>
             </>
           )}
-          {item.status === 'completed' && (
-            <Button
-              mode="text"
-              onPress={() => showConfirmDialog('delete', item)}
-              icon="trash-can-outline"
-              textColor="#F44336"
-            >
-              {' '}
-            </Button>
-          )}
-          {item.status === 'cancelled' && (
-            <Button
-              mode="text"
-              onPress={() => showConfirmDialog('delete', item)}
-              icon="trash-can-outline"
-              textColor="#F44336"
-            >
-              {' '}
-            </Button>
+          {(item.status === 'completed' || item.status === 'cancelled') && (
+            <View style={styles.archiveContainer}>
+              <Text style={styles.archiveText}>Class is archived</Text>
+              <Button
+                mode="text"
+                onPress={() => showConfirmDialog('delete', item)}
+                textColor="#ef4444"
+                compact
+              >
+                Delete
+              </Button>
+            </View>
           )}
         </View>
       </Card.Content>
@@ -290,118 +249,99 @@ export default function ManageLiveClassesScreen({ navigation }: any) {
 
   const getDialogTitle = () => {
     switch (dialogAction) {
-      case 'start':
-        return 'Start Live Class?';
-      case 'end':
-        return 'End Live Class?';
-      case 'cancel':
-        return 'Cancel Live Class?';
-      case 'delete':
-        return 'Delete Live Class?';
-      default:
-        return 'Confirm Action';
+      case 'start': return 'Start Live Class?';
+      case 'end': return 'End Live Class?';
+      case 'cancel': return 'Cancel Live Class?';
+      case 'delete': return 'Delete Live Class?';
+      default: return 'Confirm Action';
     }
   };
 
   const getDialogMessage = () => {
     switch (dialogAction) {
-      case 'start':
-        return 'This will start the live class and students will be able to join.';
-      case 'end':
-        return 'This will end the live class and disconnect all participants.';
-      case 'cancel':
-        return 'This will cancel the scheduled live class.';
-      case 'delete':
-        return 'This action cannot be undone.';
-      default:
-        return 'Are you sure?';
+      case 'start': return 'This will start the live class and students will be able to join.';
+      case 'end': return 'This will end the live class and disconnect all participants.';
+      case 'cancel': return 'This will cancel the scheduled live class.';
+      case 'delete': return 'This action cannot be undone.';
+      default: return 'Are you sure?';
     }
   };
 
   const handleDialogConfirm = async () => {
     switch (dialogAction) {
-      case 'start':
-        await handleStartClass();
-        break;
-      case 'end':
-        await handleEndClass();
-        break;
-      case 'cancel':
-        await handleCancelClass();
-        break;
-      case 'delete':
-        await handleDeleteClass();
-        break;
+      case 'start': await handleStartClass(); break;
+      case 'end': await handleEndClass(); break;
+      case 'cancel': await handleCancelClass(); break;
+      case 'delete': await handleDeleteClass(); break;
     }
   };
 
   if (isLoading && liveClasses.length === 0) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#4338ca" />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <View style={styles.premiumHeader}>
+      <LinearGradient
+        colors={['#0f172a', '#1e1b4b', '#312e81']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.premiumHeader}
+      >
+        <View style={styles.headerDecorationCircle} />
         <View style={styles.headerContent}>
-          <Text style={styles.greeting}>🎥 Live Classes</Text>
-          <Text style={styles.subtitle}>Create and manage your live sessions</Text>
+          <Text style={styles.greeting}>Live Studio</Text>
+          <Text style={styles.subtitle}>Broadcast to your students in real-time</Text>
         </View>
-      </View>
+      </LinearGradient>
+
       <FlatList
         data={liveClasses}
-        renderItem={renderLiveClassCard}
+        renderItem={renderPremiumLiveClassCard}
         keyExtractor={(item) => item.id.toString()}
         contentContainerStyle={styles.listContent}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor="#4338ca" />
         }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
-            <View style={styles.comingSoonCard}>
-              <MaterialCommunityIcons
-                name="clock-outline"
-                size={64}
-                color="#667eea"
-              />
-              <Text variant="headlineMedium" style={styles.comingSoonTitle}>
-                Coming Soon
-              </Text>
-              <Text variant="bodyMedium" style={styles.comingSoonSubtitle}>
-                Live class streaming feature is being prepared for you
-              </Text>
-              <View style={styles.featureList}>
-                <View style={styles.featureItem}>
-                  <MaterialCommunityIcons name="check-circle" size={20} color="#4CAF50" />
-                  <Text style={styles.featureText}>Real-time video streaming</Text>
-                </View>
-                <View style={styles.featureItem}>
-                  <MaterialCommunityIcons name="check-circle" size={20} color="#4CAF50" />
-                  <Text style={styles.featureText}>Interactive live sessions</Text>
-                </View>
-                <View style={styles.featureItem}>
-                  <MaterialCommunityIcons name="check-circle" size={20} color="#4CAF50" />
-                  <Text style={styles.featureText}>Student participation tracking</Text>
-                </View>
+            <LinearGradient colors={['#eef2ff', '#e0e7ff']} style={styles.emptyIconBg}>
+              <MaterialCommunityIcons name="video-wireless-outline" size={64} color="#4338ca" />
+            </LinearGradient>
+            <Text style={styles.emptyTitle}>No Live Classes</Text>
+            <Text style={styles.emptySubtitle}>
+              Schedule a new class to interact with your students live!
+            </Text>
+
+            <View style={styles.featureList}>
+              <View style={styles.featureItem}>
+                <MaterialCommunityIcons name="check-circle-outline" size={20} color="#10b981" />
+                <Text style={styles.featureText}>Real-time HD streaming</Text>
+              </View>
+              <View style={styles.featureItem}>
+                <MaterialCommunityIcons name="check-circle-outline" size={20} color="#10b981" />
+                <Text style={styles.featureText}>Interactive chat & polls</Text>
               </View>
             </View>
           </View>
         }
       />
+
       <Portal>
-        <Dialog visible={dialogVisible} onDismiss={() => setDialogVisible(false)}>
-          <Dialog.Title>{getDialogTitle()}</Dialog.Title>
+        <Dialog visible={dialogVisible} onDismiss={() => setDialogVisible(false)} style={{ borderRadius: 16 }}>
+          <Dialog.Title style={styles.dialogTitle}>{getDialogTitle()}</Dialog.Title>
           <Dialog.Content>
-            <Text>{getDialogMessage()}</Text>
+            <Text style={styles.dialogText}>{getDialogMessage()}</Text>
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setDialogVisible(false)}>Cancel</Button>
+            <Button onPress={() => setDialogVisible(false)} textColor="#64748b">Cancel</Button>
             <Button
               onPress={handleDialogConfirm}
-              textColor={dialogAction === 'delete' ? '#F44336' : '#2196F3'}
+              textColor={dialogAction === 'delete' || dialogAction === 'cancel' || dialogAction === 'end' ? '#ef4444' : '#4338ca'}
             >
               Confirm
             </Button>
@@ -409,10 +349,19 @@ export default function ManageLiveClassesScreen({ navigation }: any) {
         </Dialog>
       </Portal>
 
+      <FAB
+        icon="plus"
+        style={styles.fab}
+        onPress={() => navigation.navigate('CreateLiveClass')}
+        color="#fff"
+        theme={{ colors: { primary: '#4338ca' } }}
+      />
+
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
         duration={3000}
+        style={{ backgroundColor: '#1e293b' }}
       >
         {snackbarMessage}
       </Snackbar>
@@ -423,191 +372,197 @@ export default function ManageLiveClassesScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8fafc',
   },
   premiumHeader: {
-    backgroundColor: '#667eea',
-    paddingTop: 50,
-    paddingBottom: 28,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    paddingTop: 60,
+    paddingBottom: 24,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
     elevation: 8,
+    position: 'relative',
+    overflow: 'hidden',
+    zIndex: 10,
+  },
+  headerDecorationCircle: {
+    position: 'absolute',
+    top: -60,
+    right: -60,
+    width: 240,
+    height: 240,
+    borderRadius: 120,
+    backgroundColor: 'rgba(129, 140, 248, 0.1)',
   },
   headerContent: {
-    gap: 4,
+    marginBottom: 20,
   },
   greeting: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '800',
     color: '#fff',
+    letterSpacing: -0.5,
   },
   subtitle: {
     fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
+    color: '#94a3b8',
+    marginTop: 4,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f8fafc',
   },
   listContent: {
-    padding: 16,
-    paddingBottom: 80,
+    padding: 24,
+    paddingBottom: 100,
   },
-  card: {
-    marginBottom: 16,
-    elevation: 4,
+  premiumCard: {
     backgroundColor: '#fff',
-    borderRadius: 16,
-    borderLeftWidth: 5,
-    borderLeftColor: '#667eea',
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
+    borderRadius: 20,
+    marginBottom: 16,
+    elevation: 3,
+    shadowColor: '#64748b',
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
   },
   cardHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 16,
-    paddingBottom: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    alignItems: 'center',
+    marginBottom: 12,
   },
-  titleContainer: {
-    flex: 1,
-    marginRight: 12,
+  statusBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 12,
+    gap: 6,
+  },
+  statusDot: {
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+  },
+  statusText: {
+    fontSize: 11,
+    fontWeight: '700',
   },
   classTitle: {
-    fontWeight: '700',
-    marginBottom: 8,
     fontSize: 18,
-    color: '#333',
+    fontWeight: '700',
+    color: '#0f172a',
+    marginBottom: 8,
   },
-  statusContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  deleteIconContainer: {
-    padding: 4,
-    borderRadius: 4,
-  },
-  description: {
-    color: '#666',
-    marginBottom: 12,
-    fontStyle: 'italic',
+  classDescription: {
     fontSize: 13,
-  },
-  detailsContainer: {
-    backgroundColor: '#f8f9fa',
-    borderRadius: 12,
-    padding: 14,
+    color: '#64748b',
     marginBottom: 16,
-    borderLeftWidth: 3,
-    borderLeftColor: '#667eea',
+    lineHeight: 20,
   },
-  detailRow: {
+  infoGrid: {
+    flexDirection: 'row',
+    marginBottom: 16,
+    gap: 16,
+    backgroundColor: '#f8fafc',
+    padding: 12,
+    borderRadius: 12,
+  },
+  infoItem: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 6,
+    gap: 6,
   },
-  detailText: {
-    marginLeft: 8,
-    color: '#666',
+  infoText: {
+    fontSize: 13,
+    color: '#475569',
+    fontWeight: '500',
   },
-  actionButtons: {
+  actionRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginTop: 8,
+    gap: 12,
   },
-  buttonRow: {
-    flexDirection: 'row',
-    flex: 1,
-    gap: 10,
-  },
-  actionButton: {
+  actionBtn: {
     flex: 1,
     borderRadius: 10,
   },
-  deleteButton: {
-    paddingHorizontal: 12,
+  btnLabel: {
+    fontSize: 13,
+    fontWeight: '600',
+    letterSpacing: 0.5,
+  },
+  archiveContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    flex: 1,
+    backgroundColor: '#f1f5f9',
+    paddingHorizontal: 16,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  archiveText: {
+    fontSize: 13,
+    color: '#64748b',
+    fontStyle: 'italic',
   },
   emptyContainer: {
-    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 60,
+  },
+  emptyIconBg: {
+    width: 120,
+    height: 120,
+    borderRadius: 60,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 20,
+    marginBottom: 24,
   },
-  comingSoonCard: {
-    backgroundColor: '#fff',
-    borderRadius: 20,
-    padding: 32,
-    alignItems: 'center',
-    elevation: 4,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    borderWidth: 1,
-    borderColor: '#f0f0f0',
+  emptyTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: '#1e1b4b',
+    marginBottom: 8,
   },
-  comingSoonTitle: {
-    marginTop: 16,
-    fontWeight: 'bold',
-    color: '#333',
+  emptySubtitle: {
+    fontSize: 14,
+    color: '#64748b',
     textAlign: 'center',
-  },
-  comingSoonSubtitle: {
-    marginTop: 12,
-    color: '#666',
-    textAlign: 'center',
-    lineHeight: 20,
+    marginBottom: 24,
+    paddingHorizontal: 40,
   },
   featureList: {
-    marginTop: 24,
     width: '100%',
-    gap: 16,
-    paddingHorizontal: 0,
+    paddingHorizontal: 40,
+    gap: 12,
   },
   featureItem: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    paddingVertical: 10,
-    paddingHorizontal: 0,
-    width: '100%',
   },
   featureText: {
-    fontSize: 13,
-    color: '#484343d5',
+    fontSize: 14,
+    color: '#475569',
     fontWeight: '500',
-    flex: 1,
-    flexWrap: 'wrap',
   },
-  emptyText: {
-    marginTop: 20,
-    textAlign: 'center',
+  dialogTitle: {
+    fontWeight: '700',
+    color: '#0f172a',
   },
-  emptySubtext: {
-    marginTop: 28,
-    textAlign: 'center',
-    color: '#7a1212ff',
-  },
-  createButton: {
-    marginTop: 16,
+  dialogText: {
+    color: '#475569',
   },
   fab: {
     position: 'absolute',
-    bottom: 16,
-    right: 16,
-    borderRadius: 50,
+    margin: 16,
+    right: 0,
+    bottom: 0,
+    backgroundColor: '#4338ca',
   },
 });

@@ -99,7 +99,7 @@ export const useProgressStore = create<ProgressState>((set) => ({
     set({ isLoading: true });
     try {
       const { data } = await studentApi.getProgress();
-      const results = data.results || data;
+      const results = data.data || data.results || data;
       set({
         enrollments: (Array.isArray(results) ? results : []).map(normalizeEnrollment),
       });
@@ -175,7 +175,8 @@ export const useProgressStore = create<ProgressState>((set) => ({
   fetchTeacherStudentProgress: async () => {
     try {
       const { data } = await teacherApi.getStudents();
-      return data.results || data || [];
+      const results = data.data || data.results || data;
+      return Array.isArray(results) ? results : [];
     } catch (error) {
       console.error('Error fetching teacher student progress:', error);
       return [];
@@ -185,7 +186,8 @@ export const useProgressStore = create<ProgressState>((set) => ({
   fetchCourseStudentProgress: async (courseId: string | number) => {
     try {
       const { data } = await teacherApi.getCourseStudents(courseId);
-      return data.results || data || [];
+      const results = data.data || data.results || data;
+      return Array.isArray(results) ? results : [];
     } catch (error) {
       console.error('Error fetching course student progress:', error);
       return [];

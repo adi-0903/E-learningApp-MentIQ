@@ -125,7 +125,7 @@ export const useNotificationStore = create<NotificationState>((set, get) => ({
     set({ isLoading: true });
     try {
       const { data } = await notificationApi.list();
-      const results = data.results || data;
+      const results = data.data || data.results || data;
       const notifications = (Array.isArray(results) ? results : []).map((n: any) => ({
         id: n.id,
         title: n.title,

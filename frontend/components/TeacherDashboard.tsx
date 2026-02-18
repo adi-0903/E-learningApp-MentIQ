@@ -1,6 +1,8 @@
 import { useAuthStore } from '@/store/authStore';
 import { Course, useCourseStore } from '@/store/courseStore';
+import { useProgressStore } from '@/store/progressStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { format } from 'date-fns';
 import React, { useEffect, useState } from 'react';
 import {
   Alert,
@@ -12,11 +14,12 @@ import {
   Dimensions,
   ImageBackground
 } from 'react-native';
-import { ActivityIndicator, Text, Surface } from 'react-native-paper';
+import { ActivityIndicator, Text, Surface, Card } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
+import { teacherApi } from '@/services/api';
 
 interface TeacherDashboardProps {
-  onCoursePress: (courseId: string) => void;
+  onCoursePress: (courseId: string, courseTitle?: string) => void;
   onCreateCoursePress: () => void;
   onCreateAnnouncementPress?: () => void;
   onManageLiveClassesPress?: () => void;
@@ -25,23 +28,35 @@ interface TeacherDashboardProps {
 
 const { width } = Dimensions.get('window');
 
-const StatCard = ({ icon, value, label, color, subValue }: { icon: string, value: string | number, label: string, color: string, subValue?: string }) => (
-  <Surface style={[styles.statCard, { borderLeftColor: color }]}>
-    <View style={[styles.statIconBox, { backgroundColor: `${color}15` }]}>
-      <MaterialCommunityIcons name={icon as any} size={24} color={color} />
-    </View>
-    <View style={styles.statContent}>
-      <Text style={styles.statValue}>{value}</Text>
-      <Text style={styles.statLabel}>{label}</Text>
-      {subValue && <Text style={[styles.statSub, { color: color }]}>{subValue}</Text>}
-    </View>
-  </Surface>
-);
+const StatCard = ({ icon, value, label, color, subValue, onPress }: { icon: string, value: string | number, label: string, color: string, subValue?: string, onPress?: () => void }) => {
+  const content = (
+    <Surface style={[styles.statCard, { borderLeftColor: color }]}>
+      <View style={[styles.statIconBox, { backgroundColor: `${color}15` }]}>
+        <MaterialCommunityIcons name={icon as any} size={24} color={color} />
+      </View>
+      <View style={styles.statContent}>
+        <Text style={styles.statValue}>{value}</Text>
+        <Text style={styles.statLabel}>{label}</Text>
+        {subValue && <Text style={[styles.statSub, { color: color }]}>{subValue}</Text>}
+      </View>
+    </Surface>
+  );
+
+  if (onPress) {
+    return (
+      <TouchableOpacity activeOpacity={0.7} onPress={onPress}>
+        {content}
+      </TouchableOpacity>
+    );
+  }
+
+  return content;
+};
 
 const ActionButton = ({ icon, label, onPress, gradient }: { icon: string, label: string, onPress: () => void, gradient: string[] }) => (
   <TouchableOpacity onPress={onPress} activeOpacity={0.8} style={styles.actionBtnContainer}>
     <LinearGradient
-      colors={gradient}
+      colors={gradient as [string, string, ...string[]]}
       style={styles.actionBtnGradient}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
@@ -60,9 +75,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
   onMyCoursesPress,
 }) => {
   const { user } = useAuthStore();
-  const { courses, isLoading, fetchTeacherCourses, deleteCourse } = useCourseStore();
+  const { courses, isLoading: coursesLoading, fetchTeacherCourses, deleteCourse } = useCourseStore();
+  const { fetchTeacherStudentProgress } = useProgressStore();
   const [refreshing, setRefreshing] = useState(false);
   const [totalStudents, setTotalStudents] = useState(0);
+  const [dashboardStats, setDashboardStats] = useState<any>(null);
+  const [recentReviews, setRecentReviews] = useState<any[]>([]);
+
+  const isLoading = coursesLoading;
 
   // Helper date function
   const getTimeOfDay = () => {
@@ -72,18 +92,40 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
     return 'Good Evening';
   };
 
+  const fetchDashboardData = async () => {
+    try {
+      const response = await teacherApi.getDashboard();
+      if (response.data?.success) {
+        setDashboardStats(response.data.data);
+        setRecentReviews(response.data.data.recent_reviews || []);
+      }
+    } catch (error) {
+      console.log('Error fetching dashboard data:', error);
+    }
+  };
+
   useEffect(() => {
     if (user?.id) {
       fetchTeacherCourses(user.id);
-      // Placeholder for student count
-      setTotalStudents(courses.length * 15 + Math.floor(Math.random() * 50));
+      fetchDashboardData();
+      fetchTeacherStudentProgress(user.id).then((students) => {
+        if (Array.isArray(students)) {
+          setTotalStudents(students.length);
+        } else {
+          setTotalStudents(0);
+        }
+      });
     }
-  }, [user?.id, courses.length]); // Updated dependency
+  }, [user?.id, courses.length]);
 
   const onRefresh = async () => {
     setRefreshing(true);
     if (user?.id) {
-      await fetchTeacherCourses(user.id);
+      await Promise.all([
+        fetchTeacherCourses(user.id),
+        fetchDashboardData(),
+        fetchTeacherStudentProgress(user.id).then(students => setTotalStudents(Array.isArray(students) ? students.length : 0))
+      ]);
     }
     setRefreshing(false);
   };
@@ -127,12 +169,14 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           <View style={styles.headerTop}>
             <View>
               <Text style={styles.greetingLight}>{getTimeOfDay()},</Text>
-              <Text style={styles.greetingUser}>{user?.name?.split(' ')[0] || 'Instructor'}</Text>
+              <Text style={styles.greetingUser}>{user?.name?.split(' ')[0] || 'Teacher'}</Text>
             </View>
             <ImageBackground
-              source={{ uri: 'https://ui-avatars.com/api/?name=Instructor&background=random' }}
+              source={{
+                uri: user?.profileAvatar || user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Teacher')}&background=random&color=fff&size=200`
+              }}
               style={styles.profileImage}
-              imageStyle={{ borderRadius: 20 }}
+              imageStyle={{ borderRadius: 25 }}
             />
           </View>
 
@@ -145,21 +189,20 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           >
             <StatCard
               icon="book-open-page-variant"
-              value={courses.length}
+              value={String(courses.length)}
               label="Active Courses"
               color="#818cf8"
-              subValue="+2 this week"
+              onPress={onMyCoursesPress}
             />
             <StatCard
               icon="account-group"
-              value={totalStudents}
+              value={totalStudents !== undefined ? String(totalStudents) : '0'}
               label="Total Students"
               color="#34d399"
-              subValue="+12% growth"
             />
             <StatCard
               icon="star-circle"
-              value="4.8"
+              value={dashboardStats?.average_rating ? String(dashboardStats.average_rating) : '0.0'}
               label="Avg. Rating"
               color="#fbbf24"
             />
@@ -186,7 +229,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           />
           <ActionButton
             icon="bullhorn-outline"
-            label="Announce"
+            label="Announcement"
             onPress={onCreateAnnouncementPress || (() => { })}
             gradient={['#ec4899', '#db2777']}
           />
@@ -204,45 +247,43 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
           />
         </View>
 
-        {/* Recent Courses List */}
+        {/* Student Feedback Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Recent Courses</Text>
-          <TouchableOpacity onPress={onMyCoursesPress}>
-            <Text style={styles.seeAllText}>Manage All</Text>
-          </TouchableOpacity>
+          <Text style={styles.sectionTitle}>Student Feedback</Text>
         </View>
 
-        <View style={styles.courseList}>
-          {courses.slice(0, 5).map((course, index) => (
-            <TouchableOpacity
-              key={course.id}
-              style={styles.courseRow}
-              onPress={() => onCoursePress(course.id)}
-              activeOpacity={0.7}
-            >
-              <View style={styles.courseIndex}>
-                <Text style={styles.indexText}>{index + 1}</Text>
+        {recentReviews.length === 0 ? (
+          <View style={styles.emptyAnnState}>
+            <Text style={styles.emptyAnnText}>No student reviews yet.</Text>
+          </View>
+        ) : (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalAnnScroll}>
+            {recentReviews.map((review) => (
+              <View key={review.id} style={styles.reviewCard}>
+                <Surface style={styles.reviewInner}>
+                  <View style={styles.reviewHeader}>
+                    <View style={styles.studentInfo}>
+                      <View style={styles.avatarMini}>
+                        <Text style={styles.avatarText}>{review.student_name?.[0] || 'S'}</Text>
+                      </View>
+                      <View>
+                        <Text style={styles.reviewStudentName}>{review.student_name}</Text>
+                        <Text style={styles.reviewCourseName} numberOfLines={1}>{review.course_name || 'Chemistry'}</Text>
+                      </View>
+                    </View>
+                    <View style={styles.ratingBadge}>
+                      <MaterialCommunityIcons name="star" size={14} color="#fbbf24" />
+                      <Text style={styles.ratingText}>{review.rating}</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.reviewText} numberOfLines={3}>"{review.comment || 'No comment provided.'}"</Text>
+                </Surface>
               </View>
-              <View style={styles.courseRowContent}>
-                <Text style={styles.rowTitle} numberOfLines={1}>{course.title}</Text>
-                <Text style={styles.rowCategory}>{course.category || 'General'}</Text>
-              </View>
-              <View style={styles.rowActions}>
-                <TouchableOpacity style={styles.iconBtn} onPress={() => onCoursePress(course.id)}>
-                  <MaterialCommunityIcons name="pencil" size={20} color="#64748b" />
-                </TouchableOpacity>
-                <TouchableOpacity style={styles.iconBtn} onPress={() => handleDeleteCourse(course.id, course.title)}>
-                  <MaterialCommunityIcons name="delete-outline" size={20} color="#ef4444" />
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-          ))}
-          {courses.length === 0 && (
-            <View style={styles.emptyState}>
-              <Text style={styles.emptyText}>No courses yet. Create one to get started!</Text>
-            </View>
-          )}
-        </View>
+            ))}
+            <View style={{ width: 20 }} />
+          </ScrollView>
+        )}
+
         <View style={{ height: 100 }} />
       </ScrollView>
     </View>
@@ -451,5 +492,147 @@ const styles = StyleSheet.create({
   emptyText: {
     color: '#94a3b8',
     fontStyle: 'italic',
+  },
+  emptyAnnState: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderStyle: 'dashed',
+  },
+  emptyAnnText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  horizontalAnnScroll: {
+    marginHorizontal: -24,
+    paddingHorizontal: 24,
+    marginBottom: 24,
+  },
+  annCard: {
+    width: 260,
+    borderRadius: 16,
+    backgroundColor: '#fff',
+    marginVertical: 4,
+    marginRight: 16,
+    elevation: 4,
+    shadowColor: '#ec4899',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+    overflow: 'hidden',
+  },
+  annCardInner: {
+    padding: 16,
+    height: 120,
+    justifyContent: 'space-between',
+  },
+  annCardHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  annTypeTag: {
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 6,
+  },
+  reviewCard: {
+    width: width * 0.75,
+    marginRight: 16,
+  },
+  reviewInner: {
+    padding: 16,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+  },
+  reviewHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 12,
+  },
+  studentInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flex: 1,
+  },
+  avatarMini: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: '#eff6ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatarText: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#3b82f6',
+  },
+  reviewStudentName: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
+  reviewCourseName: {
+    fontSize: 11,
+    color: '#64748b',
+    fontWeight: '600',
+  },
+  ratingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: '#fffbeb',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 10,
+  },
+  ratingText: {
+    fontSize: 12,
+    fontWeight: '800',
+    color: '#d97706',
+  },
+  reviewText: {
+    fontSize: 13,
+    color: '#475569',
+    lineHeight: 18,
+    fontStyle: 'italic',
+  },
+  annTypeTagText: {
+    fontSize: 9,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  annCardTime: {
+    fontSize: 10,
+    color: '#94a3b8',
+    fontWeight: '600',
+  },
+  annCardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  annCardDesc: {
+    fontSize: 12,
+    color: '#64748b',
+    lineHeight: 16,
+    fontWeight: '500',
   },
 });

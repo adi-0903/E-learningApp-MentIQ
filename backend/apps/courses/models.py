@@ -16,8 +16,11 @@ class Course(SoftDeleteModel):
         ALL_LEVELS = 'all_levels', 'All Levels'
 
     class CategoryChoices(models.TextChoices):
-        MATHEMATICS = 'mathematics', 'Mathematics'
+        TECHNOLOGY = 'technology', 'Technology'
+        BUSINESS = 'business', 'Business'
+        ART = 'art', 'Art'
         SCIENCE = 'science', 'Science'
+        MATHEMATICS = 'mathematics', 'Mathematics'
         ENGLISH = 'english', 'English'
         HISTORY = 'history', 'History'
         COMPUTER_SCIENCE = 'computer_science', 'Computer Science'
@@ -26,7 +29,6 @@ class Course(SoftDeleteModel):
         BIOLOGY = 'biology', 'Biology'
         ARTS = 'arts', 'Arts'
         MUSIC = 'music', 'Music'
-        BUSINESS = 'business', 'Business'
         OTHER = 'other', 'Other'
 
     teacher = models.ForeignKey(
@@ -88,3 +90,33 @@ class Course(SoftDeleteModel):
     @property
     def quiz_count(self):
         return self.quizzes.count()
+
+
+class CourseReview(SoftDeleteModel):
+    """Represents feedback given by a student for a course and its teacher."""
+    course = models.ForeignKey(
+        Course,
+        on_delete=models.CASCADE,
+        related_name='reviews',
+    )
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='course_reviews',
+        limit_choices_to={'role': 'student'},
+    )
+    rating = models.IntegerField(
+        default=5,
+        help_text='Rating from 1 to 5'
+    )
+    comment = models.TextField(blank=True, default='')
+
+    class Meta:
+        db_table = 'course_reviews'
+        verbose_name = 'Course Review'
+        verbose_name_plural = 'Course Reviews'
+        unique_together = ('course', 'student')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.student.name} - {self.course.title} - {self.rating}'

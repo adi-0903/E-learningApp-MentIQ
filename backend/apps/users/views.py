@@ -12,6 +12,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 import random
 from datetime import timedelta
 from django.utils import timezone
+import os
+from twilio.rest import Client
 from .models import PhoneOTP
 from .serializers import (
     ChangePasswordSerializer,
@@ -56,6 +58,8 @@ class RegisterView(generics.CreateAPIView):
                     'bio': user.bio,
                     'phone_number': user.phone_number,
                     'profile_image': user.profile_image_url,
+                    'teacher_id': user.teacher_id,
+                    'profile_avatar': user.profile_avatar,
                 },
                 'tokens': {
                     'access': str(refresh.access_token),
@@ -166,6 +170,11 @@ class RequestPhoneOTPView(APIView):
                 'message': 'Phone number is required.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        # Normalize to E.164 format (Twilio requirement)
+        phone_number = phone_number.strip().replace(' ', '').replace('-', '')
+        if not phone_number.startswith('+'):
+            phone_number = f'+91{phone_number}'  # Default to India country code
+
         # Update user's phone number if provided and different
         if phone_number != user.phone_number:
             user.phone_number = phone_number
@@ -186,13 +195,29 @@ class RequestPhoneOTPView(APIView):
             expires_at=expires_at
         )
 
-        # SIMULATION: Print to console and return in response for development
-        print(f"DEBUG: Phone OTP for {phone_number}: {otp_code}")
-        
+        # Try sending SMS via Twilio
+        try:
+            account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+            auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+            twilio_phone = os.environ.get('TWILIO_PHONE_NUMBER')
+
+            if account_sid and auth_token and twilio_phone:
+                client = Client(account_sid, auth_token)
+                message = client.messages.create(
+                    body=f"Your verification code is: {otp_code}",
+                    from_=twilio_phone,
+                    to=phone_number
+                )
+                print(f"Twilio SMS Sent: {message.sid}")
+            else:
+                print("Twilio credentials missing. Using simulation.")
+
+        except Exception as e:
+            print(f"Twilio Error: {e}")
+
         return Response({
             'success': True,
             'message': f'OTP sent to {phone_number}.',
-            'data': {'otp': otp_code} # Always return OTP in response for development
         })
 
 

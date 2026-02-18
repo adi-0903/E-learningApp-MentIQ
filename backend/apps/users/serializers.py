@@ -13,6 +13,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Custom JWT token that includes user role and name in claims."""
 
     def validate(self, attrs):
+        # Allow login via Email OR Teacher ID
+        username_value = attrs.get(User.USERNAME_FIELD)
+        
+        # Check if username_value is a 5-digit Teacher ID
+        if username_value and username_value.strip().isdigit() and len(username_value.strip()) == 5:
+            tid = username_value.strip()
+            try:
+                # If a user with this teacher_id exists, switch to email auth
+                user = User.objects.get(teacher_id=tid)
+                attrs[User.USERNAME_FIELD] = user.email
+            except User.DoesNotExist:
+                pass # Let standard validation fail naturally
+
         data = super().validate(attrs)
         user = self.user
 
@@ -27,6 +40,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'profile_image': user.profile_image_url,
             'is_email_verified': user.is_email_verified,
             'is_phone_verified': user.is_phone_verified,
+            'teacher_id': user.teacher_id,
+            'profile_avatar': user.profile_avatar,
         }
         return data
 
@@ -36,6 +51,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['role'] = user.role
         token['name'] = user.name
         token['email'] = user.email
+        if user.teacher_id:
+            token['teacher_id'] = user.teacher_id
         return token
 
 
@@ -80,17 +97,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'name', 'role', 'bio', 'phone_number',
-            'profile_image', 'profile_image_url',
+            'profile_image', 'profile_image_url', 'teacher_id', 'profile_avatar',
             'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'email', 'role', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'email', 'role', 'teacher_id', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):
     """Serializer for updating user profile."""
     class Meta:
         model = User
-        fields = ['name', 'bio', 'phone_number', 'profile_image']
+        fields = ['name', 'bio', 'phone_number', 'profile_image', 'profile_avatar']
 
     def validate_name(self, value):
         if len(value.strip()) < 2:

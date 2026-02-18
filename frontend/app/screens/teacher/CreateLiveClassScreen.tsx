@@ -3,6 +3,7 @@ import { Course, useCourseStore } from '@/store/courseStore';
 import { useLiveClassStore } from '@/store/liveClassStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
 import {
   ActivityIndicator,
@@ -11,7 +12,8 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
+  Dimensions
 } from 'react-native';
 import {
   Button,
@@ -21,12 +23,13 @@ import {
   TextInput
 } from 'react-native-paper';
 
+const { width } = Dimensions.get('window');
+
 export default function CreateLiveClassScreen({ navigation }: any) {
   const { user } = useAuthStore();
   const { courses, fetchTeacherCourses } = useCourseStore();
   const { createLiveClass, isLoading } = useLiveClassStore();
 
-  // Check if user is authenticated
   if (!user?.id) {
     return (
       <View style={styles.loadingContainer}>
@@ -147,7 +150,7 @@ export default function CreateLiveClassScreen({ navigation }: any) {
   if (coursesLoading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color="#4338ca" />
       </View>
     );
   }
@@ -157,153 +160,210 @@ export default function CreateLiveClassScreen({ navigation }: any) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
-      <View style={styles.premiumHeader}>
-        <View style={styles.headerContent}>
-          <Text style={styles.greeting}>✨ Create Live Class</Text>
-          <Text style={styles.subtitle}>Schedule a new live session for your students</Text>
-        </View>
-      </View>
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        <Card style={styles.premiumCard}>
-          <Card.Content style={styles.cardContent}>
+      <LinearGradient
+        colors={['#1e1b4b', '#312e81', '#4338ca']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.grandHeader}
+      >
+        <View style={styles.headerCircleSmall} />
+        <View style={styles.headerCircleBig} />
 
-            {/* Title Input */}
+        <View style={styles.headerTopRow}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <MaterialCommunityIcons name="arrow-left" size={24} color="#fff" />
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.headerContent}>
+          <View>
+            <Text style={styles.greeting}>Schedule</Text>
+            <Text style={styles.greetingSub}>Live Class</Text>
+          </View>
+          <View style={styles.headerIconContainer}>
+            <MaterialCommunityIcons name="calendar-clock" size={56} color="rgba(255,255,255,0.9)" />
+          </View>
+        </View>
+      </LinearGradient>
+
+      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
+        <View style={styles.mainCard}>
+
+          {/* Title Section */}
+          <View style={styles.inputSection}>
+            <Text style={styles.inputLabel}>CLASS DETAILS</Text>
             <TextInput
+              mode="flat"
               label="Class Title"
               value={title}
               onChangeText={setTitle}
-              mode="outlined"
-              style={styles.input}
-              placeholder="e.g., Mathematics Lecture - Chapter 5"
+              style={styles.modernInput}
+              underlineColor="transparent"
+              activeUnderlineColor="#4338ca"
+              textColor="#1e293b"
+              placeholder="e.g. Advanced Physics - Chapter 4"
+              placeholderTextColor="#94a3b8"
+              left={<TextInput.Icon icon="format-title" color="#64748b" />}
             />
 
-            {/* Description Input */}
             <TextInput
-              label="Description (Optional)"
+              mode="flat"
+              label="Description / Agenda"
               value={description}
               onChangeText={setDescription}
-              mode="outlined"
-              style={styles.input}
+              style={[styles.modernInput, { minHeight: 80, textAlignVertical: 'top' }]}
               multiline
               numberOfLines={3}
-              placeholder="Add details about this live class"
+              underlineColor="transparent"
+              activeUnderlineColor="#4338ca"
+              textColor="#1e293b"
+              placeholder="What will represent this session?"
+              left={<TextInput.Icon icon="text-short" color="#64748b" style={{ marginTop: 8 }} />}
             />
+          </View>
 
-            {/* Course Selection */}
-            <Text style={styles.label}>Select Course</Text>
+          {/* Course Section */}
+          <View style={styles.inputSection}>
+            <Text style={styles.inputLabel}>ASSIGN COURSE</Text>
             {courses.length > 0 ? (
-              <View ref={courseButtonRef}>
+              <View>
                 <TouchableOpacity
                   onPress={() => setCourseMenuVisible(!courseMenuVisible)}
-                  style={styles.dropdownButton}
+                  style={styles.courseSelector}
+                  activeOpacity={0.8}
                 >
-                  <Text style={styles.dropdownButtonLabel}>
-                    {selectedCourse?.title || 'Select a course'}
-                  </Text>
-                  <MaterialCommunityIcons
-                    name={courseMenuVisible ? 'chevron-up' : 'chevron-down'}
-                    size={24}
-                    color="#667eea"
-                  />
+                  <View style={styles.courseSelectorContent}>
+                    <View style={[styles.courseIcon, selectedCourse ? { backgroundColor: '#4338ca' } : {}]}>
+                      <MaterialCommunityIcons name="book-education-outline" size={24} color={selectedCourse ? '#fff' : '#64748b'} />
+                    </View>
+                    <View style={{ flex: 1 }}>
+                      <Text style={styles.courseSelectorLabel}>
+                        {selectedCourse?.title || 'Select a Course'}
+                      </Text>
+                      {selectedCourse && <Text style={styles.courseSelectorSub}>Selected Course</Text>}
+                    </View>
+                    <MaterialCommunityIcons name="chevron-down" size={24} color="#64748b" />
+                  </View>
                 </TouchableOpacity>
 
                 {courseMenuVisible && (
-                  <View style={styles.dropdownContainer}>
+                  <View style={styles.courseMenu}>
                     {courses.map((course) => (
-                      <Button
+                      <TouchableOpacity
                         key={course.id}
-                        mode="text"
+                        style={styles.courseMenuItem}
                         onPress={() => {
                           setSelectedCourse(course);
                           setCourseMenuVisible(false);
                         }}
-                        style={styles.dropdownItem}
-                        contentStyle={styles.dropdownItemContent}
-                        labelStyle={[
-                          styles.dropdownItemLabel,
-                          selectedCourse?.id === course.id && styles.dropdownItemLabelActive
-                        ]}
                       >
-                        {course.title}
-                      </Button>
+                        <Text style={[styles.courseMenuItemText, selectedCourse?.id === course.id && styles.courseMenuItemTextActive]}>
+                          {course.title}
+                        </Text>
+                        {selectedCourse?.id === course.id && <MaterialCommunityIcons name="check" size={20} color="#4338ca" />}
+                      </TouchableOpacity>
                     ))}
                   </View>
                 )}
               </View>
             ) : (
-              <Card style={styles.noCourseCard}>
-                <Card.Content>
-                  <Text>No courses available. Create a course first.</Text>
-                </Card.Content>
-              </Card>
+              <View style={styles.emptyCourseBox}>
+                <MaterialCommunityIcons name="alert-circle-outline" size={24} color="#854d0e" />
+                <Text style={styles.emptyCourseText}>No active courses found.</Text>
+              </View>
             )}
+          </View>
 
-            {/* Date Picker */}
-            <Text style={styles.label}>Scheduled Start Date</Text>
-            <Button
-              mode="outlined"
-              onPress={() => setShowDatePicker(true)}
-              style={styles.dateButton}
-            >
-              {scheduledStartTime.toLocaleDateString()}
-            </Button>
-            {showDatePicker && (
-              <DateTimePicker
-                value={scheduledStartTime}
-                mode="date"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={handleDateChange}
-              />
-            )}
-
-            {/* Time Picker */}
-            <Text style={styles.label}>Scheduled Start Time</Text>
-            <Button
-              mode="outlined"
-              onPress={() => setShowTimePicker(true)}
-              style={styles.dateButton}
-            >
-              {scheduledStartTime.toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </Button>
-            {showTimePicker && (
-              <DateTimePicker
-                value={scheduledStartTime}
-                mode="time"
-                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-                onChange={handleTimeChange}
-              />
-            )}
-
-            {/* Action Buttons */}
-            <View style={styles.buttonContainer}>
-              <Button
-                mode="outlined"
-                onPress={() => navigation.goBack()}
-                style={styles.button}
+          {/* Schedule Section */}
+          <View style={styles.inputSection}>
+            <Text style={styles.inputLabel}>DATE & TIME</Text>
+            <View style={styles.row}>
+              <TouchableOpacity
+                style={styles.timeCard}
+                onPress={() => setShowDatePicker(true)}
+                activeOpacity={0.8}
               >
-                Cancel
-              </Button>
-              <Button
-                mode="contained"
-                onPress={handleCreateLiveClass}
-                loading={isLoading}
-                disabled={isLoading || courses.length === 0}
-                style={styles.button}
+                <View style={styles.timeCardIcon}>
+                  <MaterialCommunityIcons name="calendar-month" size={22} color="#4338ca" />
+                </View>
+                <View>
+                  <Text style={styles.timeCardLabel}>Date</Text>
+                  <Text style={styles.timeCardValue}>{scheduledStartTime.toLocaleDateString()}</Text>
+                </View>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.timeCard}
+                onPress={() => setShowTimePicker(true)}
+                activeOpacity={0.8}
               >
-                Create Class
-              </Button>
+                <View style={styles.timeCardIcon}>
+                  <MaterialCommunityIcons name="clock-outline" size={22} color="#4338ca" />
+                </View>
+                <View>
+                  <Text style={styles.timeCardLabel}>Time</Text>
+                  <Text style={styles.timeCardValue}>{scheduledStartTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</Text>
+                </View>
+              </TouchableOpacity>
             </View>
-          </Card.Content>
-        </Card>
+          </View>
+
+          {/* Pickers */}
+          {showDatePicker && (
+            <DateTimePicker
+              value={scheduledStartTime}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={handleDateChange}
+            />
+          )}
+
+          {showTimePicker && (
+            <DateTimePicker
+              value={scheduledStartTime}
+              mode="time"
+              display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+              onChange={handleTimeChange}
+            />
+          )}
+
+          <View style={{ height: 20 }} />
+
+          {/* Action Buttons */}
+          <TouchableOpacity
+            onPress={handleCreateLiveClass}
+            disabled={isLoading || courses.length === 0}
+            activeOpacity={0.9}
+          >
+            <LinearGradient
+              colors={['#4338ca', '#3730a3']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={styles.submitButton}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <>
+                  <Text style={styles.submitButtonText}>Schedule Class</Text>
+                  <MaterialCommunityIcons name="arrow-right" size={20} color="#fff" />
+                </>
+              )}
+            </LinearGradient>
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.cancelLink}>
+            <Text style={styles.cancelLinkText}>Cancel</Text>
+          </TouchableOpacity>
+
+        </View>
       </ScrollView>
 
       <Snackbar
         visible={snackbarVisible}
         onDismiss={() => setSnackbarVisible(false)}
         duration={3000}
+        style={{ backgroundColor: '#1e293b' }}
       >
         {snackbarMessage}
       </Snackbar>
@@ -314,180 +374,237 @@ export default function CreateLiveClassScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f1f5f9',
   },
-  premiumHeader: {
-    backgroundColor: '#667eea',
-    paddingTop: 50,
-    paddingBottom: 28,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    elevation: 8,
+  grandHeader: {
+    height: 280,
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  headerCircleSmall: {
+    position: 'absolute',
+    top: -20,
+    right: 60,
+    width: 140,
+    height: 140,
+    borderRadius: 70,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  headerCircleBig: {
+    position: 'absolute',
+    top: -60,
+    right: -60,
+    width: 260,
+    height: 260,
+    borderRadius: 130,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    marginBottom: 20,
+  },
+  backButton: {
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    padding: 10,
+    borderRadius: 14,
   },
   headerContent: {
-    gap: 4,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 8,
   },
   greeting: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    color: '#fff',
+    fontSize: 24,
+    color: 'rgba(255,255,255,0.8)',
+    fontWeight: '500',
   },
-  subtitle: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.9)',
+  greetingSub: {
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#fff',
+    lineHeight: 38,
+  },
+  headerIconContainer: {
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    borderRadius: 24,
+    padding: 16,
+    transform: [{ rotate: '-10deg' }]
   },
   scrollView: {
     flex: 1,
-    padding: 16,
+    marginTop: -40,
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#f1f5f9',
   },
-  card: {
-    marginBottom: 16,
-  },
-  premiumCard: {
-    marginHorizontal: 6,
-    marginVertical: 20,
-    borderRadius: 24,
-    backgroundColor: '#1a1a2e',
-    elevation: 12,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
+  mainCard: {
+    backgroundColor: '#fff',
+    borderRadius: 32,
+    marginHorizontal: 16,
+    padding: 24,
+    elevation: 8,
+    shadowColor: '#64748b',
+    shadowOpacity: 0.15,
     shadowRadius: 16,
-    borderWidth: 1,
-    borderColor: 'rgba(102, 126, 234, 0.2)',
+    shadowOffset: { width: 0, height: 8 },
   },
-  cardContent: {
-    paddingHorizontal: 24,
-    paddingVertical: 28,
+  inputSection: {
+    marginBottom: 24,
   },
-  title: {
-    marginBottom: 20,
-    fontWeight: 'bold',
-  },
-  input: {
-    marginBottom: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
-    borderRadius: 12,
-  },
-  label: {
-    fontSize: 14,
+  inputLabel: {
+    fontSize: 12,
     fontWeight: '700',
+    color: '#94a3b8',
     marginBottom: 12,
-    marginTop: 16,
-    color: '#fff',
-    letterSpacing: 0.5,
+    letterSpacing: 1,
   },
-  courseButton: {
-    marginBottom: 16,
-    justifyContent: 'center',
-    backgroundColor: 'rgba(102, 126, 234, 0.15)',
+  modernInput: {
+    backgroundColor: '#f8fafc',
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: 'rgba(102, 126, 234, 0.4)',
-  },
-  courseButtonContent: {
-    justifyContent: 'flex-start',
-    height: 48,
-    paddingHorizontal: 16,
-  },
-  courseButtonLabel: {
+    marginBottom: 16,
+    borderTopLeftRadius: 12,
+    borderTopRightRadius: 12,
     fontSize: 16,
-    color: '#fff',
-    fontWeight: '500',
   },
-  dropdownButton: {
-    marginBottom: 16,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: 'rgba(102, 126, 234, 0.15)',
+  courseSelector: {
+    backgroundColor: '#f8fafc',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    overflow: 'hidden',
+  },
+  courseSelectorContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 16,
+  },
+  courseIcon: {
+    width: 48,
+    height: 48,
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: 'rgba(102, 126, 234, 0.4)',
+    backgroundColor: '#e2e8f0',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  courseSelectorLabel: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e293b',
+  },
+  courseSelectorSub: {
+    fontSize: 13,
+    color: '#64748b',
+  },
+  courseMenu: {
+    marginTop: 8,
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 8,
+    elevation: 4,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  courseMenuItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    height: 48,
-  },
-  dropdownButtonContent: {
-    justifyContent: 'space-between',
-    height: 48,
-    paddingHorizontal: 16,
-  },
-  dropdownButtonLabel: {
-    fontSize: 16,
-    color: '#fff',
-    fontWeight: '500',
-    flex: 1,
-  },
-  dropdownContainer: {
-    backgroundColor: '#252541',
-    borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: 'rgba(102, 126, 234, 0.4)',
-    marginTop: -8,
-    marginBottom: 14,
-    overflow: 'visible',
-    elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    zIndex: 1000,
-    paddingTop: 2,
-  },
-  dropdownItem: {
-    marginHorizontal: 0,
-    marginVertical: 0,
-    paddingVertical: 0,
+    padding: 12,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(102, 126, 234, 0.1)',
+    borderBottomColor: '#f8fafc',
   },
-  dropdownItemContent: {
-    justifyContent: 'flex-start',
-    height: 48,
-    paddingHorizontal: 16,
-  },
-  dropdownItemLabel: {
+  courseMenuItemText: {
     fontSize: 15,
-    color: '#fff',
-    fontWeight: '400',
-    textAlign: 'left',
+    color: '#475569',
   },
-  dropdownItemLabelActive: {
+  courseMenuItemTextActive: {
+    color: '#4338ca',
     fontWeight: '600',
-    color: '#667eea',
   },
-  noCourseCard: {
-    marginBottom: 16,
-    backgroundColor: '#fff3cd',
-  },
-  dateButton: {
-    marginBottom: 16,
-    backgroundColor: 'rgba(102, 126, 234, 0.15)',
+  emptyCourseBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    padding: 16,
+    backgroundColor: '#fef3c7',
     borderRadius: 12,
-    borderWidth: 1.5,
-    borderColor: 'rgba(102, 126, 234, 0.4)',
   },
-  buttonContainer: {
+  emptyCourseText: {
+    color: '#854d0e',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  row: {
     flexDirection: 'row',
     gap: 16,
-    marginTop: 32,
-    paddingTop: 24,
-    borderTopWidth: 1,
-    borderTopColor: 'rgba(102, 126, 234, 0.2)',
   },
-  button: {
+  timeCard: {
     flex: 1,
-    borderRadius: 12,
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderRadius: 16,
+    padding: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    elevation: 2,
+    shadowColor: '#64748b',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
   },
+  timeCardIcon: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    backgroundColor: '#e0e7ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  timeCardLabel: {
+    fontSize: 12,
+    color: '#64748b',
+    marginBottom: 2,
+  },
+  timeCardValue: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
+  submitButton: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: 18,
+    borderRadius: 16,
+    gap: 8,
+    elevation: 4,
+    shadowColor: '#4338ca',
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
+  },
+  submitButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
+  cancelLink: {
+    alignItems: 'center',
+    padding: 16,
+    marginTop: 4,
+  },
+  cancelLinkText: {
+    color: '#64748b',
+    fontSize: 16,
+    fontWeight: '600',
+  }
 });

@@ -36,8 +36,8 @@ function StudentProgressScreen({ navigation }: any) {
     setCourseProgress(progress);
   }, [enrollments, courses]);
 
-  const renderProgressCard = ({ item }: { item: any }) => (
-    <Surface style={styles.cardWrapper} elevation={2}>
+  const renderProgressCard = ({ item, index }: { item: any, index: number }) => (
+    <Surface key={item.id || index} style={styles.cardWrapper} elevation={2}>
       <View style={styles.cardIconBox}>
         <MaterialCommunityIcons name="book-open-page-variant" size={24} color={Colors.light.primary} />
       </View>
@@ -122,7 +122,7 @@ function StudentProgressScreen({ navigation }: any) {
             <Text style={styles.emptySub}>Start a course to see your progress bloom here.</Text>
           </View>
         ) : (
-          courseProgress.map((item) => renderProgressCard({ item }))
+          courseProgress.map((item, index) => renderProgressCard({ item, index }))
         )}
 
         <View style={{ height: 100 }} />

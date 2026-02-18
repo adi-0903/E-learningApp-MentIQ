@@ -3,18 +3,33 @@
  * Handles all communication with the Django REST backend.
  * Uses JWT authentication with automatic token refresh.
  */
+import Constants from 'expo-constants';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // ─── Configuration ───────────────────────────────────────────────
-// IMPORTANT: For physical Android devices, replace with your computer's IP address
-// Find it with: ipconfig (Windows) or ifconfig (Mac/Linux)
-// Example: 'http://192.168.1.100:8000/api'
+// Auto-detect the dev machine's IP from Expo so you never have to
+// enter it manually. Falls back to localhost if detection fails.
+
+function getDevBaseUrl(): string {
+  // Expo SDK 49+: debuggerHost is available in dev
+  const debuggerHost =
+    Constants.expoConfig?.hostUri ?? // e.g. "192.168.1.7:8081"
+    Constants.manifest2?.extra?.expoGo?.debuggerHost ??
+    (Constants.manifest as any)?.debuggerHost;
+
+  if (debuggerHost) {
+    const ip = debuggerHost.split(':')[0]; // strip the Expo port
+    return `http://${ip}:8000/api`;
+  }
+
+  // Fallback for edge-cases
+  return 'http://localhost:8000/api';
+}
+
 const API_BASE_URL = __DEV__
-  ? 'http://192.168.1.4:8000/api'  // Your computer's IP
+  ? getDevBaseUrl()
   : 'https://your-production-url.com/api';
 
-// For Android Emulator use: 'http://10.0.2.2:8000/api'
-// For iOS Simulator use: 'http://localhost:8000/api'
 
 const TOKEN_KEY = 'auth_tokens';
 
@@ -257,6 +272,11 @@ export const teacherApi = {
 
   getCourseStudents: (courseId: string | number) =>
     api.get(`/v1/teachers/courses/${courseId}/students/`),
+
+  getStudentDetail: (studentId: string | number, courseId?: string | number | null) => {
+    const query = courseId ? `?course_id=${courseId}` : '';
+    return api.get(`/v1/teachers/students/${studentId}/${query}`);
+  },
 };
 
 // ─── Courses ─────────────────────────────────────────────────────
@@ -288,12 +308,18 @@ export const courseApi = {
 
   delete: (id: string | number) =>
     api.delete(`/v1/courses/${id}/`),
+
+  listReviews: (courseId: string | number) =>
+    api.get(`/v1/courses/${courseId}/reviews/`),
+
+  submitReview: (courseId: string | number, data: { rating: number; comment: string }) =>
+    api.post(`/v1/courses/${courseId}/reviews/`, data),
 };
 
 // ─── Lessons ─────────────────────────────────────────────────────
 export const lessonApi = {
   list: (courseId?: string | number) => {
-    const query = courseId ? `?course_id=${courseId}` : '';
+    const query = courseId ? `?course=${courseId}` : '';
     return api.get(`/v1/lessons/${query}`);
   },
 
@@ -329,7 +355,7 @@ export const lessonApi = {
 // ─── Quizzes ─────────────────────────────────────────────────────
 export const quizApi = {
   list: (courseId?: string | number) => {
-    const query = courseId ? `?course_id=${courseId}` : '';
+    const query = courseId ? `?course=${courseId}` : '';
     return api.get(`/v1/quizzes/${query}`);
   },
 
@@ -374,6 +400,9 @@ export const quizApi = {
 
   getAttempts: (quizId: string | number) =>
     api.get(`/v1/quizzes/${quizId}/attempts/`),
+
+  listAllAttempts: () =>
+    api.get('/v1/quizzes/attempts/all/'),
 };
 
 // ─── Enrollments ─────────────────────────────────────────────────

@@ -14,9 +14,14 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
-  View
+  View,
+  Dimensions,
+  ActivityIndicator
 } from 'react-native';
-import { Button, Chip, SegmentedButtons, Text, TextInput } from 'react-native-paper';
+import { Button, Chip, Text, TextInput, Surface } from 'react-native-paper';
+import { LinearGradient } from 'expo-linear-gradient';
+
+const { width } = Dimensions.get('window');
 
 function CreateAnnouncementScreen({ navigation }: any) {
   const { user } = useAuthStore();
@@ -226,211 +231,279 @@ function CreateAnnouncementScreen({ navigation }: any) {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       style={styles.container}
     >
+      <LinearGradient
+        colors={['#f8fafc', '#f1f5f9', '#e2e8f0']}
+        style={styles.meshBackground}
+      />
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Premium Header */}
-        <View style={styles.premiumHeader}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
+        {/* Ultra-Premium Header */}
+        <View style={styles.headerContainer}>
+          <LinearGradient
+            colors={['#020617', '#0f172a', '#1e293b']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.headerGradient}
           >
-            <View style={styles.backButtonCircle}>
-              <MaterialCommunityIcons name="chevron-left" size={24} color="#fff" />
+            {/* Artistic Glass Elements */}
+            <View style={styles.glassCircle1} />
+            <View style={styles.glassCircle2} />
+
+            <View style={styles.headerTopRow}>
+              <TouchableOpacity
+                onPress={() => navigation.goBack()}
+                style={styles.backButton}
+              >
+                <View style={styles.backButtonGlass}>
+                  <MaterialCommunityIcons name="chevron-left" size={28} color="#fff" />
+                </View>
+              </TouchableOpacity>
+
+              <View style={styles.headerTitleGroup}>
+                <Text style={styles.premiumTitle}>Broadcast Center</Text>
+                <Text style={styles.premiumLabel}>Teacher's Executive Hub</Text>
+              </View>
+
+              <View style={styles.broadcastStatus}>
+                <View style={styles.statusPulse} />
+                <MaterialCommunityIcons name="broadcast" size={24} color="rgba(255,255,255,0.7)" />
+              </View>
             </View>
-          </TouchableOpacity>
-          <View style={styles.headerContent}>
-            <Text style={styles.greeting}>📢 Create Announcement</Text>
-          </View>
+          </LinearGradient>
         </View>
 
         <View style={styles.content}>
-          {/* Announcement Type Selection */}
+          {/* Audience Selection - Unified Box */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Announcement Type</Text>
-            <SegmentedButtons
-              value={announcementType}
-              onValueChange={(value: any) => setAnnouncementType(value)}
-              buttons={[
-                {
-                  value: 'school',
-                  label: '🏫 School-wide',
-                  style: styles.segmentButton,
-                  labelStyle: styles.segmentLabel,
-                },
-                {
-                  value: 'subject',
-                  label: '📚 Subject-specific',
-                  style: styles.segmentButton,
-                  labelStyle: styles.segmentLabel,
-                },
-              ]}
-              style={styles.segmentedButtons}
-            />
-          </View>
+            <View style={styles.sectionAccent} />
 
-          {/* Subject Selection (if subject-specific) */}
-          {announcementType === 'subject' && courses.length > 0 && (
-            <View style={styles.section}>
-              <Text style={styles.sectionTitle}>Select Subject</Text>
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.subjectScroll}
-              >
-                {courses.map((course) => (
-                  <TouchableOpacity
-                    key={course.id}
-                    onPress={() => setSelectedCourseId(course.id)}
-                    style={[
-                      styles.subjectChip,
-                      selectedCourseId === course.id && styles.subjectChipActive,
-                    ]}
-                  >
-                    <MaterialCommunityIcons
-                      name="book-open-page-variant"
-                      size={16}
-                      color={selectedCourseId === course.id ? '#fff' : '#667eea'}
-                    />
-                    <Text
-                      style={[
-                        styles.subjectChipText,
-                        selectedCourseId === course.id && styles.subjectChipTextActive,
-                      ]}
-                      numberOfLines={1}
-                    >
-                      {course.title}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+            {/* Type Part */}
+            <View style={styles.subSection}>
+              <Text style={styles.sectionTitle}>Target Audience</Text>
+              <View style={styles.customSegmentContainer}>
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setAnnouncementType('school')}
+                  style={[
+                    styles.audienceOption,
+                    announcementType === 'school' && styles.audienceOptionActive
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name="home-city-outline"
+                    size={20}
+                    color={announcementType === 'school' ? '#4f46e5' : '#64748b'}
+                  />
+                  <Text style={[
+                    styles.audienceOptionText,
+                    announcementType === 'school' && styles.audienceOptionTextActive
+                  ]}>School-wide</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  activeOpacity={0.7}
+                  onPress={() => setAnnouncementType('subject')}
+                  style={[
+                    styles.audienceOption,
+                    announcementType === 'subject' && styles.audienceOptionActive
+                  ]}
+                >
+                  <MaterialCommunityIcons
+                    name="book-outline"
+                    size={20}
+                    color={announcementType === 'subject' ? '#4f46e5' : '#64748b'}
+                  />
+                  <Text style={[
+                    styles.audienceOptionText,
+                    announcementType === 'subject' && styles.audienceOptionTextActive
+                  ]}>Subject-specific</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          )}
 
-          {/* Title Input */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Announcement Title</Text>
-            <TextInput
-              label="Enter title"
-              value={title}
-              onChangeText={setTitle}
-              mode="outlined"
-              style={styles.input}
-              outlineColor="#e0e0e0"
-              activeOutlineColor="#667eea"
-              left={<TextInput.Icon icon="format-title" color="#667eea" />}
-              maxLength={100}
-              placeholder="e.g., Holiday Schedule, Important Notice"
-            />
-            <Text style={styles.charCount}>{title.length}/100</Text>
+            {/* Subject Selection Part (Conditional inside same box) */}
+            {announcementType === 'subject' && courses.length > 0 && (
+              <>
+                <View style={[styles.boxDivider, { marginVertical: 20 }]} />
+                <View style={styles.subSection}>
+                  <Text style={[styles.sectionTitle, { fontSize: 13, color: '#64748b' }]}>Target Subject</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    style={styles.subjectScroll}
+                  >
+                    {courses.map((course) => (
+                      <TouchableOpacity
+                        key={course.id}
+                        onPress={() => setSelectedCourseId(course.id)}
+                        style={[
+                          styles.subjectChip,
+                          selectedCourseId === course.id && styles.subjectChipActive,
+                        ]}
+                      >
+                        <MaterialCommunityIcons
+                          name={selectedCourseId === course.id ? "check-circle" : "book-open-page-variant"}
+                          size={16}
+                          color={selectedCourseId === course.id ? '#4f46e5' : '#64748b'}
+                        />
+                        <Text
+                          style={[
+                            styles.subjectChipText,
+                            selectedCourseId === course.id && styles.subjectChipTextActive,
+                          ]}
+                          numberOfLines={1}
+                        >
+                          {course.title}
+                        </Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                </View>
+              </>
+            )}
           </View>
 
-          {/* Content Input */}
+          {/* Announcement Hub - Unified Box */}
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Announcement Content</Text>
-            <TextInput
-              label="Enter announcement details"
-              value={content}
-              onChangeText={setContent}
-              mode="outlined"
-              style={[styles.input, styles.contentInput]}
-              outlineColor="#e0e0e0"
-              activeOutlineColor="#667eea"
-              multiline
-              numberOfLines={8}
-              maxLength={6000}
-              placeholder="Write your announcement here..."
-            />
-            <Text style={styles.charCount}>{content.length}/6000</Text>
-          </View>
+            <View style={styles.sectionAccent} />
 
-          {/* Links Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>📎 Add Links & PDFs</Text>
-            <Text style={styles.linkHint}>Enter any URL or PDF link</Text>
-            <View style={styles.attachmentInputContainer}>
+            {/* Title Part */}
+            <View style={styles.subSection}>
+              <Text style={styles.sectionTitle}>Announcement Details</Text>
               <TextInput
-                label="Enter link or PDF URL"
-                value={newLink}
-                onChangeText={setNewLink}
+                label="Campaign Title"
+                value={title}
+                onChangeText={setTitle}
                 mode="outlined"
-                style={styles.attachmentInput}
-                outlineColor="#e0e0e0"
-                activeOutlineColor="#667eea"
-                placeholder="https://example.com or .pdf"
+                style={styles.input}
+                outlineColor="#e2e8f0"
+                activeOutlineColor="#4f46e5"
+                left={<TextInput.Icon icon="format-title" color="#4f46e5" />}
+                maxLength={100}
+                placeholder="e.g., Important Notice"
               />
-              <Button
-                mode="contained"
-                onPress={addLink}
-                style={styles.addButton}
-                labelStyle={styles.addButtonLabel}
-              >
-                Add
-              </Button>
+              <Text style={styles.charCount}>{title.length}/100</Text>
             </View>
-            {(links.length > 0 || pdfs.length > 0) && (
-              <View style={styles.chipContainer}>
-                {links.map((link, index) => (
-                  <Chip
-                    key={`link-${index}`}
-                    icon="link"
-                    onClose={() => removeLink(index)}
-                    style={styles.attachmentChip}
-                    textStyle={styles.chipText}
+
+            <View style={styles.boxDivider} />
+
+            {/* Content Part */}
+            <View style={[styles.subSection, { paddingTop: 12 }]}>
+              <TextInput
+                label="Detailed Description"
+                value={content}
+                onChangeText={setContent}
+                mode="outlined"
+                style={[styles.input, styles.contentInput]}
+                outlineColor="#e2e8f0"
+                activeOutlineColor="#4f46e5"
+                multiline
+                numberOfLines={6}
+                maxLength={6000}
+                placeholder="Write your announcement message here..."
+              />
+              <Text style={styles.charCount}>{content.length}/6000</Text>
+            </View>
+          </View>
+
+          {/* Attachments Section - Unified Box */}
+          <View style={styles.section}>
+            <View style={styles.sectionAccent} />
+
+            {/* Links Part */}
+            <View style={styles.subSection}>
+              <Text style={styles.sectionTitle}>📎 Attachments & Media</Text>
+              <Text style={styles.linkHint}>Add important resources (Web, PDF)</Text>
+              <View style={styles.attachmentInputContainer}>
+                <TextInput
+                  label="Document URL"
+                  value={newLink}
+                  onChangeText={setNewLink}
+                  mode="outlined"
+                  style={styles.attachmentInput}
+                  outlineColor="transparent"
+                  activeOutlineColor="#4f46e5"
+                  placeholder="https://example.com"
+                />
+                <TouchableOpacity
+                  onPress={addLink}
+                  style={styles.addIconBtn}
+                >
+                  <LinearGradient
+                    colors={['#4f46e5', '#4338ca']}
+                    style={styles.addIconGradient}
                   >
-                    Link {index + 1}
-                  </Chip>
-                ))}
-                {pdfs.map((pdf, index) => {
-                  const shortName = pdf.name.length > 20 ? pdf.name.substring(0, 17) + '...' : pdf.name;
-                  return (
+                    <MaterialCommunityIcons name="plus" size={24} color="#fff" />
+                  </LinearGradient>
+                </TouchableOpacity>
+              </View>
+              {(links.length > 0 || pdfs.length > 0) && (
+                <View style={styles.chipContainer}>
+                  {links.map((link, index) => (
                     <Chip
-                      key={`pdf-${index}`}
-                      icon="file-pdf-box"
-                      onClose={() => removePdfLink(index)}
+                      key={`link-${index}`}
+                      icon="link"
+                      onClose={() => removeLink(index)}
                       style={styles.attachmentChip}
                       textStyle={styles.chipText}
                     >
-                      {shortName}
+                      Link {index + 1}
                     </Chip>
-                  );
-                })}
-              </View>
-            )}
-          </View>
+                  ))}
+                  {pdfs.map((pdf, index) => {
+                    const shortName = pdf.name.length > 20 ? pdf.name.substring(0, 17) + '...' : pdf.name;
+                    return (
+                      <Chip
+                        key={`pdf-${index}`}
+                        icon="file-pdf-box"
+                        onClose={() => removePdfLink(index)}
+                        style={styles.attachmentChip}
+                        textStyle={styles.chipText}
+                      >
+                        {shortName}
+                      </Chip>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
 
-          {/* Images Section */}
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>🖼️ Add Images</Text>
-            <Button
-              mode="contained"
-              onPress={pickImageFile}
-              style={styles.uploadButton}
-              labelStyle={styles.uploadButtonLabel}
-              icon="image-plus"
-            >
-              Choose Image File
-            </Button>
-            {images.length > 0 && (
-              <View style={styles.chipContainer}>
-                {images.map((image, index) => {
-                  const shortName = image.name.length > 20 ? image.name.substring(0, 17) + '...' : image.name;
-                  return (
-                    <TouchableOpacity
-                      key={index}
-                      onPress={() => handlePreviewImage(image.uri)}
-                      style={[styles.attachmentChip, styles.imageChip, styles.previewChip]}
-                    >
-                      <View style={styles.chipContent}>
-                        <MaterialCommunityIcons name="image" size={16} color="#9c27b0" />
-                        <Text style={styles.chipText} numberOfLines={1}>{shortName}</Text>
-                        <TouchableOpacity onPress={() => removeImage(index)} style={styles.closeButton}>
-                          <MaterialCommunityIcons name="close" size={16} color="#9c27b0" />
-                        </TouchableOpacity>
-                      </View>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-            )}
+            <View style={[styles.boxDivider, { marginVertical: 14 }]} />
+
+            {/* Images Part */}
+            <View style={styles.subSection}>
+              <Text style={[styles.sectionTitle, { fontSize: 12, color: '#64748b', marginBottom: 10 }]}>Gallery / Visual Aids</Text>
+              <Button
+                mode="contained"
+                onPress={pickImageFile}
+                style={styles.uploadButton}
+                labelStyle={styles.uploadButtonLabel}
+                icon="image-plus"
+              >
+                Choose Image File
+              </Button>
+              {images.length > 0 && (
+                <View style={[styles.chipContainer, { marginTop: 12 }]}>
+                  {images.map((image, index) => {
+                    const shortName = image.name.length > 20 ? image.name.substring(0, 17) + '...' : image.name;
+                    return (
+                      <TouchableOpacity
+                        key={index}
+                        onPress={() => handlePreviewImage(image.uri)}
+                        style={[styles.attachmentChip, styles.imageChip]}
+                      >
+                        <View style={styles.chipContent}>
+                          <MaterialCommunityIcons name="image" size={16} color="#4f46e5" />
+                          <Text style={styles.chipText} numberOfLines={1}>{shortName}</Text>
+                          <TouchableOpacity onPress={() => removeImage(index)} style={styles.closeButton}>
+                            <MaterialCommunityIcons name="close" size={16} color="#4f46e5" />
+                          </TouchableOpacity>
+                        </View>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              )}
+            </View>
           </View>
 
           {/* Action Buttons */}
@@ -443,16 +516,28 @@ function CreateAnnouncementScreen({ navigation }: any) {
             >
               Cancel
             </Button>
-            <Button
-              mode="contained"
+            <TouchableOpacity
               onPress={handleCreateAnnouncement}
-              loading={isLoading}
               disabled={isLoading}
-              style={styles.submitButton}
-              labelStyle={styles.buttonLabel}
+              activeOpacity={0.8}
+              style={[styles.submitButtonContainer, isLoading && { opacity: 0.7 }]}
             >
-              Publish Announcement
-            </Button>
+              <LinearGradient
+                colors={['#6366f1', '#4f46e5', '#4338ca']}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 0 }}
+                style={styles.submitButtonGradient}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" size="small" />
+                ) : (
+                  <>
+                    <MaterialCommunityIcons name="broadcast" size={22} color="#fff" style={{ marginRight: 10 }} />
+                    <Text style={styles.submitButtonLabel}>Broadcast Now</Text>
+                  </>
+                )}
+              </LinearGradient>
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -463,7 +548,7 @@ function CreateAnnouncementScreen({ navigation }: any) {
           <View style={styles.previewCardHeader}>
             <Text style={styles.previewCardTitle}>Image Preview</Text>
             <TouchableOpacity onPress={closePreview} style={styles.previewCardClose}>
-              <MaterialCommunityIcons name="close" size={24} color="#667eea" />
+              <MaterialCommunityIcons name="close" size={24} color="#4f46e5" />
             </TouchableOpacity>
           </View>
           <Image source={{ uri: previewUri }} style={styles.previewImageInCard} />
@@ -496,89 +581,182 @@ function CreateAnnouncementScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f0f3f9',
+    backgroundColor: '#f8fafc',
+  },
+  meshBackground: {
+    ...StyleSheet.absoluteFillObject,
   },
   centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#f0f3f9',
+    backgroundColor: '#f8fafc',
   },
   scrollView: {
     flex: 1,
   },
-  premiumHeader: {
-    backgroundColor: '#667eea',
-    paddingTop: 50,
-    paddingBottom: 24,
-    paddingHorizontal: 20,
-    borderBottomLeftRadius: 24,
-    borderBottomRightRadius: 24,
-    elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
+  headerContainer: {
+    backgroundColor: '#020617',
+    borderBottomLeftRadius: 40,
+    borderBottomRightRadius: 40,
+    overflow: 'hidden',
+    elevation: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 12 },
     shadowOpacity: 0.3,
-    shadowRadius: 12,
-    minHeight: 100,
+    shadowRadius: 24,
+  },
+  headerGradient: {
+    paddingTop: 70,
+    paddingBottom: 44,
+    paddingHorizontal: 26,
+    position: 'relative',
+  },
+  glassCircle1: {
+    position: 'absolute',
+    top: -50,
+    right: -50,
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    backgroundColor: 'rgba(79, 70, 229, 0.15)',
+  },
+  glassCircle2: {
+    position: 'absolute',
+    bottom: -40,
+    left: -30,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
+  },
+  headerTopRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
+    gap: 18,
   },
   backButton: {
-    padding: 4,
+    zIndex: 10,
   },
-  backButtonCircle: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: 'rgba(255, 255, 255, 0.25)',
+  backButtonGlass: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255, 255, 255, 0.15)',
     justifyContent: 'center',
     alignItems: 'center',
   },
-  headerContent: {
+  headerTitleGroup: {
     flex: 1,
-    justifyContent: 'center',
   },
-  greeting: {
-    fontSize: 20,
-    fontWeight: '800',
+  premiumTitle: {
+    fontSize: 24,
+    fontWeight: '900',
     color: '#fff',
+    letterSpacing: 0.8,
+  },
+  premiumLabel: {
+    fontSize: 13,
+    color: 'rgba(255, 255, 255, 0.7)',
+    fontWeight: '700',
+    marginTop: 4,
     letterSpacing: 0.5,
+    textTransform: 'uppercase',
+  },
+  broadcastStatus: {
+    width: 48,
+    height: 48,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    borderRadius: 24,
+  },
+  statusPulse: {
+    position: 'absolute',
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10b981',
+    top: 8,
+    right: 8,
+    borderWidth: 2,
+    borderColor: '#0f172a',
   },
   content: {
     padding: 20,
-    paddingBottom: 40,
+    paddingTop: 24,
+    paddingBottom: 100,
   },
   section: {
-    marginBottom: 22,
-    backgroundColor: '#fff',
-    borderRadius: 18,
-    padding: 22,
-    elevation: 5,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.12,
-    shadowRadius: 12,
-    borderWidth: 0.5,
-    borderColor: 'rgba(102, 126, 234, 0.1)',
+    marginBottom: 16,
+    backgroundColor: 'rgba(255, 255, 255, 0.95)',
+    borderRadius: 28,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.6)',
+    elevation: 4,
+    shadowColor: '#1e293b',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16,
+    position: 'relative',
+    overflow: 'hidden',
   },
   sectionTitle: {
-    fontSize: 17,
+    fontSize: 12,
     fontWeight: '900',
-    color: '#0d0d0d',
-    marginBottom: 18,
-    letterSpacing: 0.4,
+    color: '#020617',
+    marginBottom: 12,
+    textTransform: 'uppercase',
+    letterSpacing: 1.5,
   },
-  segmentedButtons: {
-    marginBottom: 0,
+  subSection: {
+    width: '100%',
   },
-  segmentButton: {
-    borderColor: '#667eea',
+  boxDivider: {
+    height: 1.5,
+    backgroundColor: '#f1f5f9',
+    marginVertical: 4,
   },
-  segmentLabel: {
+  sectionAccent: {
+    position: 'absolute',
+    top: 0,
+    left: 30,
+    width: 44,
+    height: 5,
+    backgroundColor: '#4f46e5',
+    borderBottomLeftRadius: 6,
+    borderBottomRightRadius: 6,
+  },
+  customSegmentContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  audienceOption: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 10,
+    height: 54,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#f1f5f9',
+    backgroundColor: '#fff',
+  },
+  audienceOptionActive: {
+    backgroundColor: '#f5f3ff',
+    borderColor: '#4f46e5',
+  },
+  audienceOptionText: {
     fontSize: 13,
     fontWeight: '700',
-    letterSpacing: 0.2,
+    color: '#64748b',
+  },
+  audienceOptionTextActive: {
+    color: '#4f46e5',
   },
   subjectScroll: {
     marginHorizontal: -20,
@@ -588,53 +766,44 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
-    paddingHorizontal: 15,
-    paddingVertical: 9,
-    borderRadius: 22,
-    backgroundColor: '#f0f4ff',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderRadius: 16,
+    backgroundColor: '#fff',
     borderWidth: 1.5,
-    borderColor: '#667eea',
+    borderColor: '#f1f5f9',
     marginRight: 10,
-    elevation: 3,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
   },
   subjectChipActive: {
-    backgroundColor: '#667eea',
-    borderColor: '#667eea',
-    elevation: 6,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
+    backgroundColor: '#f5f3ff',
+    borderColor: '#4f46e5',
   },
   subjectChipText: {
-    fontSize: 13,
+    fontSize: 14,
     fontWeight: '700',
-    color: '#667eea',
-    maxWidth: 100,
-    letterSpacing: 0.2,
+    color: '#64748b',
   },
   subjectChipTextActive: {
-    color: '#fff',
+    color: '#4f46e5',
   },
   input: {
-    backgroundColor: '#f8f9fc',
-    borderRadius: 13,
-    borderWidth: 0,
-    fontSize: 15,
-    fontWeight: '500',
+    backgroundColor: 'rgba(248, 250, 252, 0.8)',
+    borderRadius: 18,
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#0f172a',
+    paddingHorizontal: 16,
   },
   contentInput: {
     minHeight: 120,
     textAlignVertical: 'top',
+    fontSize: 16,
+    lineHeight: 22,
   },
   charCount: {
-    fontSize: 11,
-    color: '#999',
-    marginTop: 8,
+    fontSize: 10,
+    color: '#94a3b8',
+    marginTop: 4,
     textAlign: 'right',
     fontWeight: '600',
   },
@@ -678,68 +847,93 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   cancelButton: {
-    flex: 1,
-    borderColor: '#e0e0e0',
-    borderWidth: 1,
-    backgroundColor: '#f8f9fc',
+    flex: 1.2,
+    borderWidth: 1.5,
+    borderColor: '#e2e8f0',
+    borderRadius: 20,
+    height: 64,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    elevation: 2,
+    shadowColor: '#64748b',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
   },
-  submitButton: {
+  submitButtonContainer: {
+    flex: 2.8,
+    height: 64,
+    borderRadius: 20,
+    overflow: 'hidden',
+    elevation: 16,
+    shadowColor: '#4f46e5',
+    shadowOffset: { width: 0, height: 12 },
+    shadowOpacity: 0.6,
+    shadowRadius: 24,
+  },
+  submitButtonGradient: {
     flex: 1,
-    backgroundColor: '#667eea',
-    elevation: 8,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.4,
-    shadowRadius: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 16,
   },
   buttonLabel: {
-    fontSize: 16,
-    fontWeight: '900',
-    letterSpacing: 0.4,
-  },
-  attachmentInputContainer: {
-    flexDirection: 'row',
-    gap: 8,
-    alignItems: 'flex-end',
-  },
-  attachmentInput: {
-    flex: 1,
-    backgroundColor: '#f8f9fc',
-    borderRadius: 13,
-    borderWidth: 0,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  addButton: {
-    backgroundColor: '#667eea',
-    paddingHorizontal: 16,
-    borderRadius: 13,
-    elevation: 6,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-  },
-  addButtonLabel: {
-    fontSize: 13,
-    fontWeight: '900',
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#475569',
     letterSpacing: 0.3,
   },
-  uploadButton: {
-    backgroundColor: '#667eea',
-    marginTop: 14,
-    borderRadius: 13,
-    elevation: 6,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 12,
-  },
-  uploadButtonLabel: {
+  submitButtonLabel: {
     fontSize: 15,
     fontWeight: '900',
     color: '#fff',
-    letterSpacing: 0.3,
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  attachmentInputContainer: {
+    flexDirection: 'row',
+    gap: 10,
+    alignItems: 'center',
+    backgroundColor: '#f8fafc',
+    borderRadius: 18,
+    paddingRight: 6,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  attachmentInput: {
+    flex: 1,
+    backgroundColor: 'transparent',
+    height: 54,
+  },
+  addIconBtn: {
+    width: 44,
+    height: 44,
+  },
+  addIconGradient: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  uploadButton: {
+    backgroundColor: '#f8fafc',
+    marginTop: 8,
+    borderRadius: 16,
+    borderWidth: 1.5,
+    borderColor: '#cbd5e1',
+    borderStyle: 'dashed',
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  uploadButtonLabel: {
+    fontSize: 14,
+    fontWeight: '800',
+    color: '#64748b',
+    marginTop: 4,
   },
   cancelSmallButton: {
     borderColor: '#ddd',
@@ -758,61 +952,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 0,
   },
   attachmentChip: {
-    backgroundColor: '#e8eef7',
-    borderColor: '#667eea',
-    borderWidth: 1.2,
-    paddingHorizontal: 13,
-    paddingVertical: 9,
-    maxWidth: '85%',
-    borderRadius: 15,
-    elevation: 3,
-    shadowColor: '#667eea',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
+    backgroundColor: 'rgba(255, 255, 255, 0.8)',
+    borderColor: 'rgba(79, 70, 229, 0.15)',
+    borderWidth: 1.5,
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    borderRadius: 18,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    elevation: 4,
+    shadowColor: '#6366f1',
+    shadowOpacity: 0.12,
+    shadowRadius: 8,
   },
   pdfChip: {
-    backgroundColor: '#fff8e1',
-    borderColor: '#ff9800',
-    borderWidth: 1.2,
-    paddingHorizontal: 13,
-    paddingVertical: 9,
-    maxWidth: '80%',
-    borderRadius: 15,
-    elevation: 3,
-    shadowColor: '#ff9800',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
+    backgroundColor: '#fffbeb',
+    borderColor: '#fbbf24',
   },
   imageChip: {
-    backgroundColor: '#f3e5f5',
-    borderColor: '#9c27b0',
-    borderWidth: 1.2,
-    paddingHorizontal: 13,
-    paddingVertical: 9,
-    maxWidth: '80%',
-    borderRadius: 15,
-    elevation: 3,
-    shadowColor: '#9c27b0',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.15,
-    shadowRadius: 5,
+    backgroundColor: '#f5f3ff',
+    borderColor: '#818cf8',
   },
   chipText: {
-    fontSize: 12,
+    fontSize: 13,
     fontWeight: '700',
-    color: '#333',
-    letterSpacing: 0.2,
-  },
-  previewChip: {
-    cursor: 'pointer',
+    color: '#1e293b',
+    maxWidth: 160,
   },
   chipContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 6,
-    flex: 1,
+    gap: 10,
   },
   closeButton: {
     padding: 4,
@@ -876,14 +1047,14 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   openButton: {
-    backgroundColor: '#667eea',
+    backgroundColor: '#4f46e5',
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
     paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 14,
     marginTop: 24,
   },
   openButtonText: {

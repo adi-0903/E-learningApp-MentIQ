@@ -10,6 +10,7 @@ export interface Quiz {
   totalQuestions: number;
   passingScore: number;
   timeLimit?: number;
+  courseTitle?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -21,9 +22,14 @@ export interface QuizQuestion {
   questionText: string;
   questionType: 'multiple_choice' | 'true_false' | 'short_answer';
   options?: string;
+  option_a?: string;
+  option_b?: string;
+  option_c?: string;
+  option_d?: string;
   correctAnswer: string;
   sequenceNumber: number;
   createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface QuizAttempt {
@@ -31,11 +37,16 @@ export interface QuizAttempt {
   studentId?: string;
   quizId?: string | number;
   quiz?: number | string;
+  quiz_title?: string;
   score: number;
   totalQuestions: number;
-  correctAnswers: number;
+  correctAnswers?: number;
+  percentage?: number;
+  passed?: boolean;
   attemptedAt?: string;
   timeSpent?: number;
+  answers?: Record<string, string>;
+  questions?: any[];
 }
 
 function normalizeQuiz(raw: any): Quiz {
@@ -44,9 +55,10 @@ function normalizeQuiz(raw: any): Quiz {
     courseId: raw.course_id || raw.courseId || (raw.course ? String(raw.course) : undefined),
     title: raw.title,
     description: raw.description || '',
-    totalQuestions: raw.total_questions || raw.totalQuestions || 0,
+    totalQuestions: raw.total_questions || raw.totalQuestions || raw.question_count || 0,
     passingScore: raw.passing_score || raw.passingScore || 0,
-    timeLimit: raw.time_limit || raw.timeLimit,
+    timeLimit: raw.duration || raw.time_limit || raw.timeLimit,
+    courseTitle: raw.course_title || raw.courseTitle || (raw.course_name),
     createdAt: raw.created_at || raw.createdAt,
     updatedAt: raw.updated_at || raw.updatedAt,
   };
@@ -57,11 +69,16 @@ function normalizeQuestion(raw: any): QuizQuestion {
     id: String(raw.id),
     quizId: raw.quiz_id || raw.quizId || (raw.quiz ? String(raw.quiz) : undefined),
     questionText: raw.question_text || raw.questionText,
-    questionType: raw.question_type || raw.questionType,
+    questionType: raw.question_type || raw.questionType || 'multiple_choice',
     options: raw.options || '',
+    option_a: raw.option_a,
+    option_b: raw.option_b,
+    option_c: raw.option_c,
+    option_d: raw.option_d,
     correctAnswer: raw.correct_answer || raw.correctAnswer || '',
     sequenceNumber: raw.sequence_number || raw.sequenceNumber || 0,
     createdAt: raw.created_at || raw.createdAt,
+    updatedAt: raw.updated_at || raw.updatedAt,
   };
 }
 
@@ -69,12 +86,17 @@ function normalizeAttempt(raw: any): QuizAttempt {
   return {
     id: String(raw.id),
     studentId: raw.student_id || raw.studentId || (raw.student ? String(raw.student) : undefined),
-    quizId: raw.quiz_id || raw.quizId || (raw.quiz ? String(raw.quiz) : undefined),
+    quizId: raw.quiz_id || raw.quizId || (raw.quiz ? String(raw.quiz) : String(raw.quiz_id)),
+    quiz_title: raw.quiz_title,
     score: raw.score || 0,
     totalQuestions: raw.total_questions || raw.totalQuestions || 0,
-    correctAnswers: raw.correct_answers || raw.correctAnswers || 0,
-    attemptedAt: raw.attempted_at || raw.attemptedAt,
-    timeSpent: raw.time_spent || raw.timeSpent,
+    correctAnswers: raw.score,
+    percentage: raw.percentage,
+    passed: raw.passed,
+    attemptedAt: raw.completed_at || raw.attempted_at || raw.attemptedAt,
+    timeSpent: raw.time_taken || raw.timeSpent,
+    answers: raw.answers,
+    questions: raw.questions,
   };
 }
 
@@ -85,6 +107,7 @@ interface QuizState {
   quizAttempts: QuizAttempt[];
   isLoading: boolean;
 
+  fetchAllQuizzes: () => Promise<void>;
   fetchCourseQuizzes: (courseId: string | number) => Promise<void>;
   getQuizById: (quizId: string | number) => Promise<Quiz | null>;
   createQuiz: (quiz: {
@@ -94,7 +117,7 @@ interface QuizState {
     total_questions: number;
     passing_score: number;
     time_limit?: number;
-  }) => Promise<void>;
+  }) => Promise<any>;
   updateQuiz: (quizId: string | number, updates: Partial<Quiz>) => Promise<void>;
   deleteQuiz: (quizId: string | number) => Promise<void>;
 
@@ -110,7 +133,8 @@ interface QuizState {
   deleteQuestion: (questionId: string | number) => Promise<void>;
 
   fetchStudentAttempts: (studentId: string, quizId: string | number) => Promise<void>;
-  submitQuizAttempt: (quizId: string | number, answers: Record<string, string>) => Promise<void>;
+  fetchAllAttempts: () => Promise<void>;
+  submitQuizAttempt: (quizId: string | number, answers: Record<string, string>) => Promise<QuizAttempt>;
 }
 
 export const useQuizStore = create<QuizState>((set) => ({
@@ -120,11 +144,25 @@ export const useQuizStore = create<QuizState>((set) => ({
   quizAttempts: [],
   isLoading: false,
 
+  fetchAllQuizzes: async () => {
+    set({ isLoading: true });
+    try {
+      const { data } = await quizApi.list();
+      const results = data.data || data.results || data;
+      set({ quizzes: (Array.isArray(results) ? results : []).map(normalizeQuiz) });
+    } catch (error) {
+      console.error('Error fetching all quizzes:', error);
+    } finally {
+      set({ isLoading: false });
+    }
+  },
+
   fetchCourseQuizzes: async (courseId) => {
     set({ isLoading: true });
     try {
       const { data } = await quizApi.list(courseId);
-      const results = data.results || data;
+      // Backend StandardPagination puts the array in data.data
+      const results = data.data || data.results || data;
       set({ quizzes: (Array.isArray(results) ? results : []).map(normalizeQuiz) });
     } catch (error) {
       console.error('Error fetching quizzes:', error);
@@ -136,7 +174,7 @@ export const useQuizStore = create<QuizState>((set) => ({
   getQuizById: async (quizId) => {
     try {
       const { data } = await quizApi.get(quizId);
-      return normalizeQuiz(data);
+      return normalizeQuiz(data.data || data);
     } catch (error) {
       console.error('Error fetching quiz:', error);
       return null;
@@ -145,7 +183,8 @@ export const useQuizStore = create<QuizState>((set) => ({
 
   createQuiz: async (quiz) => {
     try {
-      await quizApi.create(quiz);
+      const { data } = await quizApi.create(quiz);
+      return data.data || data;
     } catch (error) {
       console.error('Error creating quiz:', error);
       throw error;
@@ -179,9 +218,11 @@ export const useQuizStore = create<QuizState>((set) => ({
   fetchQuizQuestions: async (quizId) => {
     set({ isLoading: true });
     try {
-      const { data } = await quizApi.getQuestions(quizId);
-      const results = data.results || data;
-      set({ quizQuestions: (Array.isArray(results) ? results : []).map(normalizeQuestion) });
+      // Questions are fetched as part of the quiz detail
+      const { data } = await quizApi.get(quizId);
+      const quizData = data.data || data;
+      const questions = quizData.questions || [];
+      set({ quizQuestions: questions.map(normalizeQuestion) });
     } catch (error) {
       console.error('Error fetching quiz questions:', error);
     } finally {
@@ -211,16 +252,27 @@ export const useQuizStore = create<QuizState>((set) => ({
   fetchStudentAttempts: async (_studentId, quizId) => {
     try {
       const { data } = await quizApi.getAttempts(quizId);
-      const results = data.results || data;
+      const results = data.data || data.results || data;
       set({ quizAttempts: (Array.isArray(results) ? results : []).map(normalizeAttempt) });
     } catch (error) {
       console.error('Error fetching quiz attempts:', error);
     }
   },
 
+  fetchAllAttempts: async () => {
+    try {
+      const { data } = await quizApi.listAllAttempts();
+      const results = data.data || data.results || data;
+      set({ quizAttempts: (Array.isArray(results) ? results : []).map(normalizeAttempt) });
+    } catch (error) {
+      console.error('Error fetching all quiz attempts:', error);
+    }
+  },
+
   submitQuizAttempt: async (quizId, answers) => {
     try {
-      await quizApi.submit(quizId, { answers });
+      const { data } = await quizApi.submit(quizId, { answers });
+      return normalizeAttempt(data.data);
     } catch (error) {
       console.error('Error submitting quiz attempt:', error);
       throw error;

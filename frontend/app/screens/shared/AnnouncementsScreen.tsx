@@ -9,7 +9,8 @@ import * as IntentLauncher from 'expo-intent-launcher';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as MediaLibrary from 'expo-media-library';
 import * as WebBrowser from 'expo-web-browser';
-import React, { useEffect, useState, useRef } from 'react';
+import { useFocusEffect } from '@react-navigation/native';
+import React, { useEffect, useState, useRef, useCallback } from 'react';
 import { Alert, FlatList, Platform, ScrollView, StyleSheet, TouchableOpacity, View, Animated, Easing } from 'react-native';
 import ImageViewing from 'react-native-image-viewing';
 import { ActivityIndicator, FAB, Searchbar, Text } from 'react-native-paper';
@@ -28,25 +29,27 @@ function AnnouncementsScreen({ navigation }: any) {
 
   const fadeAnim = useRef(new Animated.Value(0)).current;
 
-  useEffect(() => {
-    Animated.timing(fadeAnim, {
-      toValue: 1,
-      duration: 800,
-      useNativeDriver: true,
-    }).start();
+  useFocusEffect(
+    useCallback(() => {
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 800,
+        useNativeDriver: true,
+      }).start();
 
-    // Fetch announcements based on selected filter
-    if (selectedFilter === 'all') {
-      fetchAllAnnouncements();
-    } else if (selectedFilter === 'school') {
-      fetchSchoolAnnouncements();
-    } else if (selectedFilter === 'subject') {
-      fetchSubjectAnnouncements();
-    }
+      // Fetch announcements based on selected filter
+      if (selectedFilter === 'all') {
+        fetchAllAnnouncements();
+      } else if (selectedFilter === 'school') {
+        fetchSchoolAnnouncements();
+      } else if (selectedFilter === 'subject') {
+        fetchSubjectAnnouncements();
+      }
 
-    // Reset unread count when viewing announcements
-    markAllAsRead();
-  }, [selectedFilter, fetchAllAnnouncements, fetchSchoolAnnouncements, fetchSubjectAnnouncements, markAllAsRead]);
+      // Reset unread count when viewing announcements
+      markAllAsRead();
+    }, [selectedFilter, fetchAllAnnouncements, fetchSchoolAnnouncements, fetchSubjectAnnouncements, markAllAsRead])
+  );
 
   const filteredAnnouncements = announcements.filter(a =>
     a.title.toLowerCase().includes(searchQuery.toLowerCase()) ||

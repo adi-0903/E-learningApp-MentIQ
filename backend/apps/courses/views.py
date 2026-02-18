@@ -10,13 +10,48 @@ from rest_framework.response import Response
 from apps.core.pagination import StandardPagination
 from apps.core.permissions import IsCourseTeacher, IsTeacher, IsTeacherOrReadOnly
 
-from .models import Course
+from .models import Course, CourseReview
 from .serializers import (
     CourseCreateSerializer,
     CourseDetailSerializer,
     CourseListSerializer,
     CourseUpdateSerializer,
+    CourseReviewSerializer,
 )
+
+
+class CourseReviewListCreateView(generics.ListCreateAPIView):
+    """
+    GET  /api/v1/courses/<id>/reviews/ - List reviews for a course
+    POST /api/v1/courses/<id>/reviews/ - Create a review (students only)
+    """
+    serializer_class = CourseReviewSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        course_id = self.kwargs.get('course_id')
+        return CourseReview.objects.filter(course_id=course_id, is_deleted=False).select_related('student')
+
+    def create(self, request, *args, **kwargs):
+        course_id = self.kwargs.get('course_id')
+        # Check if student already reviewed this course
+        if CourseReview.objects.filter(course_id=course_id, student=request.user).exists():
+            return Response({
+                'success': False,
+                'error': {'message': 'You have already reviewed this course.'}
+            }, status=status.HTTP_400_BAD_REQUEST)
+        
+        data = request.data.copy()
+        data['course'] = course_id
+        serializer = self.get_serializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response({
+            'success': True,
+            'message': 'Review submitted successfully.',
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
 
 
 class CourseListCreateView(generics.ListCreateAPIView):

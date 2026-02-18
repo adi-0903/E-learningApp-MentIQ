@@ -39,7 +39,9 @@ elasticsearch>=8.12,<8.15
 django-elasticsearch-dsl>=8.0,<8.1
 elasticsearch-dsl>=8.12,<8.15
 
-# Email & Notifications
+# SMS & Notifications
+twilio>=9.0.0
+
 sendgrid>=6.11,<6.12
 firebase-admin>=6.4,<6.6
 fcm-django>=2.0,<2.1

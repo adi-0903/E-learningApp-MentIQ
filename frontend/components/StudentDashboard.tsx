@@ -2,10 +2,13 @@ import { useAuthStore } from '@/store/authStore';
 import { Course, useCourseStore } from '@/store/courseStore';
 import { useProgressStore } from '@/store/progressStore';
 import { useNotificationStore } from '@/store/notificationStore';
+import { useAnnouncementStore } from '@/store/announcementStore';
+import { useQuizStore } from '@/store/quizStore';
 import { useNavigation } from '@react-navigation/native';
 import { Colors, Spacing, AppShadows, BorderRadius, Typography } from '@/constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { format } from 'date-fns';
 import React, { useEffect, useState, useRef } from 'react';
 import {
   FlatList,
@@ -78,11 +81,15 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   onBrowseCoursesPress,
 }) => {
   const { user } = useAuthStore();
-  const { courses, isLoading, fetchEnrolledCourses } = useCourseStore();
+  const { courses, isLoading: coursesLoading, fetchEnrolledCourses } = useCourseStore();
+  const { announcements, fetchAllAnnouncements, isLoading: announcementsLoading } = useAnnouncementStore();
+  const { quizzes, fetchAllQuizzes } = useQuizStore();
   const { enrollments } = useProgressStore();
   const { unreadCount, loadSettings } = useNotificationStore();
   const navigation = useNavigation<any>();
   const [refreshing, setRefreshing] = useState(false);
+
+  const isLoading = coursesLoading || (announcementsLoading && announcements.length === 0);
 
   // Animation for header
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -90,6 +97,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   useEffect(() => {
     if (user?.id) {
       fetchEnrolledCourses(user.id);
+      fetchAllAnnouncements();
       loadSettings(user.id);
     }
   }, [user?.id]);
@@ -97,7 +105,11 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   const onRefresh = async () => {
     setRefreshing(true);
     if (user?.id) {
-      await fetchEnrolledCourses(user.id);
+      await Promise.all([
+        fetchEnrolledCourses(user.id),
+        fetchAllAnnouncements(),
+        fetchAllQuizzes()
+      ]);
     }
     setRefreshing(false);
   };
@@ -188,7 +200,14 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 styles.avatarContainer,
                 { opacity: avatarOpacity, transform: [{ scale: avatarScale }] }
               ]}>
-                <Text style={styles.avatarText}>{user?.name?.charAt(0) || 'S'}</Text>
+                {user?.profileAvatar || user?.profileImage ? (
+                  <Image
+                    source={{ uri: user?.profileAvatar || user?.profileImage }}
+                    style={styles.avatarImage}
+                  />
+                ) : (
+                  <Text style={styles.avatarText}>{user?.name?.charAt(0) || 'S'}</Text>
+                )}
               </Animated.View>
               <Animated.View style={{ transform: [{ translateY: contentTranslateY }] }}>
                 <Text style={styles.greetingText}>Hello, {user?.name?.split(' ')[0] || 'Student'}! 👋</Text>
@@ -235,12 +254,13 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
               <Text style={styles.statLabel}>Completed</Text>
             </View>
             <View style={styles.statDivider} />
-            <View style={styles.statItem}>
-              <Text style={styles.statValue}>
-                {courses.length > 0 ? Math.round(courses.reduce((acc, curr) => acc + getProgressPercentage(curr.id), 0) / courses.length) : 0}%
-              </Text>
-              <Text style={styles.statLabel}>Avg. Score</Text>
-            </View>
+            <TouchableOpacity
+              style={styles.statItem}
+              onPress={() => navigation.navigate('AllQuizzes')}
+            >
+              <Text style={styles.statValue}>{quizzes.length}</Text>
+              <Text style={styles.statLabel}>Quizzes</Text>
+            </TouchableOpacity>
           </Animated.View>
         </LinearGradient>
       </Animated.View>
@@ -277,7 +297,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             </View>
           ) : (
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
-              {courses.map((course, index) => (
+              {courses.map((course) => (
                 <View key={course.id} style={{ marginRight: 16 }}>
                   <CourseProgressCard
                     course={course}
@@ -290,35 +310,51 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             </ScrollView>
           )}
 
-          {/* New Suggested Section */}
+          {/* Recent Broadcasts Section */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Explore Categories</Text>
+            <Text style={styles.sectionTitle}>Executive Briefings</Text>
+            <TouchableOpacity onPress={() => navigation.navigate('AnnouncementsTab')}>
+              <Text style={styles.seeAllText}>Hub View</Text>
+            </TouchableOpacity>
           </View>
 
-          <View style={styles.categoryGrid}>
-            {['Technology', 'Business', 'Art', 'Science'].map((cat, idx) => (
-              <TouchableOpacity key={idx} style={styles.categoryCard} onPress={onBrowseCoursesPress}>
-                <LinearGradient
-                  colors={idx % 2 === 0 ? ['#e0f2fe', '#bae6fd'] : ['#f0fdf4', '#dcfce7']}
-                  style={styles.categoryIcon}
+          {announcements.length === 0 ? (
+            <View style={styles.announcementEmpty}>
+              <Text style={styles.emptySubText}>No recent broadcasts from teachers.</Text>
+            </View>
+          ) : (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalScroll}>
+              {announcements.slice(0, 5).map((announcement) => (
+                <TouchableOpacity
+                  key={announcement.id}
+                  style={styles.announcementCard}
+                  onPress={() => navigation.navigate('AnnouncementsTab')}
+                  activeOpacity={0.9}
                 >
-                  <MaterialCommunityIcons
-                    name={idx === 0 ? 'laptop' : idx === 1 ? 'briefcase' : idx === 2 ? 'palette' : 'flask'}
-                    size={24}
-                    color={idx % 2 === 0 ? '#0284c7' : '#16a34a'}
-                  />
-                </LinearGradient>
-                <Text style={styles.categoryName}>{cat}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-
-
-
+                  <LinearGradient
+                    colors={['#ffffff', '#f8fafc']}
+                    style={styles.annCardInner}
+                  >
+                    <View style={styles.annHeader}>
+                      <View style={[styles.annBadge, { backgroundColor: announcement.courseId ? '#e0e7ff' : '#ecfdf5' }]}>
+                        <Text style={[styles.annBadgeText, { color: announcement.courseId ? '#4f46e5' : '#059669' }]}>
+                          {announcement.courseId ? 'Subject' : 'School'}
+                        </Text>
+                      </View>
+                      <Text style={styles.annTime}>{format(announcement.createdAt ? new Date(announcement.createdAt) : new Date(), 'MMM d')}</Text>
+                    </View>
+                    <Text style={styles.annTitle} numberOfLines={1}>{announcement.title}</Text>
+                    <Text style={styles.annDesc} numberOfLines={2}>{announcement.content}</Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+              ))}
+              <View style={{ width: 20 }} />
+            </ScrollView>
+          )}
           <View style={{ height: 100 }} />
         </View>
-      </ScrollView>
-    </View>
+      </ScrollView >
+    </View >
   );
 };
 
@@ -393,6 +429,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  avatarImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 15,
   },
   greetingText: {
     fontSize: 20,
@@ -692,5 +733,72 @@ const styles = StyleSheet.create({
     bottom: -10,
     right: -10,
     zIndex: 0,
+  },
+  announcementEmpty: {
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    alignItems: 'center',
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e2e8f0',
+    borderStyle: 'dashed',
+  },
+  emptySubText: {
+    fontSize: 12,
+    color: '#94a3b8',
+    fontWeight: '500',
+  },
+  announcementCard: {
+    width: 240,
+    borderRadius: 20,
+    backgroundColor: '#fff',
+    marginVertical: 4,
+    elevation: 4,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 10,
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.8)',
+    overflow: 'hidden',
+  },
+  annCardInner: {
+    padding: 16,
+    height: 120,
+    justifyContent: 'space-between',
+  },
+  annHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  annBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  annBadgeText: {
+    fontSize: 9,
+    fontWeight: '900',
+    textTransform: 'uppercase',
+  },
+  annTime: {
+    fontSize: 10,
+    color: '#94a3b8',
+    fontWeight: '600',
+  },
+  annTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#1e293b',
+    marginBottom: 4,
+  },
+  annDesc: {
+    fontSize: 12,
+    color: '#64748b',
+    lineHeight: 16,
+    fontWeight: '500',
   },
 });

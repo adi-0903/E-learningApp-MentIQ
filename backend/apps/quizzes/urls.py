@@ -9,4 +9,5 @@ urlpatterns = [
     path('<uuid:quiz_id>/questions/', views.QuizQuestionManageView.as_view(), name='questions'),
     path('<uuid:quiz_id>/submit/', views.QuizSubmitView.as_view(), name='submit'),
     path('<uuid:quiz_id>/attempts/', views.QuizAttemptsView.as_view(), name='attempts'),
+    path('attempts/all/', views.AllQuizAttemptsView.as_view(), name='all-attempts'),
 ]

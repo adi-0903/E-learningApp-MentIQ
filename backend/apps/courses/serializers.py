@@ -3,9 +3,23 @@ Course serializers for CRUD operations.
 """
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
-from .models import Course
+from .models import Course, CourseReview
 
 User = get_user_model()
+
+
+class CourseReviewSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.name', read_only=True)
+    course_name = serializers.CharField(source='course.title', read_only=True)
+
+    class Meta:
+        model = CourseReview
+        fields = ['id', 'course', 'course_name', 'student', 'student_name', 'rating', 'comment', 'created_at']
+        read_only_fields = ['id', 'student', 'student_name', 'course_name', 'created_at']
+
+    def create(self, validated_data):
+        validated_data['student'] = self.context['request'].user
+        return super().create(validated_data)
 
 
 class CourseListSerializer(serializers.ModelSerializer):

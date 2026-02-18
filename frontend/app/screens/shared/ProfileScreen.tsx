@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react';
-import * as ImagePicker from 'expo-image-picker';
 import { useAuthStore } from '@/store/authStore';
 import { Course, useCourseStore } from '@/store/courseStore';
 import { useNotificationStore } from '@/store/notificationStore';
@@ -22,7 +21,42 @@ function ProfileScreen({ navigation }: any) {
   const [otp, setOtp] = useState('');
   const [otpLoading, setOtpLoading] = useState(false);
   const [profileImage, setProfileImage] = useState(user?.profileImage || '');
+  const [profileAvatar, setProfileAvatar] = useState(user?.profileAvatar || '');
+  const [avatarModalVisible, setAvatarModalVisible] = useState(false);
   const [uploadingImage, setUploadingImage] = useState(false);
+
+  const AVATARS = [
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor1',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor2',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor3',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor4',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor5',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor6',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor7',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor8',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor9',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor10',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor11',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor12',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor13',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor14',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor15',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor16',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor17',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor18',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor19',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor20',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor21',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor22',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor23',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor24',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor25',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor26',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor27',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor28',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor29',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor30',
+  ];
 
   // Update state when user changes
   useEffect(() => {
@@ -30,42 +64,35 @@ function ProfileScreen({ navigation }: any) {
     setBio(user?.bio || '');
     setPhone(user?.phoneNumber || '');
     setProfileImage(user?.profileImage || '');
-  }, [user?.name, user?.bio, user?.phoneNumber, user?.profileImage]);
+    setProfileAvatar(user?.profileAvatar || '');
+  }, [user?.name, user?.bio, user?.phoneNumber, user?.profileImage, user?.profileAvatar]);
 
   useEffect(() => {
     if (user?.id) {
       loadSettings(user.id).catch(console.error);
-      fetchEnrolledCourses().catch(console.error);
-      fetchStudentEnrollments().catch(console.error);
+      if (user.role === 'student') {
+        fetchEnrolledCourses().catch(console.error);
+        fetchStudentEnrollments().catch(console.error);
+      } else if (user.role === 'teacher') {
+        const { fetchTeacherCourses } = useCourseStore.getState();
+        fetchTeacherCourses().catch(console.error);
+      }
     }
   }, [user?.id]);
 
-  const handlePickImage = async () => {
-    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert('Permission Denied', 'We need camera roll permissions to change your avatar.');
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ['images'],
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.8,
-    });
-
-    if (!result.canceled && result.assets[0].uri) {
-      const selectedUri = result.assets[0].uri;
-      setUploadingImage(true);
-      try {
-        await updateProfile(name, bio, phone, selectedUri);
-        setProfileImage(selectedUri);
-        Alert.alert('Success', 'Avatar updated successfully!');
-      } catch (error: any) {
-        Alert.alert('Error', error.message || 'Failed to sync avatar');
-      } finally {
-        setUploadingImage(false);
-      }
+  const handleAvatarSelect = async (avatarUrl: string) => {
+    setUploadingImage(true);
+    try {
+      // Create fake FormData or just pass parameters to store
+      // The updateProfile in store handles both
+      await updateProfile(name, bio, phone, undefined, avatarUrl);
+      setProfileAvatar(avatarUrl);
+      setAvatarModalVisible(false);
+      Alert.alert('Success', 'Profile avatar updated!');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Failed to sync avatar');
+    } finally {
+      setUploadingImage(false);
     }
   };
 
@@ -79,8 +106,8 @@ function ProfileScreen({ navigation }: any) {
       return;
     }
     try {
-      console.log('Saving profile...', { name, bio, phone });
-      await updateProfile(name, bio, phone);
+      console.log('Saving profile...', { name, bio, phone, profileAvatar });
+      await updateProfile(name, bio, phone, undefined, profileAvatar);
       Alert.alert('Success', 'Profile updated successfully!');
       setIsEditing(false);
     } catch (error: any) {
@@ -116,12 +143,6 @@ function ProfileScreen({ navigation }: any) {
       const result = await requestPhoneOTP(phone);
       if (result.success) {
         setOtpModalVisible(true);
-        // DEVELOPMENT ONLY: Show OTP in alert so user doesn't have to check console
-        if (result.data?.otp) {
-          setTimeout(() => {
-            Alert.alert('Development OTP', `Your code is: ${result.data.otp}\n\n(This is shown for testing purposes)`);
-          }, 500);
-        }
       }
     } catch (error: any) {
       Alert.alert('Error', error.message || 'Failed to send OTP');
@@ -191,15 +212,15 @@ function ProfileScreen({ navigation }: any) {
         <View style={styles.profileHeaderContent}>
           <TouchableOpacity
             style={styles.avatarWrapper}
-            onPress={handlePickImage}
+            onPress={() => setAvatarModalVisible(true)}
             disabled={uploadingImage}
           >
             <View style={styles.avatarHalo} />
             <View style={styles.avatarInner}>
               {uploadingImage ? (
                 <ActivityIndicator color={accentColor} size="small" />
-              ) : profileImage ? (
-                <Image source={{ uri: profileImage }} style={styles.avatarImage} />
+              ) : profileAvatar || profileImage ? (
+                <Image source={{ uri: profileAvatar || profileImage }} style={styles.avatarImage} />
               ) : (
                 <Text style={[styles.avatarLargeText, { color: accentColor }]}>
                   {user?.name?.charAt(0) || 'S'}
@@ -207,7 +228,7 @@ function ProfileScreen({ navigation }: any) {
               )}
             </View>
             <View style={[styles.imageEditBadge, { backgroundColor: accentColor }]}>
-              <MaterialCommunityIcons name="camera" size={12} color="#fff" />
+              <MaterialCommunityIcons name="face-recognition" size={12} color="#fff" />
             </View>
             <View style={[styles.onlineIndicator, { backgroundColor: '#10b981' }]} />
           </TouchableOpacity>
@@ -231,25 +252,35 @@ function ProfileScreen({ navigation }: any) {
 
       <View style={styles.contentBody}>
         {/* Stats Row */}
+        {/* Stats Row */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
             <Text style={styles.statValue}>{courses.length}</Text>
             <Text style={styles.statLabel}>Courses</Text>
           </View>
           <View style={styles.statDivider} />
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>
-              {enrollments.filter((e: Enrollment) => e.completionPercentage >= 100).length}
-            </Text>
-            <Text style={styles.statLabel}>Completed</Text>
-          </View>
-          <View style={styles.statDivider} />
-          <View style={styles.statCard}>
-            <Text style={styles.statValue}>
-              {courses.length > 0 ? Math.round(enrollments.reduce((acc: number, curr: Enrollment) => acc + curr.completionPercentage, 0) / courses.length) : 0}%
-            </Text>
-            <Text style={styles.statLabel}>Avg %</Text>
-          </View>
+          {user.role === 'student' ? (
+            <>
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>
+                  {enrollments.filter((e: Enrollment) => e.completionPercentage >= 100).length}
+                </Text>
+                <Text style={styles.statLabel}>Completed</Text>
+              </View>
+              <View style={styles.statDivider} />
+              <View style={styles.statCard}>
+                <Text style={styles.statValue}>
+                  {courses.length > 0 ? Math.round(enrollments.reduce((acc: number, curr: Enrollment) => acc + curr.completionPercentage, 0) / courses.length) : 0}%
+                </Text>
+                <Text style={styles.statLabel}>Avg %</Text>
+              </View>
+            </>
+          ) : (
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>Instructor</Text>
+              <Text style={styles.statLabel}>Role</Text>
+            </View>
+          )}
         </View>
 
         {/* Bio Section */}
@@ -369,7 +400,7 @@ function ProfileScreen({ navigation }: any) {
                   </View>
                 </View>
 
-                <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
+                <View style={[styles.infoRow, user?.role !== 'teacher' ? { borderBottomWidth: 0 } : {}]}>
                   <View style={styles.infoIconWrapper}>
                     <MaterialCommunityIcons name="phone-outline" size={18} color={accentColor} />
                   </View>
@@ -397,6 +428,24 @@ function ProfileScreen({ navigation }: any) {
                     </TouchableOpacity>
                   )}
                 </View>
+
+                {user?.role === 'teacher' && user?.teacherId && (
+                  <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
+                    <View style={styles.infoIconWrapper}>
+                      <MaterialCommunityIcons name="card-account-details-outline" size={18} color={accentColor} />
+                    </View>
+                    <View style={styles.infoContent}>
+                      <Text style={styles.infoLabel}>UID</Text>
+                      <View style={styles.phoneValueRow}>
+                        <Text style={[styles.infoValue, { fontWeight: '900', color: accentColor }]}>{user.teacherId}</Text>
+                        <View style={[styles.verifyStatus, { backgroundColor: '#eef2ff' }]}>
+                          <MaterialCommunityIcons name="check-decagram" size={12} color={accentColor} />
+                          <Text style={[styles.verifyText, { color: accentColor }]}>Active</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                )}
               </>
             )}
           </View>
@@ -460,6 +509,52 @@ function ProfileScreen({ navigation }: any) {
       {/* OTP Verification Modal */}
       <Portal>
         <Modal
+          visible={avatarModalVisible}
+          onDismiss={() => setAvatarModalVisible(false)}
+          contentContainerStyle={styles.modalContainer}
+        >
+          <View style={styles.otpHeader}>
+            <View style={styles.otpIconCircle}>
+              <MaterialCommunityIcons name="face-recognition" size={32} color={accentColor} />
+            </View>
+            <Text style={styles.otpTitle}>Choose Avatar</Text>
+            <Text style={styles.otpSubtitle}>Select a character that represents you</Text>
+          </View>
+
+          <ScrollView
+            style={styles.avatarScrollContainer}
+            showsVerticalScrollIndicator={false}
+          >
+            <View style={styles.avatarGrid}>
+              {AVATARS.map((avatarUrl, index) => (
+                <TouchableOpacity
+                  key={index}
+                  style={[
+                    styles.avatarSlot,
+                    (profileAvatar === avatarUrl) && { borderColor: accentColor, borderWidth: 3 }
+                  ]}
+                  onPress={() => handleAvatarSelect(avatarUrl)}
+                >
+                  <Image source={{ uri: avatarUrl }} style={styles.avatarChoice} />
+                  {profileAvatar === avatarUrl && (
+                    <View style={[styles.avatarCheck, { backgroundColor: accentColor }]}>
+                      <MaterialCommunityIcons name="check" size={12} color="#fff" />
+                    </View>
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
+          </ScrollView>
+
+          <TouchableOpacity
+            onPress={() => setAvatarModalVisible(false)}
+            style={styles.closeModalBtn}
+          >
+            <Text style={styles.closeModalText}>Maybe Later</Text>
+          </TouchableOpacity>
+        </Modal>
+
+        <Modal
           visible={otpModalVisible}
           onDismiss={() => setOtpModalVisible(false)}
           contentContainerStyle={styles.modalContainer}
@@ -504,8 +599,8 @@ function ProfileScreen({ navigation }: any) {
             <Text style={styles.closeModalText}>Cancel</Text>
           </TouchableOpacity>
         </Modal>
-      </Portal>
-    </ScrollView>
+      </Portal >
+    </ScrollView >
   );
 }
 
@@ -856,6 +951,55 @@ const styles = StyleSheet.create({
     color: '#94a3b8',
     fontWeight: '700',
     fontSize: 14,
+  },
+  avatarScrollContainer: {
+    maxHeight: 400,
+    width: '100%',
+  },
+  avatarGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 15,
+    paddingVertical: 10,
+    width: '100%',
+  },
+  avatarSlot: {
+    width: 90,
+    height: 90,
+    borderRadius: 45,
+    backgroundColor: '#fff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#f1f5f9',
+    overflow: 'visible', // Allow checkmark to pop
+    elevation: 4,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.1,
+    shadowRadius: 8,
+  },
+  avatarChoice: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+  },
+  avatarCheck: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#fff',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   infoRow: {
     flexDirection: 'row',
