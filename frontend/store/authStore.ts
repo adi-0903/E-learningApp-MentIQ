@@ -14,6 +14,7 @@ export interface User {
   profileImage?: string;
   profileAvatar?: string;
   teacherId?: string;
+  studentId?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -62,6 +63,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         profileImage: data.user?.profile_image_url || data.user?.profile_image || '',
         profileAvatar: data.user?.profile_avatar || '',
         teacherId: data.user?.teacher_id || '',
+        studentId: data.user?.student_id || '',
       };
 
       // Verify role matches
@@ -149,6 +151,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           profileImage: actualData.profile_image_url || actualData.profile_image || '',
           profileAvatar: actualData.profile_avatar || '',
           teacherId: actualData.teacher_id || '',
+          studentId: actualData.student_id || '',
         };
         set({ user: freshUser, isLoggedIn: true, isLoading: false });
         await AsyncStorage.setItem('currentUser', JSON.stringify(freshUser));

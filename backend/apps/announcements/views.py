@@ -87,7 +87,10 @@ class AnnouncementListCreateView(generics.ListCreateAPIView):
 
 class AnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
     """GET/PUT/DELETE /api/v1/announcements/<id>/"""
-    serializer_class = AnnouncementListSerializer
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return AnnouncementCreateSerializer
+        return AnnouncementListSerializer
     permission_classes = [IsAuthenticated]
     lookup_field = 'id'
 
@@ -97,6 +100,26 @@ class AnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         return Response({'success': True, 'data': AnnouncementListSerializer(instance).data})
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.teacher != request.user:
+            return Response(
+                {'success': False, 'error': {'message': 'Only the author can update.'}},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        
+        # Use partial=True to allow partial updates (PATCH)
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response({
+            'success': True,
+            'message': 'Announcement updated.',
+            'data': AnnouncementListSerializer(instance).data,
+        })
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()

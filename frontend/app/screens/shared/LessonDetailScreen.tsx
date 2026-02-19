@@ -103,132 +103,134 @@ function LessonDetailScreen({ route, navigation }: any) {
   }
 
   return (
-    <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
-      {/* Premium Header */}
-      <LinearGradient
-        colors={[Colors.light.primaryDark, Colors.light.primary]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
-        style={styles.premiumHeader}
-      >
-        <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-          <View style={styles.backButtonCircle}>
-            <MaterialCommunityIcons name="chevron-left" size={24} color={Colors.light.white} />
+    <View style={styles.container}>
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Premium Header */}
+        <LinearGradient
+          colors={[Colors.light.primaryDark, Colors.light.primary]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.premiumHeader}
+        >
+          <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
+            <View style={styles.backButtonCircle}>
+              <MaterialCommunityIcons name="chevron-left" size={24} color={Colors.light.white} />
+            </View>
+          </TouchableOpacity>
+          <View style={styles.headerContent}>
+            <Text style={styles.headerBadge}>📚 Lesson</Text>
+            <Text style={styles.headerTitle} numberOfLines={2}>
+              {lesson.title}
+            </Text>
+            {lesson.duration && (
+              <View style={styles.durationContainer}>
+                <MaterialCommunityIcons name="clock-outline" size={14} color="rgba(255,255,255,0.8)" />
+                <Text style={styles.durationText}>{lesson.duration} minutes</Text>
+              </View>
+            )}
           </View>
-        </TouchableOpacity>
-        <View style={styles.headerContent}>
-          <Text style={styles.headerBadge}>📚 Lesson</Text>
-          <Text style={styles.headerTitle} numberOfLines={2}>
-            {lesson.title}
-          </Text>
-          {lesson.duration && (
-            <View style={styles.durationContainer}>
-              <MaterialCommunityIcons name="clock-outline" size={14} color="rgba(255,255,255,0.8)" />
-              <Text style={styles.durationText}>{lesson.duration} minutes</Text>
+        </LinearGradient>
+
+        <View style={styles.content}>
+          {/* Video Section */}
+          {lesson.videoUrl && (
+            <TouchableOpacity
+              activeOpacity={0.9}
+              onPress={handleOpenVideo}
+              style={[styles.videoCard, AppShadows.medium]}
+            >
+              <LinearGradient
+                colors={[Colors.light.primary, Colors.light.primaryDark]}
+                style={styles.videoGradient}
+              >
+                <View style={styles.videoIconContainer}>
+                  <MaterialCommunityIcons name="play-circle" size={56} color={Colors.light.white} />
+                </View>
+                <Text style={styles.videoText}>Watch Lesson Video</Text>
+                <Text style={styles.videoSubtext}>Tap to start playing</Text>
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
+
+          {/* Description Section */}
+          {lesson.description && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <MaterialCommunityIcons name="text-box-outline" size={20} color={Colors.light.primary} />
+                <Text style={styles.sectionTitle}>Description</Text>
+              </View>
+              <View style={[styles.card, AppShadows.light]}>
+                <Text style={styles.description}>{lesson.description}</Text>
+              </View>
+            </View>
+          )}
+
+          {/* Content Section */}
+          {lesson.content && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <MaterialCommunityIcons name="book-open-page-variant" size={20} color={Colors.light.primary} />
+                <Text style={styles.sectionTitle}>Lesson Content</Text>
+              </View>
+              <View style={[styles.card, AppShadows.light]}>
+                <Text style={styles.contentText}>{lesson.content}</Text>
+              </View>
+            </View>
+          )}
+
+          {/* File Section */}
+          {lesson.fileUrl && (
+            <View style={styles.section}>
+              <View style={styles.sectionHeader}>
+                <MaterialCommunityIcons name="file-document-outline" size={20} color={Colors.light.warning} />
+                <Text style={styles.sectionTitle}>Resources</Text>
+              </View>
+              <TouchableOpacity
+                onPress={() => {
+                  if (isValidUrl(lesson.fileUrl)) {
+                    Linking.openURL(lesson.fileUrl).catch(() => {
+                      Alert.alert('Error', 'Could not open file');
+                    });
+                  } else {
+                    Alert.alert('Error', 'Invalid file URL');
+                  }
+                }}
+                style={[styles.fileCard, AppShadows.small]}
+              >
+                <View style={[styles.fileIconContainer, { backgroundColor: '#FFF7ED' }]}>
+                  <MaterialCommunityIcons name="file-document" size={32} color={Colors.light.warning} />
+                </View>
+                <View style={styles.fileInfo}>
+                  <Text style={styles.fileName}>{lesson.fileType || 'Attached File'}</Text>
+                  <Text style={styles.fileSize}>Tap to download material</Text>
+                </View>
+                <View style={styles.downloadButton}>
+                  <MaterialCommunityIcons name="download" size={20} color={Colors.light.white} />
+                </View>
+              </TouchableOpacity>
+            </View>
+          )}
+
+          {/* Student Actions */}
+          {user?.role === 'student' && (
+            <View style={styles.studentActions}>
+              <Button
+                mode="contained"
+                onPress={handleMarkComplete}
+                style={[
+                  styles.completeButton,
+                  isCompleted ? { backgroundColor: Colors.light.success } : { backgroundColor: Colors.light.primary }
+                ]}
+                labelStyle={styles.completeButtonLabel}
+                icon={isCompleted ? "check" : undefined}
+              >
+                {isCompleted ? 'Completed' : 'Mark as Complete'}
+              </Button>
             </View>
           )}
         </View>
-      </LinearGradient>
-
-      <View style={styles.content}>
-        {/* Video Section */}
-        {lesson.videoUrl && (
-          <TouchableOpacity
-            activeOpacity={0.9}
-            onPress={handleOpenVideo}
-            style={[styles.videoCard, AppShadows.medium]}
-          >
-            <LinearGradient
-              colors={[Colors.light.primary, Colors.light.primaryDark]}
-              style={styles.videoGradient}
-            >
-              <View style={styles.videoIconContainer}>
-                <MaterialCommunityIcons name="play-circle" size={56} color={Colors.light.white} />
-              </View>
-              <Text style={styles.videoText}>Watch Lesson Video</Text>
-              <Text style={styles.videoSubtext}>Tap to start playing</Text>
-            </LinearGradient>
-          </TouchableOpacity>
-        )}
-
-        {/* Description Section */}
-        {lesson.description && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <MaterialCommunityIcons name="text-box-outline" size={20} color={Colors.light.primary} />
-              <Text style={styles.sectionTitle}>Description</Text>
-            </View>
-            <View style={[styles.card, AppShadows.light]}>
-              <Text style={styles.description}>{lesson.description}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* Content Section */}
-        {lesson.content && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <MaterialCommunityIcons name="book-open-page-variant" size={20} color={Colors.light.primary} />
-              <Text style={styles.sectionTitle}>Lesson Content</Text>
-            </View>
-            <View style={[styles.card, AppShadows.light]}>
-              <Text style={styles.contentText}>{lesson.content}</Text>
-            </View>
-          </View>
-        )}
-
-        {/* File Section */}
-        {lesson.fileUrl && (
-          <View style={styles.section}>
-            <View style={styles.sectionHeader}>
-              <MaterialCommunityIcons name="file-document-outline" size={20} color={Colors.light.warning} />
-              <Text style={styles.sectionTitle}>Resources</Text>
-            </View>
-            <TouchableOpacity
-              onPress={() => {
-                if (isValidUrl(lesson.fileUrl)) {
-                  Linking.openURL(lesson.fileUrl).catch(() => {
-                    Alert.alert('Error', 'Could not open file');
-                  });
-                } else {
-                  Alert.alert('Error', 'Invalid file URL');
-                }
-              }}
-              style={[styles.fileCard, AppShadows.small]}
-            >
-              <View style={[styles.fileIconContainer, { backgroundColor: '#FFF7ED' }]}>
-                <MaterialCommunityIcons name="file-document" size={32} color={Colors.light.warning} />
-              </View>
-              <View style={styles.fileInfo}>
-                <Text style={styles.fileName}>{lesson.fileType || 'Attached File'}</Text>
-                <Text style={styles.fileSize}>Tap to download material</Text>
-              </View>
-              <View style={styles.downloadButton}>
-                <MaterialCommunityIcons name="download" size={20} color={Colors.light.white} />
-              </View>
-            </TouchableOpacity>
-          </View>
-        )}
-
-        {/* Student Actions */}
-        {user?.role === 'student' && (
-          <View style={styles.studentActions}>
-            <Button
-              mode="contained"
-              onPress={handleMarkComplete}
-              style={[
-                styles.completeButton,
-                isCompleted ? { backgroundColor: Colors.light.success } : { backgroundColor: Colors.light.primary }
-              ]}
-              labelStyle={styles.completeButtonLabel}
-              icon={isCompleted ? "check" : undefined}
-            >
-              {isCompleted ? 'Completed' : 'Mark as Complete'}
-            </Button>
-          </View>
-        )}
-      </View>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 }
 

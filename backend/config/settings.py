@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'apps.payments',
     'apps.analytics',
     'apps.media',
+    'apps.ai_tutor',
 ]
 
 MIDDLEWARE = [

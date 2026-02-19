@@ -161,11 +161,20 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
       {/* Header Section */}
       <View style={styles.headerContainer}>
         <LinearGradient
-          colors={['#1e1b4b', '#312e81', '#4338ca']}
+          colors={['#0f172a', '#1e1b4b', '#312e81']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={styles.headerGradient}
+          style={styles.nexusHeader}
         >
+          <View style={styles.blurMesh}>
+            <MaterialCommunityIcons
+              name="view-dashboard-variant"
+              size={300}
+              color="rgba(99, 102, 241, 0.05)"
+              style={styles.meshIcon}
+            />
+          </View>
+
           <View style={styles.headerTop}>
             <View>
               <Text style={styles.greetingLight}>{getTimeOfDay()},</Text>
@@ -176,7 +185,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                 uri: user?.profileAvatar || user?.profileImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.name || 'Teacher')}&background=random&color=fff&size=200`
               }}
               style={styles.profileImage}
-              imageStyle={{ borderRadius: 25 }}
+              imageStyle={{ borderRadius: 24 }}
             />
           </View>
 
@@ -301,26 +310,37 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   headerContainer: {
-    backgroundColor: '#312e81',
+    marginBottom: 20,
+  },
+  nexusHeader: {
+    height: 280,
+    paddingTop: 60,
+    paddingHorizontal: 24,
+    borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
     overflow: 'hidden',
+    position: 'relative',
+    elevation: 10,
     shadowColor: '#312e81',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
     shadowRadius: 20,
-    elevation: 10,
-    zIndex: 10,
   },
-  headerGradient: {
-    paddingTop: 60,
-    paddingBottom: 30,
-    paddingHorizontal: 24,
+  blurMesh: {
+    position: 'absolute',
+    top: -50,
+    right: -50,
+    opacity: 0.6,
+  },
+  meshIcon: {
+    transform: [{ rotate: '-15deg' }],
   },
   headerTop: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 24,
+    zIndex: 1,
   },
   greetingLight: {
     fontSize: 14,
@@ -330,16 +350,18 @@ const styles = StyleSheet.create({
   },
   greetingUser: {
     fontSize: 28,
-    fontWeight: 'bold',
+    fontWeight: '900',
     color: '#fff',
+    letterSpacing: -0.5,
   },
   profileImage: {
-    width: 50,
-    height: 50,
+    width: 48,
+    height: 48,
     backgroundColor: '#4338ca',
-    borderRadius: 25,
+    borderRadius: 24,
     borderWidth: 2,
     borderColor: '#818cf8',
+    overflow: 'hidden',
   },
   statsScroll: {
     marginHorizontal: -24,

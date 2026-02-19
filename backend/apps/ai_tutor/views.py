@@ -1,0 +1,134 @@
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from django.shortcuts import get_object_or_404
+from .services import QbitService
+from apps.lessons.models import Lesson
+from apps.enrollments.models import Enrollment
+from PIL import Image
+import io
+
+class AskQbitView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        Endpoint to ask Qbit a question.
+        Payload: { "query": "string", "lesson_id": "uuid" (optional), "scope": "lesson" | "global" }
+        Files: "image" (optional)
+        """
+        query = request.data.get("query")
+        lesson_id = request.data.get("lesson_id")
+        scope = request.data.get("scope", "global")
+        image_file = request.FILES.get("image")
+
+        if not query and not image_file:
+            return Response({"error": "Query or Image is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        context = ""
+        user = request.user
+
+        # Build context based on scope
+        if scope == "lesson" and lesson_id:
+            try:
+                lesson = Lesson.objects.get(id=lesson_id)
+                context = f"Lesson Title: {lesson.title}\nContent: {lesson.content}\nDescription: {lesson.description}"
+            except Lesson.DoesNotExist:
+                pass # Fallback
+        elif scope == "global":
+            # Global context: Fetch enrolled course titles
+            enrollments = Enrollment.objects.filter(student=user, is_active=True).select_related('course')
+            course_titles = [e.course.title for e in enrollments]
+            context = f"Enrolled Courses: {', '.join(course_titles)}"
+
+        # User details for personalization
+        full_name = f"{getattr(user, 'first_name', '')} {getattr(user, 'last_name', '')}".strip()
+        user_name = full_name or getattr(user, 'username', 'Student')
+        context = f"Student Name: {user_name}\n" + context
+
+        # Process Image if present
+        image = None
+        if image_file:
+            try:
+                image = Image.open(image_file)
+            except Exception as e:
+                return Response({"error": "Invalid image file"}, status=status.HTTP_400_BAD_REQUEST)
+
+        service = QbitService()
+        answer = service.get_chat_response(query or "Analyze this image", context, image)
+
+        return Response({"answer": answer})
+
+class GenerateQuizView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        """
+        Generate a quiz for a specific lesson or topic.
+        """
+        lesson_id = request.data.get("lesson_id")
+        topic = request.data.get("topic")
+
+        content = ""
+        if lesson_id:
+            try:
+                lesson = Lesson.objects.get(id=lesson_id)
+                content = f"{lesson.title}\n{lesson.content}"
+            except Lesson.DoesNotExist:
+                return Response({"error": "Lesson not found"}, status=status.HTTP_404_NOT_FOUND)
+        elif topic:
+            content = topic
+        else:
+             return Response({"error": "Lesson ID or Topic is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        service = QbitService()
+        quiz_json = service.generate_quiz(content)
+        
+        import json
+        try:
+            data = json.loads(quiz_json)
+            return Response(data)
+        except json.JSONDecodeError:
+            return Response({"error": "Failed to generate valid quiz data. Raw: " + quiz_json}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GenerateFlashcardsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        topic = request.data.get("topic")
+        if not topic:
+             return Response({"error": "Topic is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        service = QbitService()
+        cards_json = service.generate_flashcards(topic)
+
+        import json
+        try:
+            data = json.loads(cards_json)
+            return Response(data)
+        except json.JSONDecodeError:
+            return Response({"error": "Failed to generate flashcards"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class GenerateStudyPlanView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        exam_date = request.data.get("exam_date")
+        hours = request.data.get("hours_per_day", 2)
+        subject = request.data.get("subject", "")
+        
+        # Use subject if provided, otherwise fall back to enrolled courses
+        if subject:
+            courses = [subject]
+        else:
+            enrollments = Enrollment.objects.filter(student=request.user, is_active=True).select_related('course')
+            courses = [e.course.title for e in enrollments]
+
+        if not courses:
+             return Response({"error": "Please enter a subject or enroll in a course."}, status=status.HTTP_400_BAD_REQUEST)
+
+        service = QbitService()
+        plan = service.generate_study_plan(courses, exam_date, hours)
+        
+        return Response({"plan": plan})

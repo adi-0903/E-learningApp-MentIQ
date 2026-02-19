@@ -96,7 +96,7 @@ interface CourseState {
   // Lesson operations
   fetchLessons: (courseId: string | number) => Promise<void>;
   getLessonById: (lessonId: string | number) => Promise<Lesson | null>;
-  createLesson: (lesson: { course: string | number; title: string; description?: string; content?: string; video_url?: string; file_url?: string; sequence_number: number }) => Promise<void>;
+  createLesson: (lesson: { course: string | number; title: string; duration?: number; description?: string; content?: string; video_url?: string; file_url?: string; sequence_number: number }) => Promise<void>;
   updateLesson: (lessonId: string | number, updates: Partial<Lesson>) => Promise<void>;
   deleteLesson: (lessonId: string | number) => Promise<void>;
   reorderLessons: (lessonIds: (string | number)[]) => Promise<void>;

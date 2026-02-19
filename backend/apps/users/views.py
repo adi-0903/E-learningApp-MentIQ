@@ -59,6 +59,7 @@ class RegisterView(generics.CreateAPIView):
                     'phone_number': user.phone_number,
                     'profile_image': user.profile_image_url,
                     'teacher_id': user.teacher_id,
+                    'student_id': user.student_id,
                     'profile_avatar': user.profile_avatar,
                 },
                 'tokens': {

@@ -3,6 +3,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Colors } from '@/constants/theme';
+import { TouchableOpacity, View } from 'react-native';
+import StudentAIStackNavigator from './navigation/StudentAIStackNavigator';
 
 // Screens - using absolute imports
 // Student screens
@@ -150,6 +152,7 @@ function StudentTabs() {
         headerShown: false,
         tabBarActiveTintColor: Colors.light.primary,
         tabBarInactiveTintColor: Colors.light.tabIconDefault,
+        tabBarHideOnKeyboard: true,
         tabBarStyle: {
           borderTopColor: Colors.light.divider,
           backgroundColor: Colors.light.surface,
@@ -160,6 +163,7 @@ function StudentTabs() {
           shadowRadius: 4,
         }
       }}
+
     >
       <Tab.Screen
         name="HomeTab"
@@ -182,12 +186,38 @@ function StudentTabs() {
         }}
       />
       <Tab.Screen
-        name="AnnouncementsTab"
-        component={AnnouncementsScreen}
+        name="AI Center"
+        component={StudentAIStackNavigator}
         options={{
-          tabBarLabel: 'Updates',
+          tabBarLabel: '',
           tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="bell-outline" color={color} size={size} />
+            <MaterialCommunityIcons name="robot" color={color} size={size} />
+          ),
+          tabBarButton: (props) => (
+            <TouchableOpacity
+              {...(props as any)}
+              style={{
+                top: -20,
+                justifyContent: 'center',
+                alignItems: 'center',
+                flex: 1,
+              }}
+            >
+              <View
+                style={{
+                  width: 62,
+                  height: 62,
+                  borderRadius: 31,
+                  backgroundColor: Colors.light.primary,
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  borderWidth: 3,
+                  borderColor: '#fff',
+                }}
+              >
+                <MaterialCommunityIcons name="creation" size={30} color="white" />
+              </View>
+            </TouchableOpacity>
           ),
         }}
       />

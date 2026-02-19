@@ -23,10 +23,14 @@ import { LinearGradient } from 'expo-linear-gradient';
 
 const { width } = Dimensions.get('window');
 
-function CreateAnnouncementScreen({ navigation }: any) {
+function CreateAnnouncementScreen({ navigation, route }: any) {
   const { user } = useAuthStore();
-  const { createAnnouncement, fetchAllAnnouncements } = useAnnouncementStore();
+  const { createAnnouncement, updateAnnouncement, fetchAllAnnouncements } = useAnnouncementStore();
   const { courses, fetchTeacherCourses } = useCourseStore();
+
+  const mode = route.params?.mode || 'create';
+  const announcementId = route.params?.announcementId;
+  const initialData = route.params?.initialData;
 
   // Check if user is authenticated
   if (!user?.id) {
@@ -37,8 +41,8 @@ function CreateAnnouncementScreen({ navigation }: any) {
     );
   }
 
-  const [title, setTitle] = useState('');
-  const [content, setContent] = useState('');
+  const [title, setTitle] = useState(initialData?.title || '');
+  const [content, setContent] = useState(initialData?.content || '');
   const [announcementType, setAnnouncementType] = useState<'school' | 'subject'>('school');
   const [selectedCourseId, setSelectedCourseId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -167,7 +171,7 @@ function CreateAnnouncementScreen({ navigation }: any) {
     setImages(prevImages => prevImages.filter((_, i) => i !== index));
   };
 
-  const handleCreateAnnouncement = async () => {
+  const handleSaveAnnouncement = async () => {
     // Validate user authentication
     if (!user?.id) {
       Alert.alert('Error', 'You must be logged in to create announcements');
@@ -182,45 +186,47 @@ function CreateAnnouncementScreen({ navigation }: any) {
       Alert.alert('Error', 'Please enter announcement content');
       return;
     }
-    if (announcementType === 'subject' && !selectedCourseId) {
+    if (mode === 'create' && announcementType === 'subject' && !selectedCourseId) {
       Alert.alert('Error', 'Please select a subject for this announcement');
       return;
     }
 
     try {
       setIsLoading(true);
-      const attachments = {
-        links: links.length > 0 ? links : undefined,
-        pdfs: pdfs.length > 0 ? pdfs : undefined,
-        images: images.length > 0 ? images : undefined,
-      };
 
-      await createAnnouncement({
-        title,
-        content,
-        course: announcementType === 'subject' && selectedCourseId ? selectedCourseId : null,
-        attachments: Object.keys(attachments).some(key => attachments[key as keyof typeof attachments]) ? attachments : undefined,
-      });
+      if (mode === 'edit') {
+        const updates: any = { title, content };
+        // If adding new attachments during edit, user needs to understand they replace old ones or append depending on backend logic.
+        // For simplicity in this iteration, we focus on Title/Content updates as requested by user flow.
+        // Attachments update would require more complex UI state management to show existing vs new.
+
+        await updateAnnouncement(announcementId, updates);
+        Alert.alert('Success', 'Announcement updated successfully!');
+      } else {
+        const attachments = {
+          links: links.length > 0 ? links : undefined,
+          pdfs: pdfs.length > 0 ? pdfs : undefined,
+          images: images.length > 0 ? images : undefined,
+        };
+
+        await createAnnouncement({
+          title,
+          content,
+          course: announcementType === 'subject' && selectedCourseId ? selectedCourseId : null,
+          attachments: Object.keys(attachments).some(key => attachments[key as keyof typeof attachments]) ? attachments : undefined,
+        });
+        Alert.alert('Success', 'Announcement broadcasted successfully!');
+      }
+
       // Refresh the announcements list to show the new announcement
       await fetchAllAnnouncements();
 
-      Alert.alert('Success', 'Announcement created successfully!', [
-        {
-          text: 'OK',
-          onPress: () => {
-            setTitle('');
-            setContent('');
-            setAnnouncementType('school');
-            setLinks([]);
-            setPdfs([]);
-            setImages([]);
-            navigation.goBack();
-          }
-        }
-      ]);
+      // Navigate back
+      navigation.goBack();
+
     } catch (error) {
-      console.error('Error creating announcement:', error);
-      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to create announcement');
+      console.error('Error saving announcement:', error);
+      Alert.alert('Error', error instanceof Error ? error.message : 'Failed to save announcement');
     } finally {
       setIsLoading(false);
     }
@@ -517,7 +523,7 @@ function CreateAnnouncementScreen({ navigation }: any) {
               Cancel
             </Button>
             <TouchableOpacity
-              onPress={handleCreateAnnouncement}
+              onPress={handleSaveAnnouncement}
               disabled={isLoading}
               activeOpacity={0.8}
               style={[styles.submitButtonContainer, isLoading && { opacity: 0.7 }]}
@@ -533,7 +539,7 @@ function CreateAnnouncementScreen({ navigation }: any) {
                 ) : (
                   <>
                     <MaterialCommunityIcons name="broadcast" size={22} color="#fff" style={{ marginRight: 10 }} />
-                    <Text style={styles.submitButtonLabel}>Broadcast Now</Text>
+                    <Text style={styles.submitButtonLabel}>{mode === 'edit' ? 'Update Broadcast' : 'Broadcast Now'}</Text>
                   </>
                 )}
               </LinearGradient>

@@ -23,6 +23,7 @@ import {
   Platform
 } from 'react-native';
 import { ActivityIndicator, Text, Button } from 'react-native-paper';
+import { DAILY_QUOTES } from '@/constants/quotes';
 
 interface StudentDashboardProps {
   onCoursePress: (courseId: string) => void;
@@ -73,6 +74,69 @@ const CourseProgressCard = ({ course, progress, onPress }: { course: Course, pro
         <View style={styles.accentLine} />
       </LinearGradient>
     </TouchableOpacity>
+  );
+};
+
+const QuickActions = () => {
+  const navigation = useNavigation<any>();
+  const actions = [
+    { label: 'Live Class', icon: 'video-wireless', color: '#f43f5e', route: 'LiveClassesTab' },
+    { label: 'Browse', icon: 'compass', color: '#0ea5e9', route: 'BrowseCourses' },
+    { label: 'Quizzes', icon: 'lightbulb-on', color: '#eab308', route: 'AllQuizzes' },
+    { label: 'My Stats', icon: 'chart-box', color: '#10b981', route: 'ProgressTab' },
+  ];
+
+  return (
+    <View style={styles.quickActionsContainer}>
+      {actions.map((action, index) => (
+        <TouchableOpacity
+          key={index}
+          style={styles.actionItem}
+          onPress={() => navigation.navigate(action.route)}
+          activeOpacity={0.7}
+        >
+          <View style={[styles.actionIconCircle, { backgroundColor: `${action.color}15` }]}>
+            <MaterialCommunityIcons name={action.icon as any} size={28} color={action.color} />
+          </View>
+          <Text style={styles.actionLabel}>{action.label}</Text>
+        </TouchableOpacity>
+      ))}
+    </View>
+  );
+};
+
+const DailyMotivation = () => {
+  // Select a quote based on the current day of the year
+  const start = new Date(new Date().getFullYear(), 0, 0);
+  const diff = new Date().getTime() - start.getTime();
+  const oneDay = 1000 * 60 * 60 * 24;
+  const dayOfYear = Math.floor(diff / oneDay);
+
+  // Ensure we have a valid index even if something goes wrong with dates
+  const quoteIndex = Math.max(0, Math.floor(dayOfYear % DAILY_QUOTES.length));
+  const todayQuote = DAILY_QUOTES[quoteIndex] || DAILY_QUOTES[0];
+
+  return (
+    <View style={styles.motivationContainer}>
+      <LinearGradient
+        colors={['#6366f1', '#4f46e5', '#4338ca']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.motivationGradient}
+      >
+        <View style={styles.motivationContent}>
+          <View style={styles.motivationHeader}>
+            <MaterialCommunityIcons name="star-four-points" size={16} color="#fbbf24" />
+            <Text style={styles.motivationLabel}>DAILY INSPIRATION</Text>
+          </View>
+          <Text style={styles.motivationQuote}>
+            "{todayQuote.text}"
+          </Text>
+          <Text style={styles.motivationAuthor}>— {todayQuote.author}</Text>
+        </View>
+        <MaterialCommunityIcons name="format-quote-close" size={120} color="rgba(255,255,255,0.1)" style={styles.bgQuoteIcon} />
+      </LinearGradient>
+    </View>
   );
 };
 
@@ -278,6 +342,12 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
         }
       >
         <View style={styles.mainBody}>
+          {/* Quick Actions */}
+          <QuickActions />
+
+          {/* Daily Motivation */}
+          <DailyMotivation />
+
           {/* Continue Learning Section */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Continue Learning</Text>
@@ -700,40 +770,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#374151',
   },
-  motivationCard: {
-    padding: 24,
-    borderRadius: 24,
-    position: 'relative',
-    overflow: 'hidden',
-  },
-  motivationContent: {
-    zIndex: 1,
-  },
-  motivationTitle: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: '#be123c',
-    textTransform: 'uppercase',
-    marginBottom: 8,
-  },
-  motivationText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#881337',
-    marginBottom: 12,
-    fontStyle: 'italic',
-  },
-  motivationAuthor: {
-    fontSize: 12,
-    color: '#9f1239',
-    textAlign: 'right',
-  },
-  quoteIcon: {
-    position: 'absolute',
-    bottom: -10,
-    right: -10,
-    zIndex: 0,
-  },
+
   announcementEmpty: {
     backgroundColor: '#fff',
     borderRadius: 20,
@@ -801,4 +838,88 @@ const styles = StyleSheet.create({
     lineHeight: 16,
     fontWeight: '500',
   },
+  // New Styles
+  quickActionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 24,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 24,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  actionItem: {
+    alignItems: 'center',
+    gap: 8,
+    flex: 1,
+  },
+  actionIconCircle: {
+    width: 56,
+    height: 56,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  actionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#475569',
+  },
+  motivationContainer: {
+    marginBottom: 24,
+    borderRadius: 24,
+    shadowColor: '#6366f1',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+    elevation: 6,
+  },
+  motivationGradient: {
+    borderRadius: 24,
+    padding: 24,
+    position: 'relative',
+    overflow: 'hidden',
+  },
+  motivationContent: {
+    zIndex: 1,
+  },
+  motivationHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginBottom: 12,
+    backgroundColor: 'rgba(255,255,255,0.1)',
+    alignSelf: 'flex-start',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  motivationLabel: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: '#fbbf24',
+    letterSpacing: 1,
+  },
+  motivationQuote: {
+    fontSize: 18,
+    fontWeight: '700',
+    color: '#fff',
+    lineHeight: 28,
+    fontStyle: 'italic',
+    marginBottom: 16,
+  },
+  motivationAuthor: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.8)',
+  },
+  bgQuoteIcon: {
+    position: 'absolute',
+    bottom: -20,
+    right: -20,
+  }
 });

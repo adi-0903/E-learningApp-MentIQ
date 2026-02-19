@@ -334,6 +334,7 @@ export const lessonApi = {
     video_url?: string;
     file_url?: string;
     sequence_number: number;
+    duration?: number;
   }) => api.post('/v1/lessons/', data),
 
   update: (id: string | number, data: Partial<{
@@ -343,6 +344,7 @@ export const lessonApi = {
     video_url: string;
     file_url: string;
     sequence_number: number;
+    duration: number;
   }>) => api.put(`/v1/lessons/${id}/`, data),
 
   delete: (id: string | number) =>
@@ -482,12 +484,12 @@ export const announcementApi = {
   get: (id: string | number) =>
     api.get(`/v1/announcements/${id}/`),
 
-  create: (data: {
-    title: string;
-    content: string;
-    course?: string | number | null;
-    attachments?: any;
-  }) => api.post('/v1/announcements/', data),
+  create: (data: any) => {
+    if (data instanceof FormData) {
+      return api.upload('/v1/announcements/', data);
+    }
+    return api.post('/v1/announcements/', data);
+  },
 
   update: (id: string | number, data: Partial<{
     title: string;

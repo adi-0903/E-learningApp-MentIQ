@@ -1,5 +1,5 @@
 import { Lesson, useCourseStore } from '@/store/courseStore';
-import { mediaApi } from '@/services/api';
+import { mediaApi, API_BASE_URL } from '@/services/api';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import * as DocumentPicker from 'expo-document-picker';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -105,6 +105,7 @@ export default function ManageVideoLecturesScreen({ route, navigation }: any) {
         video_url: videoUrl,
         sequence_number: lessons.length + 1,
         content: formData.description, // Optional
+        duration: parseInt(formData.duration) || 0,
       });
 
       // 4. Finalize

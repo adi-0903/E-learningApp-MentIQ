@@ -69,6 +69,9 @@ function ProfileScreen({ navigation }: any) {
 
   useEffect(() => {
     if (user?.id) {
+      // Force refresh user data to ensure ID is up to date
+      useAuthStore.getState().getCurrentUser().catch(console.error);
+
       loadSettings(user.id).catch(console.error);
       if (user.role === 'student') {
         fetchEnrolledCourses().catch(console.error);
@@ -441,6 +444,24 @@ function ProfileScreen({ navigation }: any) {
                         <View style={[styles.verifyStatus, { backgroundColor: '#eef2ff' }]}>
                           <MaterialCommunityIcons name="check-decagram" size={12} color={accentColor} />
                           <Text style={[styles.verifyText, { color: accentColor }]}>Active</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                )}
+
+                {user?.role === 'student' && user?.studentId && (
+                  <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
+                    <View style={styles.infoIconWrapper}>
+                      <MaterialCommunityIcons name="card-account-details-outline" size={18} color={accentColor} />
+                    </View>
+                    <View style={styles.infoContent}>
+                      <Text style={styles.infoLabel}>S-UID</Text>
+                      <View style={styles.phoneValueRow}>
+                        <Text style={[styles.infoValue, { fontWeight: '900', color: accentColor }]}>{user.studentId}</Text>
+                        <View style={[styles.verifyStatus, { backgroundColor: '#ecfdf5' }]}>
+                          <MaterialCommunityIcons name="check-decagram" size={12} color="#10b981" />
+                          <Text style={[styles.verifyText, { color: '#10b981' }]}>Active</Text>
                         </View>
                       </View>
                     </View>

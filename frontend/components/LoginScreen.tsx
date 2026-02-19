@@ -208,7 +208,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
               <View style={styles.inputContainer}>
                 <MaterialCommunityIcons name="email-outline" size={20} color={Colors.light.textLight} style={styles.inputIcon} />
                 <TextInput
-                  placeholder={role === 'teacher' ? "Email Address or 5-digit ID" : "Email Address"}
+                  placeholder={role === 'teacher' ? "Email Address or 5-digit ID" : "Email Address or 8-digit ID"}
                   value={email}
                   onChangeText={setEmail}
                   mode="flat"

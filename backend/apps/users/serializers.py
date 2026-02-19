@@ -13,18 +13,29 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
     """Custom JWT token that includes user role and name in claims."""
 
     def validate(self, attrs):
-        # Allow login via Email OR Teacher ID
+        # Allow login via Email OR Teacher ID OR Student ID
         username_value = attrs.get(User.USERNAME_FIELD)
         
-        # Check if username_value is a 5-digit Teacher ID
-        if username_value and username_value.strip().isdigit() and len(username_value.strip()) == 5:
-            tid = username_value.strip()
-            try:
-                # If a user with this teacher_id exists, switch to email auth
-                user = User.objects.get(teacher_id=tid)
-                attrs[User.USERNAME_FIELD] = user.email
-            except User.DoesNotExist:
-                pass # Let standard validation fail naturally
+        if username_value:
+            cleaned_username = username_value.strip()
+            
+            # Check if username_value is a 5-digit Teacher ID
+            if cleaned_username.isdigit() and len(cleaned_username) == 5:
+                try:
+                    # If a user with this teacher_id exists, switch to email auth
+                    user = User.objects.get(teacher_id=cleaned_username)
+                    attrs[User.USERNAME_FIELD] = user.email
+                except User.DoesNotExist:
+                    pass # Let standard validation fail naturally
+            
+            # Check if username_value is an 8-digit Student ID
+            elif cleaned_username.isdigit() and len(cleaned_username) == 8:
+                try:
+                    # If a user with this student_id exists, switch to email auth
+                    user = User.objects.get(student_id=cleaned_username)
+                    attrs[User.USERNAME_FIELD] = user.email
+                except User.DoesNotExist:
+                    pass # Let standard validation fail naturally
 
         data = super().validate(attrs)
         user = self.user
@@ -41,6 +52,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'is_email_verified': user.is_email_verified,
             'is_phone_verified': user.is_phone_verified,
             'teacher_id': user.teacher_id,
+            'student_id': user.student_id,
             'profile_avatar': user.profile_avatar,
         }
         return data
@@ -53,6 +65,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['email'] = user.email
         if user.teacher_id:
             token['teacher_id'] = user.teacher_id
+        if user.student_id:
+            token['student_id'] = user.student_id
         return token
 
 
@@ -97,10 +111,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'name', 'role', 'bio', 'phone_number',
-            'profile_image', 'profile_image_url', 'teacher_id', 'profile_avatar',
+            'profile_image', 'profile_image_url', 'teacher_id', 'student_id', 'profile_avatar',
             'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'email', 'role', 'teacher_id', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'email', 'role', 'teacher_id', 'student_id', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

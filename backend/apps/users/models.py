@@ -86,6 +86,15 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         help_text="5-digit unique ID for teachers"
     )
 
+    # Unique student ID
+    student_id = models.CharField(
+        max_length=8, 
+        unique=True, 
+        blank=True, 
+        null=True,
+        help_text="8-digit unique ID for students"
+    )
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -99,6 +108,22 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
                 if not User.objects.filter(teacher_id=tid).exists():
                     self.teacher_id = tid
                     break
+        
+        if self.role == self.RoleChoices.STUDENT and not self.student_id:
+            import random
+            from datetime import datetime
+            
+            current_year_suffix = str(datetime.now().year)[-2:] # e.g., '26' for 2026
+            prefix = f"1{current_year_suffix}" # e.g., '126'
+            
+            while True:
+                random_digits = str(random.randint(0, 99999)).zfill(5)
+                sid = f"{prefix}{random_digits}"
+                
+                if not User.objects.filter(student_id=sid).exists():
+                    self.student_id = sid
+                    break
+
         super().save(*args, **kwargs)
 
     class Meta:
