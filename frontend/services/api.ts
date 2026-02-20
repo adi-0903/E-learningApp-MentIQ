@@ -577,6 +577,64 @@ export const mediaApi = {
     api.delete(`/v1/media/${id}/`),
 };
 
+// ─── Email ───────────────────────────────────────────────────────
+export const emailApi = {
+  // Contact form (public)
+  submitContact: (data: {
+    sender_name: string;
+    sender_email: string;
+    subject: string;
+    message: string;
+  }) => api.post('/v1/emails/contact/', data, { skipAuth: true }),
+
+  getMyContacts: () =>
+    api.get('/v1/emails/contact/mine/'),
+
+  // EmailJS config for frontend
+  getEmailJSConfig: () =>
+    api.get('/v1/emails/emailjs-config/'),
+
+  // Admin: inbox
+  getInbox: () =>
+    api.get('/v1/emails/inbox/'),
+
+  syncInbox: () =>
+    api.post('/v1/emails/inbox/sync/', {}),
+
+  markInboxRead: (id: string | number) =>
+    api.patch(`/v1/emails/inbox/${id}/read/`, {}),
+
+  // Admin: campaigns
+  getCampaigns: () =>
+    api.get('/v1/emails/campaigns/'),
+
+  createCampaign: (data: {
+    title: string;
+    subject: string;
+    body_html: string;
+    body_text?: string;
+    audience?: 'all' | 'students' | 'teachers';
+    scheduled_at?: string;
+  }) => api.post('/v1/emails/campaigns/', data),
+
+  sendCampaign: (id: string | number) =>
+    api.post(`/v1/emails/campaigns/${id}/send/`, {}),
+
+  // Admin: logs
+  getEmailLogs: (params?: { type?: string; status?: string }) => {
+    let url = '/v1/emails/logs/';
+    if (params) {
+      const qs = new URLSearchParams(params as any).toString();
+      if (qs) url += `?${qs}`;
+    }
+    return api.get(url);
+  },
+
+  // Admin: reply to contact
+  replyToContact: (id: string | number, reply_text: string) =>
+    api.post(`/v1/emails/admin/contacts/${id}/reply/`, { reply_text }),
+};
+
 // ─── Exported utilities ──────────────────────────────────────────
 export { setTokens, clearTokens, getTokens, API_BASE_URL };
 export default api;

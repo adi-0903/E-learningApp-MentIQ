@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'apps.analytics',
     'apps.media',
     'apps.ai_tutor',
+    'apps.emails',
 ]
 
 MIDDLEWARE = [
@@ -238,6 +239,16 @@ CELERY_RESULT_BACKEND_MAX_RETRIES = 10
 # Celery Beat Schedule
 CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 
+# Periodic tasks
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    # Sync Gmail inbox every 10 minutes
+    'sync-gmail-inbox': {
+        'task': 'apps.emails.tasks.fetch_inbox_task',
+        'schedule': crontab(minute='*/10'),
+    },
+}
+
 # Jitsi Configuration (Live Streaming)
 JITSI_DOMAIN = env.str('JITSI_DOMAIN', 'meet.jit.si')
 JITSI_APP_ID = env.str('JITSI_APP_ID', '')
@@ -253,11 +264,27 @@ CLOUDINARY_STORAGE = {
 if env.bool('USE_CLOUDINARY', False):
     DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
-# Email Configuration
+# ─── Email Configuration (Gmail SMTP - Sending) ──────────────────
 EMAIL_BACKEND = env.str('EMAIL_BACKEND', 'django.core.mail.backends.console.EmailBackend')
-SENDGRID_API_KEY = env.str('SENDGRID_API_KEY', '')
-DEFAULT_FROM_EMAIL = env.str('DEFAULT_FROM_EMAIL', 'noreply@mentiq.com')
+EMAIL_HOST = env.str('EMAIL_HOST', 'smtp.gmail.com')
+EMAIL_PORT = env.int('EMAIL_PORT', 587)
+EMAIL_USE_TLS = env.bool('EMAIL_USE_TLS', True)
+EMAIL_HOST_USER = env.str('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = env.str('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = env.str('DEFAULT_FROM_EMAIL', 'MentiQ <noreply@mentiq.com>')
 ADMIN_EMAIL = env.str('ADMIN_EMAIL', 'admin@mentiq.com')
+
+# ─── Email Receiving (Gmail IMAP) ────────────────────────────────
+IMAP_HOST = env.str('IMAP_HOST', 'imap.gmail.com')
+IMAP_PORT = env.int('IMAP_PORT', 993)
+IMAP_USE_SSL = env.bool('IMAP_USE_SSL', True)
+IMAP_USER = env.str('IMAP_USER', '')
+IMAP_PASSWORD = env.str('IMAP_PASSWORD', '')
+
+# ─── EmailJS (Frontend Contact Forms) ────────────────────────────
+EMAILJS_SERVICE_ID = env.str('EMAILJS_SERVICE_ID', '')
+EMAILJS_TEMPLATE_ID = env.str('EMAILJS_TEMPLATE_ID', '')
+EMAILJS_PUBLIC_KEY = env.str('EMAILJS_PUBLIC_KEY', '')
 
 # Firebase Cloud Messaging (Push Notifications)
 FCM_SERVER_KEY = env.str('FCM_SERVER_KEY', '')

@@ -14,7 +14,7 @@
 
 ---
 
-**MentiQ** is a full-stack, cross-platform e-learning mobile application built as a Capstone Project. It connects teachers and students through structured courses, live sessions, AI-powered tutoring, quizzes, analytics, and real-time notifications — all delivered through a polished React Native (Expo) mobile app backed by a production-grade Django REST API.
+**MentiQ** is a full-stack, cross-platform e-learning platform built as a Capstone Project. It connects teachers and students through structured courses, live sessions, AI-powered tutoring, quizzes, analytics, and real-time notifications — all delivered through a polished React Native (Expo) mobile app and a React Web frontend, backed by a production-grade Django REST API.
 
 </div>
 
@@ -67,6 +67,7 @@ The project demonstrates end-to-end full-stack engineering: a RESTful Django bac
 ## ✨ Key Features
 
 ### 🧑‍🎓 For Students
+
 | Feature | Description |
 |---|---|
 | **Personalized Dashboard** | Enrolled courses, recent activity, progress stats at a glance |
@@ -83,6 +84,7 @@ The project demonstrates end-to-end full-stack engineering: a RESTful Django bac
 | **Biometric Security** | Fingerprint / Face ID login via `expo-local-authentication` |
 
 ### 🧑‍🏫 For Teachers
+
 | Feature | Description |
 |---|---|
 | **Teacher Dashboard** | Overview of total students, published courses, revenue, and quick actions |
@@ -96,6 +98,7 @@ The project demonstrates end-to-end full-stack engineering: a RESTful Django bac
 | **Analytics** | Per-course views, enrollments, completions, average quiz scores, and revenue |
 
 ### 🤖 AI Tutor — Qbit
+
 | Capability | Description |
 |---|---|
 | **Chat Q&A** | Ask subject-related questions with lesson context injected automatically |
@@ -109,6 +112,7 @@ The project demonstrates end-to-end full-stack engineering: a RESTful Django bac
 ## 🛠 Tech Stack
 
 ### Backend
+
 | Technology | Version | Purpose |
 |---|---|---|
 | **Python** | 3.11+ | Core language |
@@ -123,7 +127,7 @@ The project demonstrates end-to-end full-stack engineering: a RESTful Django bac
 | **Cloudinary** | 1.36+ | Cloud media/image storage |
 | **Firebase Admin SDK** | 6.4+ | Push notifications & OTP |
 | **Stripe** | 8.x | Payment processing |
-| **SendGrid** | 6.11 | Transactional email |
+| **Gmail / EmailJS** | — | Core email system (SMTP/IMAP) & contact forms |
 | **Twilio** | 9.x | SMS OTP (alternate) |
 | **Gunicorn** | 21.x | WSGI production server |
 | **Whitenoise** | 6.6+ | Static file serving |
@@ -131,6 +135,7 @@ The project demonstrates end-to-end full-stack engineering: a RESTful Django bac
 | **Groq API** | — | AI model provider for Qbit |
 
 ### Frontend
+
 | Technology | Version | Purpose |
 |---|---|---|
 | **React Native** | 0.81.5 | Cross-platform mobile framework |
@@ -157,10 +162,10 @@ The project demonstrates end-to-end full-stack engineering: a RESTful Django bac
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
 │                        CLIENT LAYER                                  │
-│   ┌──────────────────────────────────────────────────────────────┐  │
-│   │       React Native + Expo (iOS / Android / Web)              │  │
-│   │   Expo Router · Zustand · TypeScript · Firebase SDK          │  │
-│   └──────────────────────────────────────────────────────────────┘  │
+│   ┌─────────────────────────────────────────┐ ┌──────────────────┐  │
+│   │ React Native + Expo (iOS/Android/Web)   │ │  React Web App   │  │
+│   │ Expo Router · Zustand · Firebase SDK    │ │   Vite · Roles   │  │
+│   └─────────────────────────────────────────┘ └──────────────────┘  │
 │                              │ HTTPS / REST                          │
 └──────────────────────────────┼──────────────────────────────────────┘
                                │
@@ -219,6 +224,7 @@ Capstone Project/
 │   │   ├── payments/               # Stripe checkout, payment history
 │   │   ├── analytics/              # Daily snapshots, course & user activity
 │   │   ├── media/                  # Media file upload & management
+│   │   ├── emails/                 # Email logging, IMAP inbox, Contact form
 │   │   └── ai_tutor/               # Qbit AI: chat, quiz gen, flashcards, plans
 │   ├── media/                      # Local media uploads (dev)
 │   ├── static/                     # Static assets
@@ -272,6 +278,12 @@ Capstone Project/
     ├── eas.json                    # EAS Build configuration
     ├── package.json                # JS dependencies
     └── tsconfig.json               # TypeScript compiler config
+│
+└── frontendweb/                    # Vite React Web Frontend
+    ├── src/                        # React source files for web interfaces
+    ├── public/                     # Static web assets
+    ├── index.html                  # HTML entry point
+    └── package.json                # Web JS dependencies
 ```
 
 ---
@@ -299,7 +311,8 @@ The backend is organized into **14 Django apps**, each responsible for a clearly
 | `payments` | Stripe checkout session creation, webhook handling, payment history |
 | `analytics` | `DailyAnalytics`, `CourseAnalytics`, `UserActivityLog` snapshots; platform-wide stats |
 | `media` | Media file upload (Cloudinary), listing, deletion |
-| `ai_tutor` | **Qbit** AI service: chat, AI quiz generation, flashcard generation, study plan generation (Groq API) |
+| `emails` | System email logs, bulk campaigns, contact us messages, and IMAP inbox viewer |
+| `ai_tutor` | **Qbit** AI service: chat, AI quiz generation, flashcards, study plan generation (Groq API) |
 
 ---
 
@@ -315,11 +328,13 @@ POST /api/v1/auth/token/refresh/ → Returns new access token
 ```
 
 **Token Lifecycle:**
+
 - `Access Token` — Short-lived (60 min default), sent as `Authorization: Bearer <token>`
 - `Refresh Token` — Long-lived (24 hours default), rotated on every refresh
 - `Token Blacklist` — Refresh tokens are blacklisted on logout (via `rest_framework_simplejwt.token_blacklist`)
 
 **Additional Security:**
+
 - Custom user IDs: Teachers get 5-digit numeric IDs; students get 8-digit IDs prefixed with enrollment year
 - Phone OTP verification: Firebase Auth integration for phone number verification
 - Biometric unlock: `expo-local-authentication` for fingerprint/Face ID on the mobile app
@@ -331,6 +346,7 @@ POST /api/v1/auth/token/refresh/ → Returns new access token
 ### Database Models
 
 #### Users (`apps/users`)
+
 ```
 User
 ├── email (unique, pk field)
@@ -351,6 +367,7 @@ PhoneOTP
 ```
 
 #### Courses (`apps/courses`)
+
 ```
 Course
 ├── teacher → User
@@ -368,6 +385,7 @@ CourseReview
 ```
 
 #### Lessons (`apps/lessons`)
+
 ```
 Lesson
 ├── course → Course
@@ -378,6 +396,7 @@ Lesson
 ```
 
 #### Quizzes (`apps/quizzes`)
+
 ```
 Quiz
 ├── course → Course
@@ -404,6 +423,7 @@ QuizAttempt
 ```
 
 #### Live Classes (`apps/live_classes`)
+
 ```
 LiveClass
 ├── teacher → User, course → Course
@@ -426,6 +446,7 @@ LiveClassChat
 ```
 
 #### Announcements (`apps/announcements`)
+
 ```
 Announcement
 ├── teacher → User
@@ -437,6 +458,7 @@ Announcement
 ```
 
 #### Notifications (`apps/notifications`)
+
 ```
 Notification
 ├── user → User
@@ -452,6 +474,7 @@ NotificationSetting
 ```
 
 #### Payments (`apps/payments`)
+
 ```
 Payment
 ├── student → User, course → Course
@@ -463,6 +486,7 @@ Payment
 ```
 
 #### Analytics (`apps/analytics`)
+
 ```
 DailyAnalytics     - Platform-wide daily snapshots
 CourseAnalytics    - Per-course daily snapshots (views, enrollments, completions, revenue)
@@ -661,6 +685,7 @@ POST /api/v1/ai/generate-study-plan/
 MentiQ uses **Expo Router's file-based navigation** (similar to Next.js) with nested route groups for role-based navigation.
 
 #### Navigation Architecture
+
 ```
 _layout.tsx (root)
 └── index.tsx → MainApp.tsx (role dispatcher)
@@ -791,7 +816,7 @@ await quizApi.submit(quizId, { answers: { "q1": "b", "q2": "a" } });
 | **Firebase** | Phone OTP authentication + FCM push notification delivery | `FCM_SERVER_KEY`, Firebase Admin SDK credentials JSON |
 | **Cloudinary** | Cloud storage for course covers, profile images, video thumbnails | `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` |
 | **Stripe** | Paid course checkout sessions and payment history | `STRIPE_PUBLIC_KEY`, `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
-| **SendGrid** | Transactional email (enrollment confirmations, password reset) | `SENDGRID_API_KEY` |
+| **Gmail / EmailJS** | Core email system (SMTP outbound, IMAP inbound) & frontend contact forms | `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD`, EmailJS Integration |
 | **Twilio** | Alternate SMS OTP delivery | Twilio credentials |
 | **Jitsi Meet** | Free, embeddable live class video conferencing | `JITSI_DOMAIN`, `JITSI_APP_ID`, `JITSI_SECRET` |
 | **Sentry** | Real-time error monitoring and crash reporting | `SENTRY_DSN` |
@@ -870,12 +895,14 @@ LOG_LEVEL=INFO
 ### Prerequisites
 
 **Backend:**
+
 - Python 3.11+
 - PostgreSQL 14+
 - Redis 6+
 - `pip` and `virtualenv` or `venv`
 
 **Frontend:**
+
 - Node.js 18+ and npm
 - Expo CLI: `npm install -g expo-cli`
 - Expo Go app on your physical device (or an Android/iOS emulator)
@@ -941,11 +968,29 @@ Scan the QR code with the **Expo Go** app on your phone, or press `a` for Androi
 
 ---
 
+### Web Frontend Setup (frontendweb)
+
+```bash
+# 1. Navigate to frontendweb directory
+cd "Capstone Project/frontendweb"
+
+# 2. Install dependencies
+npm install
+
+# 3. Start the Vite development server
+npm run dev
+```
+
+The app will be available at `http://localhost:5173/`.
+
+---
+
 ## ▶️ Running the Application
 
 To run all services simultaneously in development:
 
 **Terminal 1 — Django Backend:**
+
 ```bash
 cd "Capstone Project/backend"
 source venv/bin/activate   # or venv\Scripts\activate on Windows
@@ -953,6 +998,7 @@ python manage.py runserver 0.0.0.0:8000
 ```
 
 **Terminal 2 — Celery Worker (optional for background tasks):**
+
 ```bash
 cd "Capstone Project/backend"
 source venv/bin/activate
@@ -960,6 +1006,7 @@ celery -A config worker --loglevel=info --pool=solo    # --pool=solo for Windows
 ```
 
 **Terminal 3 — Celery Beat (optional for scheduled tasks):**
+
 ```bash
 cd "Capstone Project/backend"
 source venv/bin/activate
@@ -967,9 +1014,17 @@ celery -A config beat --loglevel=info
 ```
 
 **Terminal 4 — Expo Frontend:**
+
 ```bash
 cd "Capstone Project/frontend"
 npx expo start
+```
+
+**Terminal 5 — Web Frontend (Optional):**
+
+```bash
+cd "Capstone Project/frontendweb"
+npm run dev
 ```
 
 ---
@@ -1014,12 +1069,14 @@ Once the backend server is running, interactive API documentation is auto-genera
 ## ✨ Features Walkthrough
 
 ### 🔐 Authentication Flow
+
 1. User opens the app → **OnboardingScreen** (first launch only)
 2. Taps **Register** → selects role (Student / Teacher) → fills form → JWT tokens stored
 3. Subsequent launches → **LoginScreen** → email/password or biometric shortcut
 4. Tokens auto-refresh silently in the background; expired sessions force re-login
 
 ### 📚 Student Learning Flow
+
 1. Dashboard shows enrolled courses progress and upcoming live classes
 2. **Browse Courses** → filter by category/level → tap a course → **Enroll**
 3. Open course → lessons list → read content → watch video → **Mark Complete**
@@ -1028,6 +1085,7 @@ Once the backend server is running, interactive API documentation is auto-genera
 6. Ask **Qbit** any question; generate flashcards or study plan for upcoming exams
 
 ### 🧑‍🏫 Teacher Content Creation Flow
+
 1. Dashboard shows revenue, student count, and quick actions
 2. **Create Course** → fill details, upload cover image, set pricing → publish
 3. **Add Lessons** → write content, upload video, sequence lessons

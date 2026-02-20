@@ -42,6 +42,7 @@ import QuizScreen from './screens/shared/QuizScreen';
 import NotificationSettingsScreen from './screens/shared/NotificationSettingsScreen';
 import SecurityScreen from './screens/shared/SecurityScreen';
 import QuizAnalysisScreen from './screens/shared/QuizAnalysisScreen';
+import ContactUsScreen from './screens/shared/ContactUsScreen';
 
 const Stack = createNativeStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -80,6 +81,7 @@ function ProfileStack() {
       <Stack.Screen name="About" component={AboutScreen} />
       <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} />
       <Stack.Screen name="Security" component={SecurityScreen} />
+      <Stack.Screen name="ContactUs" component={ContactUsScreen} />
     </Stack.Navigator>
   );
 }

@@ -510,6 +510,16 @@ function ProfileScreen({ navigation }: any) {
               <Text style={styles.settingLabel}>App Info</Text>
               <MaterialCommunityIcons name="chevron-right" size={20} color="#94a3b8" />
             </TouchableOpacity>
+
+            <View style={styles.cardDivider} />
+
+            <TouchableOpacity style={styles.settingRow} onPress={() => navigation.navigate('ContactUs')}>
+              <View style={[styles.settingIcon, { backgroundColor: '#ecfdf5' }]}>
+                <MaterialCommunityIcons name="headphones" size={20} color="#10b981" />
+              </View>
+              <Text style={styles.settingLabel}>Help & Support</Text>
+              <MaterialCommunityIcons name="chevron-right" size={20} color="#94a3b8" />
+            </TouchableOpacity>
           </View>
         </View>
 

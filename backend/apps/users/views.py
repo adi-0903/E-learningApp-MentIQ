@@ -44,6 +44,13 @@ class RegisterView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
 
+        # Send welcome email asynchronously
+        try:
+            from apps.emails.tasks import send_welcome_email_task
+            send_welcome_email_task.delay(str(user.id))
+        except Exception:
+            pass  # Don't block registration if email fails
+
         # Generate tokens for the new user
         refresh = RefreshToken.for_user(user)
         return Response({
