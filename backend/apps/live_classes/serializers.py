@@ -1,5 +1,14 @@
 from rest_framework import serializers
-from .models import LiveClass, LiveClassChat, LiveClassParticipant
+from .models import Attendance, LiveClass, LiveClassChat, LiveClassParticipant
+
+
+class AttendanceSerializer(serializers.ModelSerializer):
+    student_name = serializers.CharField(source='student.name', read_only=True)
+
+    class Meta:
+        model = Attendance
+        fields = ['id', 'student', 'student_name', 'is_present', 'marked_at']
+        read_only_fields = ['id', 'marked_at']
 
 
 class LiveClassListSerializer(serializers.ModelSerializer):

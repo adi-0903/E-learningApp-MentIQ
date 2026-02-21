@@ -17,6 +17,7 @@ from apps.lessons.models import Lesson
 from apps.progress.models import CourseProgress, LessonProgress
 from apps.quizzes.models import QuizAttempt
 
+from apps.live_classes.models import Attendance
 from .serializers import (
     StudentCourseSerializer,
     StudentDashboardSerializer,
@@ -38,11 +39,11 @@ class StudentDashboardView(APIView):
         student = request.user
 
         # Enrolled courses
-        enrolled_ids = Enrollment.objects.filter(
-            student=student, is_active=True
-        ).values_list('course_id', flat=True)
-
-        enrolled_courses = Course.objects.filter(id__in=enrolled_ids)
+        enrolled_courses = Course.objects.filter(
+            enrollments__student=student, 
+            enrollments__is_active=True,
+            is_deleted=False
+        ).distinct()
         total_enrolled = enrolled_courses.count()
 
         # Progress stats
@@ -58,14 +59,33 @@ class StudentDashboardView(APIView):
         # Quiz stats
         quiz_attempts = QuizAttempt.objects.filter(student=student)
         total_quizzes = quiz_attempts.count()
+        unique_quizzes = quiz_attempts.values('quiz').distinct().count()
         avg_score = quiz_attempts.aggregate(
             avg=Avg('score')
         )['avg'] or 0.0
 
-        # Overall progress
-        overall = course_progresses.aggregate(
-            avg=Avg('progress_percentage')
-        )['avg'] or 0.0
+        # Core Stats
+        overall = course_progresses.aggregate(avg=Avg('progress_percentage'))['avg'] or 0.0
+        attendances = Attendance.objects.filter(student=student)
+        total_attendance = attendances.count()
+        present_count = attendances.filter(is_present=True).count()
+        attendance_percentage = round((present_count / total_attendance) * 100, 1) if total_attendance > 0 else 0.0
+
+        # Per-course attendance
+        course_attendance_stats = []
+        for course in enrolled_courses:
+            course_attendances = Attendance.objects.filter(student=student, live_class__course=course)
+            c_total = course_attendances.count()
+            c_present = course_attendances.filter(is_present=True).count()
+            c_percentage = round((c_present / c_total) * 100, 1) if c_total > 0 else 0.0
+            
+            course_attendance_stats.append({
+                'id': str(course.id),
+                'title': course.title,
+                'total': c_total,
+                'present': c_present,
+                'percentage': c_percentage
+            })
 
         # Recent 5 courses
         recent_courses = enrolled_courses.order_by('-updated_at')[:5]
@@ -75,13 +95,19 @@ class StudentDashboardView(APIView):
             'completed_courses': completed,
             'in_progress_courses': in_progress,
             'total_quizzes_taken': total_quizzes,
+            'unique_quizzes_count': unique_quizzes,
             'average_quiz_score': round(avg_score, 1),
             'total_lessons_completed': total_lessons_completed,
+            'total_attendance_marked': total_attendance,
+            'total_present': present_count,
+            'attendance_percentage': attendance_percentage,
+            'course_attendance': course_attendance_stats,
             'recent_courses': StudentCourseSerializer(
                 recent_courses, many=True, context={'request': request}
             ).data,
             'overall_progress': round(overall, 1),
         }
+
 
         return Response({'success': True, 'data': data})
 

@@ -12,4 +12,5 @@ urlpatterns = [
     path('<uuid:id>/leave/', views.LeaveLiveClassView.as_view(), name='leave'),
     path('<uuid:id>/participants/', views.LiveClassParticipantsView.as_view(), name='participants'),
     path('<uuid:id>/chat/', views.LiveClassChatView.as_view(), name='chat'),
+    path('<uuid:id>/attendance/', views.LiveClassAttendanceView.as_view(), name='attendance'),
 ]

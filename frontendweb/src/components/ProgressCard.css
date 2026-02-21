@@ -1,0 +1,124 @@
+.progress-card {
+    height: 100%;
+    background: var(--card-bg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    align-items: center;
+    padding: 0 1.5rem !important;
+    box-sizing: border-box;
+}
+
+.progress-grid-layout {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    width: 100%;
+    gap: 1.5rem;
+}
+
+.stats-box {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    flex: 2;
+}
+
+.mini-stat-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 100px;
+}
+
+.mini-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mini-icon svg {
+    width: 16px;
+    height: 16px;
+}
+
+.p-icon {
+    background: rgba(99, 102, 241, 0.1);
+    color: #818cf8;
+}
+
+.g-icon {
+    background: rgba(16, 185, 129, 0.1);
+    color: #34d399;
+}
+
+.o-icon {
+    background: rgba(245, 158, 11, 0.1);
+    color: #fbbf24;
+}
+
+.mini-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.mini-details .v {
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    line-height: 1.1;
+}
+
+.mini-details .l {
+    font-size: 0.65rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.circle-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    border-left: 1px solid rgba(255, 255, 255, 0.05);
+    padding-left: 1rem;
+    height: 80%;
+}
+
+.compact-circle {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    margin-bottom: 5px;
+    box-shadow: 0 0 15px rgba(99, 102, 241, 0.2);
+}
+
+.compact-circle-inner {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #0f172a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.circle-label {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-transform: uppercase;
+    white-space: nowrap;
+}

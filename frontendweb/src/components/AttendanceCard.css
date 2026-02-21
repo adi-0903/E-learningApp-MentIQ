@@ -1,0 +1,200 @@
+.premium-attendance-card {
+    background: rgba(20, 16, 30, 0.4);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 30px;
+    padding: 1.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-sizing: border-box;
+}
+
+.premium-attendance-card:hover {
+    transform: translateY(-5px);
+    border-color: rgba(155, 108, 255, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+}
+
+.attendance-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.header-info h3 {
+    color: white;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin: 5px 0 0 0;
+}
+
+.tiny-label {
+    font-size: 0.65rem;
+    font-weight: 900;
+    letter-spacing: 2px;
+    color: #475569;
+    text-transform: uppercase;
+}
+
+.attendance-scroll-list {
+    flex-grow: 1;
+    margin: 0.5rem 0;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 8px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.attendance-scroll-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.attendance-scroll-list::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+.course-attendance-item {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.02);
+    border-radius: 18px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    transition: background 0.2s ease;
+}
+
+.course-attendance-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.course-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.course-name-mini {
+    color: white;
+    font-size: 0.9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 75%;
+}
+
+.course-pct {
+    font-size: 0.9rem;
+    font-weight: 800;
+}
+
+.mini-progress-track {
+    width: 100%;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    margin-bottom: 8px;
+    overflow: hidden;
+}
+
+.mini-progress-fill {
+    height: 100%;
+    border-radius: 10px;
+    transition: width 1s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.status-excellent .mini-progress-fill {
+    background: #10b981;
+    box-shadow: 0 0 8px rgba(16, 185, 129, 0.3);
+}
+
+.status-good .mini-progress-fill {
+    background: #3b82f6;
+    box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+}
+
+.status-warning .mini-progress-fill {
+    background: #ef4444;
+    box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+}
+
+.status-excellent .course-pct {
+    color: #10b981;
+}
+
+.status-good .course-pct {
+    color: #3b82f6;
+}
+
+.status-warning .course-pct {
+    color: #ef4444;
+}
+
+.mini-stats-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.mini-stats-row strong {
+    color: #f1f5f9;
+}
+
+.attendance-footer-mini {
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    margin-top: auto;
+}
+
+.attendance-footer-mini p {
+    color: #475569;
+    font-size: 0.7rem;
+    margin: 0;
+    text-align: center;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.empty-attendance {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: #475569;
+}
+
+.empty-attendance p {
+    font-size: 0.85rem;
+    line-height: 1.5;
+}
+
+/* Shimmer Loading */
+.premium-attendance-card.loading {
+    min-height: 200px;
+}
+
+.shimmer-line {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.03), transparent);
+    background-size: 200% 100%;
+    animation: shimmer 2s infinite linear;
+}
+
+@keyframes shimmer {
+    from {
+        background-position: 200% 0;
+    }
+
+    to {
+        background-position: -200% 0;
+    }
+}

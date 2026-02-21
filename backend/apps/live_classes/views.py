@@ -11,8 +11,10 @@ from rest_framework.views import APIView
 from apps.core.pagination import StandardPagination
 from apps.core.permissions import IsStudent, IsTeacher
 
-from .models import LiveClass, LiveClassChat, LiveClassParticipant
+from apps.enrollments.models import Enrollment
+from .models import Attendance, LiveClass, LiveClassChat, LiveClassParticipant
 from .serializers import (
+    AttendanceSerializer,
     LiveClassChatSerializer,
     LiveClassCreateSerializer,
     LiveClassDetailSerializer,
@@ -228,3 +230,86 @@ class LiveClassChatView(APIView):
             'success': True,
             'data': LiveClassChatSerializer(msg).data,
         }, status=status.HTTP_201_CREATED)
+
+
+class LiveClassAttendanceView(APIView):
+    """
+    GET  /api/v1/live-classes/<id>/attendance/ - Get attendance list
+    POST /api/v1/live-classes/<id>/attendance/ - Bulk mark attendance
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, id):
+        try:
+            live_class = LiveClass.objects.get(id=id)
+        except LiveClass.DoesNotExist:
+            return Response({'success': False, 'error': {'message': 'Not found.'}}, status=404)
+
+        # Check if user is teacher of this class or student enrolled in the course
+        if request.user.role == 'teacher' and live_class.teacher != request.user:
+             return Response({'success': False, 'error': {'message': 'Forbidden.'}}, status=403)
+
+        # Get existing attendance
+        attendance_records = Attendance.objects.filter(live_class=live_class).select_related('student')
+        
+        if request.user.role == 'student':
+            # Students only see their own attendance
+            record = attendance_records.filter(student=request.user).first()
+            return Response({
+                'success': True,
+                'data': AttendanceSerializer(record).data if record else None
+            })
+
+        # Teacher View: 
+        # If class linked to course, show all enrolled students merged with records
+        if live_class.course:
+            enrolled_students = Enrollment.objects.filter(course=live_class.course, is_active=True).select_related('student')
+            records_dict = {str(r.student_id): r for r in attendance_records}
+            
+            data = []
+            for enrollment in enrolled_students:
+                student = enrollment.student
+                record = records_dict.get(str(student.id))
+                data.append({
+                    'student': student.id,
+                    'student_name': student.name,
+                    'student_id': student.student_id, # User custom ID
+                    'is_present': record.is_present if record else False,
+                    'marked_at': record.marked_at if record else None
+                })
+            return Response({'success': True, 'data': data})
+
+        # Fallback for classes without a assigned course
+        serializer = AttendanceSerializer(attendance_records, many=True)
+        return Response({'success': True, 'data': serializer.data})
+
+    def post(self, request, id):
+        if request.user.role != 'teacher':
+             return Response({'success': False, 'error': {'message': 'Only teachers can mark attendance.'}}, status=403)
+             
+        try:
+            live_class = LiveClass.objects.get(id=id, teacher=request.user)
+        except LiveClass.DoesNotExist:
+            return Response({'success': False, 'error': {'message': 'Not found.'}}, status=404)
+
+        attendance_data = request.data.get('attendance', []) # List of {student_id: int, is_present: bool}
+        
+        results = []
+        for item in attendance_data:
+            student_id = item.get('student_id')
+            is_present = item.get('is_present', False)
+            
+            if not student_id: continue
+            
+            record, created = Attendance.objects.update_or_create(
+                live_class=live_class,
+                student_id=student_id,
+                defaults={'is_present': is_present}
+            )
+            results.append(AttendanceSerializer(record).data)
+
+        return Response({
+            'success': True,
+            'message': 'Attendance updated.',
+            'data': results
+        })

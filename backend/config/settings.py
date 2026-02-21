@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'apps.analytics',
     'apps.media',
     'apps.ai_tutor',
+    'apps.intelligence',
     'apps.emails',
 ]
 

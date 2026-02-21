@@ -110,3 +110,28 @@ class LiveClassChat(TimeStampedModel):
 
     def __str__(self):
         return f"{self.user.name}: {self.message[:50]}"
+
+
+class Attendance(TimeStampedModel):
+    """Attendance record for a live class."""
+    live_class = models.ForeignKey(
+        LiveClass,
+        on_delete=models.CASCADE,
+        related_name='attendances',
+    )
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='live_class_attendances',
+        limit_choices_to={'role': 'student'},
+    )
+    is_present = models.BooleanField(default=False)
+    marked_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'live_class_attendance'
+        unique_together = ['live_class', 'student']
+
+    def __str__(self):
+        status = "Present" if self.is_present else "Absent"
+        return f"{self.student.name} - {self.live_class.title}: {status}"

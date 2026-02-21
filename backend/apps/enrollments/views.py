@@ -111,3 +111,31 @@ class EnrollmentStatusView(APIView):
             'success': True,
             'data': {'is_enrolled': is_enrolled}
         })
+
+
+class TeacherEnrollmentsView(APIView):
+    """
+    GET /api/v1/enrollments/teacher/
+    List all students enrolled in courses taught by the current teacher.
+    Optional query param: ?course_id=<uuid>
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != 'teacher':
+            return Response(
+                {'success': False, 'error': {'message': 'Only teachers can access this view.'}},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        course_id = request.query_params.get('course_id')
+        enrollments = Enrollment.objects.filter(course__teacher=request.user, is_active=True).select_related('student', 'course')
+
+        if course_id:
+            enrollments = enrollments.filter(course_id=course_id)
+
+        serializer = EnrollmentSerializer(enrollments, many=True)
+        return Response({
+            'success': True,
+            'data': serializer.data
+        })
