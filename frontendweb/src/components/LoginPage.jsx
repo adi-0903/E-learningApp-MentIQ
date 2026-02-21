@@ -104,7 +104,7 @@ export function LoginPage({ onBack }) {
     useEffect(() => {
         const timer = setInterval(() => {
             setActiveSlide(prev => (prev + 1) % ONBOARDING_STEPS.length);
-        }, 3000);
+        }, 25000);
         return () => clearInterval(timer);
     }, []);
 

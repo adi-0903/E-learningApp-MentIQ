@@ -1,0 +1,432 @@
+/* DoubtsPage.css */
+.doubts-page-wrapper {
+    padding: 2rem 3rem;
+    height: 100vh;
+    overflow-y: auto;
+    color: white;
+    background: transparent;
+}
+
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 2.5rem;
+}
+
+.premium-title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #fff 0%, #bba3ff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin: 0 0 0.5rem 0;
+}
+
+.premium-subtitle {
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+/* Mentors Grid */
+.mentors-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 2rem;
+}
+
+.mentor-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 1.8rem;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mentor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.ai-mentor-card {
+    background: linear-gradient(145deg, rgba(107, 33, 168, 0.1) 0%, rgba(20, 16, 30, 0.4) 100%);
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    box-shadow: 0 0 30px rgba(168, 85, 247, 0.05);
+}
+
+.ai-badge {
+    position: absolute;
+    top: -12px;
+    right: 20px;
+    background: linear-gradient(135deg, #a855f7, #6b21a8);
+    color: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+}
+
+.mentor-header {
+    display: flex;
+    align-items: center;
+    gap: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+
+.mentor-avatar-container {
+    position: relative;
+}
+
+.mentor-avatar {
+    width: 65px;
+    height: 65px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+.ai-avatar-img {
+    background: #0b0616;
+    padding: 8px;
+    border-color: #a855f7;
+    animation: pulseAI 3s infinite alternate;
+}
+
+@keyframes pulseAI {
+    0% {
+        box-shadow: 0 0 0 0 rgba(168, 85, 247, 0.4);
+    }
+
+    100% {
+        box-shadow: 0 0 0 10px rgba(168, 85, 247, 0);
+    }
+}
+
+.online-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 14px;
+    height: 14px;
+    background: #10b981;
+    border: 2px solid var(--card-bg);
+    border-radius: 50%;
+}
+
+.mentor-name {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin: 0 0 0.3rem 0;
+    color: white;
+}
+
+.mentor-role-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+}
+
+.mentor-subject {
+    color: #bba3ff;
+    font-weight: 600;
+}
+
+.mentor-divider {
+    color: #64748b;
+    font-size: 0.7rem;
+}
+
+.mentor-role {
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.mentor-phone-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    color: #cbd5e1;
+    font-size: 0.8rem;
+    font-weight: 500;
+    margin-bottom: 0.6rem;
+    padding: 4px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    transition: background 0.2s, color 0.2s;
+}
+
+.mentor-phone-chip:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+.phone-icon {
+    width: 14px;
+    height: 14px;
+    color: #a855f7;
+}
+
+.mentor-stats {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+}
+
+.rating {
+    color: #fbbf24;
+    font-weight: 700;
+}
+
+.star {
+    margin-right: 2px;
+}
+
+.reviews {
+    color: var(--text-muted);
+}
+
+.mentor-expertise {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.expertise-tag {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+}
+
+.mentor-availability {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+    margin-top: auto;
+}
+
+.mentor-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.action-btn {
+    width: 100%;
+    padding: 0.9rem;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+}
+
+.chat-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.chat-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.primary-action-btn {
+    background: var(--accent-purple);
+    color: white;
+}
+
+.primary-action-btn:hover {
+    background: #7d28c7;
+    transform: translateY(-2px);
+}
+
+.ai-mentor-card .primary-action-btn {
+    background: linear-gradient(135deg, #a855f7, #6b21a8);
+}
+
+
+/* Booking Form View */
+.back-btn {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-bottom: 2rem;
+    transition: color 0.2s;
+}
+
+.back-btn:hover {
+    color: white;
+}
+
+.back-btn svg {
+    width: 20px;
+}
+
+.booking-container {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 24px;
+    padding: 3rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.booking-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.booking-header h2 {
+    font-size: 1.8rem;
+    margin: 0 0 0.3rem 0;
+    color: white;
+}
+
+.booking-header p {
+    color: var(--accent-purple);
+    margin: 0;
+    font-weight: 500;
+}
+
+.booking-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.ai-avatar {
+    background: #0b0616;
+    padding: 10px;
+    border: 2px solid #a855f7;
+}
+
+.booking-form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.form-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #cbd5e1;
+    font-weight: 500;
+    margin-bottom: 0.8rem;
+    font-size: 0.95rem;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-family: 'Inter', sans-serif;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    outline: none;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 0 2px rgba(155, 108, 255, 0.2);
+}
+
+.confirm-booking-btn {
+    background: linear-gradient(135deg, #9b6cff 0%, #6b21a8 100%);
+    color: white;
+    border: none;
+    padding: 1.2rem;
+    border-radius: 14px;
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-top: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 10px 20px rgba(107, 33, 168, 0.3);
+}
+
+.confirm-booking-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(107, 33, 168, 0.5);
+}
+
+/* Loading State */
+.mentors-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    grid-column: 1 / -1;
+    color: #94a3b8;
+    gap: 1rem;
+}
+
+.spinner {
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+/* Scrollbar customization */
+.doubts-page-wrapper::-webkit-scrollbar {
+    width: 8px;
+}
+
+.doubts-page-wrapper::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+}
+
+.doubts-page-wrapper::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.doubts-page-wrapper::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.2);
+}

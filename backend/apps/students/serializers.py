@@ -9,8 +9,54 @@ from apps.courses.models import Course
 from apps.enrollments.models import Enrollment
 from apps.progress.models import CourseProgress, LessonProgress
 from apps.quizzes.models import QuizAttempt
+from apps.live_classes.models import SessionBooking
 
 User = get_user_model()
+
+
+class TeacherMentorSerializer(serializers.ModelSerializer):
+    """Serializer for the Doubts Page to show enrolled teachers."""
+    expertise = serializers.SerializerMethodField()
+    availability = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField()
+    reviews = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
+    subject = serializers.SerializerMethodField()
+
+    class Meta:
+        model = User
+        fields = [
+            'id', 'name', 'role', 'bio', 'expertise', 
+            'availability', 'rating', 'reviews', 'image',
+            'phone_number', 'subject'
+        ]
+
+    def get_subject(self, obj):
+        titles = obj.courses.filter(is_deleted=False).values_list('title', flat=True).distinct()
+        if titles:
+            return ", ".join(list(titles)[:2])
+        return "General Subject"
+
+    def get_expertise(self, obj):
+        # Could be tied to course categories, defaulting to bio or generic for now.
+        if obj.bio:
+            return [cat.strip() for cat in obj.bio.split(',')[:3] if cat]
+        return ['Course Instructor']
+
+    def get_availability(self, obj):
+        return 'Available 9AM - 5PM'
+
+    def get_rating(self, obj):
+        return 4.8  # Default mockup rating or calculated later
+
+    def get_reviews(self, obj):
+        return '150+'  # Default mockup reviews
+
+    def get_image(self, obj):
+        request = self.context.get('request')
+        if obj.profile_image:
+            return request.build_absolute_uri(obj.profile_image.url) if request else obj.profile_image.url
+        return 'https://i.pravatar.cc/150?u=' + str(obj.id)
 
 
 class StudentCourseSerializer(serializers.ModelSerializer):
@@ -103,3 +149,11 @@ class StudentQuizResultSerializer(serializers.ModelSerializer):
         if obj.total_questions > 0:
             return round((obj.score / obj.total_questions) * 100, 1)
         return 0
+
+
+class StudentSessionBookingSerializer(serializers.ModelSerializer):
+    """Serializer for students to book a session."""
+    class Meta:
+        model = SessionBooking
+        fields = ['id', 'teacher', 'date', 'time', 'topic', 'status', 'created_at']
+        read_only_fields = ['id', 'status', 'created_at']

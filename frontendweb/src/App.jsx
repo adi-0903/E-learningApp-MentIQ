@@ -12,6 +12,8 @@ import { ContactUsPage } from './components/ContactUsPage';
 import { MyCoursesPage } from './components/MyCoursesPage';
 import { CourseDetailPage } from './components/CourseDetailPage';
 import { QuizTakingPage } from './components/QuizTakingPage';
+import { DoubtsPage } from './components/DoubtsPage';
+
 import { QuizResultPage } from './components/QuizResultPage';
 import { ClassroomPage } from './components/ClassroomPage';
 import api from './api';
@@ -151,20 +153,7 @@ function App() {
                 ) : currentPage === 'classroom' ? (
                     <ClassroomPage onBack={() => setCurrentPage('dashboard')} />
                 ) : currentPage === 'doubts' ? (
-                    <div className="premium-page-wrapper slide-up">
-                        <div className="page-header">
-                            <div className="header-info">
-                                <h1 className="premium-title">Doubts & Support</h1>
-                                <p className="premium-subtitle">Ask questions and get help from our expert mentors.</p>
-                            </div>
-                        </div>
-                        <div className="empty-state">
-                            <div className="empty-icon">💬</div>
-                            <h3>AI Mentor Support Coming Soon</h3>
-                            <p>We are integrating an advanced AI support system to help you with your doubts instantly.</p>
-                            <button className="primary-btn" onClick={() => setCurrentPage('dashboard')} style={{ marginTop: '2rem', padding: '0.8rem 2rem', background: 'var(--accent-purple)', border: 'none', borderRadius: '12px', color: 'white', cursor: 'pointer', fontWeight: 'bold' }}>BACK TO DASHBOARD</button>
-                        </div>
-                    </div>
+                    <DoubtsPage onBack={() => setCurrentPage('dashboard')} />
                 ) : currentPage === 'course_detail' ? (
                     <CourseDetailPage
                         courseId={selectedCourseId}

@@ -135,3 +135,40 @@ class Attendance(TimeStampedModel):
     def __str__(self):
         status = "Present" if self.is_present else "Absent"
         return f"{self.student.name} - {self.live_class.title}: {status}"
+
+
+class SessionBooking(TimeStampedModel):
+    """A 1:1 session booking between a student and a teacher."""
+    class StatusChoices(models.TextChoices):
+        PENDING = 'pending', 'Pending'
+        CONFIRMED = 'confirmed', 'Confirmed'
+        CANCELLED = 'cancelled', 'Cancelled'
+        COMPLETED = 'completed', 'Completed'
+
+    student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='booked_sessions',
+        limit_choices_to={'role': 'student'},
+    )
+    teacher = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='received_bookings',
+        limit_choices_to={'role': 'teacher'},
+    )
+    date = models.DateField()
+    time = models.TimeField()
+    topic = models.TextField()
+    status = models.CharField(
+        max_length=20,
+        choices=StatusChoices.choices,
+        default=StatusChoices.PENDING
+    )
+
+    class Meta:
+        db_table = 'session_bookings'
+        ordering = ['-date', '-time']
+
+    def __str__(self):
+        return f"{self.student.name} -> {self.teacher.name} on {self.date} at {self.time}"

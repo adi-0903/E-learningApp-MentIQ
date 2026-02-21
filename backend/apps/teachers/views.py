@@ -17,12 +17,14 @@ from apps.enrollments.models import Enrollment
 from apps.lessons.models import Lesson
 from apps.progress.models import CourseProgress, LessonProgress
 from apps.quizzes.models import Quiz, QuizAttempt
+from apps.live_classes.models import SessionBooking
 
 from .serializers import (
     CourseStudentProgressSerializer,
     TeacherCourseStatsSerializer,
     TeacherDashboardSerializer,
     TeacherStudentDetailSerializer,
+    TeacherSessionBookingSerializer,
 )
 
 User = get_user_model()
@@ -325,3 +327,31 @@ class TeacherStudentDetailView(APIView):
             data['courses'].append(course_data)
 
         return Response({'success': True, 'data': data})
+
+
+class TeacherSessionBookingListView(generics.ListAPIView):
+    """
+    GET /api/v1/teachers/bookings/
+    Lists all booked 1:1 sessions for the teacher.
+    """
+    serializer_class = TeacherSessionBookingSerializer
+    permission_classes = [IsAuthenticated, IsTeacher]
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        return SessionBooking.objects.filter(
+            teacher=self.request.user
+        ).select_related('student')
+
+
+class TeacherSessionBookingUpdateView(generics.UpdateAPIView):
+    """
+    PATCH /api/v1/teachers/bookings/<id>/
+    Allows teacher to update booking status (e.g., confirm, cancel).
+    """
+    serializer_class = TeacherSessionBookingSerializer
+    permission_classes = [IsAuthenticated, IsTeacher]
+    queryset = SessionBooking.objects.all()
+
+    def get_queryset(self):
+        return self.queryset.filter(teacher=self.request.user)

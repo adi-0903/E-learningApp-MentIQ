@@ -78,9 +78,9 @@
 .login-glass-container {
     position: relative;
     z-index: 10;
-    width: 90%;
-    max-width: 1100px;
-    height: 80vh;
+    width: 92%;
+    max-width: 1150px;
+    height: 82vh;
     min-height: 600px;
     background: rgba(20, 16, 30, 0.4);
     backdrop-filter: blur(30px);
@@ -106,205 +106,179 @@
 }
 
 /* =========================================================
-   LEFT PANEL — Full Onboarding Visual
+   LEFT PANEL — Full Onboarding Content (mirrors OnboardingScreen)
    ========================================================= */
 .login-left-panel {
-    flex: 1;
+    flex: 1.1;
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-items: center;
     position: relative;
     overflow: hidden;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 3rem;
     transition: background 0.5s ease;
 }
 
 /* Theme backgrounds */
 .login-theme-teal {
-    background: rgba(15, 118, 110, 0.06);
+    background: linear-gradient(135deg, rgba(15, 118, 110, 0.12) 0%, rgba(20, 16, 30, 0) 100%);
 }
 
 .login-theme-indigo {
-    background: rgba(55, 48, 163, 0.06);
+    background: linear-gradient(135deg, rgba(55, 48, 163, 0.12) 0%, rgba(20, 16, 30, 0) 100%);
 }
 
 .login-theme-violet {
-    background: rgba(107, 33, 168, 0.06);
+    background: linear-gradient(135deg, rgba(107, 33, 168, 0.12) 0%, rgba(20, 16, 30, 0) 100%);
 }
 
 .login-theme-crimson {
-    background: rgba(159, 18, 57, 0.06);
+    background: linear-gradient(135deg, rgba(159, 18, 57, 0.12) 0%, rgba(20, 16, 30, 0) 100%);
 }
 
-/* Showcase area (image + glow) */
-.login-showcase {
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    flex: 1;
-    min-height: 0;
-}
-
-.login-glow {
+/* Dot pattern overlay */
+.login-left-panel::before {
+    content: '';
     position: absolute;
-    width: 300px;
-    height: 300px;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.5;
-    animation: loginGlowPulse 4s ease-in-out infinite alternate;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPjxyZWN0IHdpZHRoPSI0IiBoZWlnaHQ9IjQiIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4wMiIvPjwvc3ZnPg==');
+    z-index: 0;
+    pointer-events: none;
 }
 
-.login-glow-teal {
-    background: radial-gradient(circle, rgba(20, 184, 166, 0.3) 0%, transparent 70%);
+.login-onboard-content {
+    position: relative;
+    z-index: 1;
+    padding: 3rem;
+    animation: loginSlideIn 0.5s ease-out forwards;
 }
 
-.login-glow-indigo {
-    background: radial-gradient(circle, rgba(99, 102, 241, 0.3) 0%, transparent 70%);
-}
-
-.login-glow-violet {
-    background: radial-gradient(circle, rgba(168, 85, 247, 0.3) 0%, transparent 70%);
-}
-
-.login-glow-crimson {
-    background: radial-gradient(circle, rgba(244, 63, 94, 0.3) 0%, transparent 70%);
-}
-
-@keyframes loginGlowPulse {
-    0% {
-        transform: scale(1);
-        opacity: 0.3;
-    }
-
-    100% {
-        transform: scale(1.2);
-        opacity: 0.6;
-    }
-}
-
-/* Main graphic */
-.login-graphic {
-    max-width: 240px;
-    max-height: 300px;
-    object-fit: contain;
-    z-index: 2;
-    animation: loginGraphicIn 0.6s ease-out forwards;
-    filter: drop-shadow(0 20px 40px rgba(0, 0, 0, 0.5));
-}
-
-.login-graphic.login-photo {
-    max-width: 220px;
-    max-height: 300px;
-    object-fit: cover;
-    border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
-    mix-blend-mode: lighten;
-    filter: none;
-}
-
-.login-graphic.login-logo-graphic {
-    animation: loginLogoFloat 5s ease-in-out infinite alternate;
-}
-
-@keyframes loginGraphicIn {
+@keyframes loginSlideIn {
     from {
         opacity: 0;
-        transform: scale(0.85);
+        transform: translateY(15px);
     }
 
     to {
         opacity: 1;
-        transform: scale(1);
-    }
-}
-
-@keyframes loginLogoFloat {
-    0% {
         transform: translateY(0);
     }
-
-    100% {
-        transform: translateY(-15px);
-    }
 }
 
-/* Floating badge */
-.login-badge {
-    position: absolute;
-    bottom: 15%;
-    right: 10%;
-    background: rgba(20, 16, 30, 0.85);
-    backdrop-filter: blur(15px);
-    border: 1px solid;
-    padding: 10px 18px;
-    border-radius: 14px;
+/* Brand / Logo Row */
+.login-ob-brand {
     display: flex;
     align-items: center;
-    gap: 10px;
-    color: white;
-    font-weight: 600;
-    font-size: 0.85rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    z-index: 3;
-    animation: loginBadgeFloat 4s ease-in-out infinite alternate;
+    gap: 12px;
+    margin-bottom: 1.8rem;
 }
 
-@keyframes loginBadgeFloat {
-    0% {
-        transform: translateY(0);
-    }
-
-    100% {
-        transform: translateY(-8px);
-    }
+.login-ob-logo {
+    width: 36px;
+    height: 36px;
+    object-fit: contain;
 }
 
-/* Text info below graphic */
-.login-slide-info {
-    text-align: center;
-    padding: 0 1rem;
-    z-index: 2;
-    animation: loginTextFade 0.5s ease-out forwards;
-    flex-shrink: 0;
-}
-
-.login-slide-info h2 {
+.login-ob-brand-name {
     font-size: 1.3rem;
     font-weight: 800;
     color: white;
-    margin: 0 0 0.4rem 0;
-    line-height: 1.3;
+    letter-spacing: 0.5px;
 }
 
-.login-slide-info p {
-    color: #94a3b8;
-    font-size: 0.85rem;
-    line-height: 1.5;
-    margin: 0 0 1.2rem 0;
+/* Step Indicator */
+.login-ob-step-indicator {
+    color: rgba(255, 255, 255, 0.35);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-bottom: 0.8rem;
+    font-weight: 600;
 }
 
-@keyframes loginTextFade {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Title */
+.login-ob-title {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    line-height: 1.15;
+    margin: 0 0 0.8rem 0;
 }
 
-/* Dot indicators */
-.login-dots {
+/* Subtitle */
+.login-ob-subtitle {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin: 0 0 2rem 0;
+    max-width: 420px;
+}
+
+/* Features List */
+.login-ob-features {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    margin-bottom: 2rem;
+}
+
+.login-ob-feature-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.login-ob-feat-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
     display: flex;
     justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    transition: all 0.3s ease;
+}
+
+.login-ob-feat-icon.teal {
+    background: rgba(15, 118, 110, 0.2);
+    color: #5eead4;
+}
+
+.login-ob-feat-icon.indigo {
+    background: rgba(55, 48, 163, 0.2);
+    color: #a5b4fc;
+}
+
+.login-ob-feat-icon.violet {
+    background: rgba(107, 33, 168, 0.2);
+    color: #d8b4fe;
+}
+
+.login-ob-feat-icon.crimson {
+    background: rgba(159, 18, 57, 0.2);
+    color: #fda4af;
+}
+
+.login-ob-feat-text h3 {
+    color: white;
+    font-size: 0.95rem;
+    margin: 0 0 0.15rem 0;
+    font-weight: 600;
+}
+
+.login-ob-feat-text p {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.85rem;
+    line-height: 1.4;
+    margin: 0;
+}
+
+/* Dot Indicators */
+.login-dots {
+    display: flex;
     gap: 6px;
 }
 
@@ -313,7 +287,7 @@
     height: 8px;
     border-radius: 50%;
     border: none;
-    background: rgba(255, 255, 255, 0.15);
+    background: rgba(255, 255, 255, 0.12);
     cursor: pointer;
     padding: 0;
     transition: all 0.3s ease;
@@ -521,22 +495,19 @@
     }
 
     .login-left-panel {
-        min-height: 320px;
-        padding: 2rem;
         border-right: none;
         border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     }
 
+    .login-onboard-content {
+        padding: 2rem;
+    }
+
+    .login-ob-title {
+        font-size: 1.5rem;
+    }
+
     .login-right-panel {
-        padding: 3rem 2rem;
-    }
-
-    .login-graphic {
-        max-width: 160px;
-        max-height: 200px;
-    }
-
-    .login-badge {
-        display: none;
+        padding: 2.5rem 2rem;
     }
 }

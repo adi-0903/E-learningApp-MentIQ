@@ -9,8 +9,20 @@ from rest_framework import serializers
 from apps.courses.models import Course
 from apps.enrollments.models import Enrollment
 from apps.quizzes.models import QuizAttempt
+from apps.live_classes.models import SessionBooking
 
 User = get_user_model()
+
+
+class TeacherSessionBookingSerializer(serializers.ModelSerializer):
+    """Serializer for teachers to view and manage their booked sessions."""
+    student_name = serializers.CharField(source='student.name', read_only=True)
+    student_email = serializers.CharField(source='student.email', read_only=True)
+
+    class Meta:
+        model = SessionBooking
+        fields = ['id', 'student', 'student_name', 'student_email', 'date', 'time', 'topic', 'status', 'created_at']
+        read_only_fields = ['id', 'student', 'date', 'time', 'topic', 'created_at']
 
 
 class TeacherCourseStatsSerializer(serializers.ModelSerializer):

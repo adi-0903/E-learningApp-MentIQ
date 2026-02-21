@@ -23,6 +23,8 @@ from .serializers import (
     StudentDashboardSerializer,
     StudentProgressSummarySerializer,
     StudentQuizResultSerializer,
+    TeacherMentorSerializer,
+    StudentSessionBookingSerializer,
 )
 
 User = get_user_model()
@@ -137,6 +139,52 @@ class StudentEnrolledCoursesView(generics.ListAPIView):
         return Response({'success': True, 'data': serializer.data})
 
 
+class StudentTeachersView(generics.ListAPIView):
+    """
+    GET /api/v1/students/my-teachers/
+    Lists all teachers of the courses the student is enrolled in.
+    """
+    serializer_class = TeacherMentorSerializer
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    def get_queryset(self):
+        enrolled_course_ids = Enrollment.objects.filter(
+            student=self.request.user, is_active=True
+        ).values_list('course_id', flat=True)
+        
+        teacher_ids = Course.objects.filter(id__in=enrolled_course_ids).values_list('teacher_id', flat=True)
+        return User.objects.filter(id__in=teacher_ids, role='teacher', is_active=True)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        data = serializer.data
+
+        # Inject Personal AI Mentor at the top
+        ai_mentor = {
+            'id': 'ai-mentor',
+            'name': 'MentIQ AI Mentor',
+            'role': 'Advanced AI Assistant',
+            'bio': 'I am available 24/7 to help you with any doubts.',
+            'expertise': ['Any Subject', 'Code Debugging', 'Concept Explanation'],
+            'availability': 'Available 24/7',
+            'rating': 5.0,
+            'reviews': '10k+',
+            'image': '/Logo.png',
+            'phone_number': '+1 (800) MentIQ-AI',
+            'subject': 'All Subjects',
+            'is_ai': True
+        }
+
+        # Mark human teachers
+        for mentor in data:
+            mentor['is_ai'] = False
+
+        data.insert(0, ai_mentor)
+
+        return Response({'success': True, 'data': data})
+
+
 class StudentProgressView(APIView):
     """
     GET /api/v1/students/progress/
@@ -242,3 +290,23 @@ class StudentBrowseCoursesView(generics.ListAPIView):
             queryset = queryset.order_by(sort)
 
         return queryset
+class StudentSessionBookingCreateView(generics.CreateAPIView):
+    """
+    POST /api/v1/students/book-session/
+    Allows students to book a 1:1 session with a teacher.
+    """
+    serializer_class = StudentSessionBookingSerializer
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    def perform_create(self, serializer):
+        serializer.save(student=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        self.perform_create(serializer)
+        return Response({
+            'success': True, 
+            'message': 'Session booked successfully.',
+            'data': serializer.data
+        }, status=status.HTTP_201_CREATED)
