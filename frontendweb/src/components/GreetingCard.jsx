@@ -1,9 +1,10 @@
 import React from 'react';
 import './GreetingCard.css';
 
-export function GreetingCard({ userData }) {
+export function GreetingCard({ userData, userRole }) {
+    const isTeacher = userRole === 'teacher';
     // If the name exists, grab just the first word (first name) for a casual greeting
-    const firstName = userData?.name ? userData.name.split(' ')[0] : 'Student';
+    const firstName = userData?.name ? userData.name.split(' ')[0] : (isTeacher ? 'Instructor' : 'Student');
 
     // Simple deterministic hash based on name to keep avatar consistent per user
     const isFemale = firstName.length % 2 !== 0;
@@ -13,11 +14,11 @@ export function GreetingCard({ userData }) {
         <div className="card greeting-card slide-up" style={{ animationDelay: '0.6s' }}>
             <div className="greeting-text">
                 <h2>Hi, {firstName}!</h2>
-                <p>Ready to make progress today?</p>
+                <p>{isTeacher ? "Your classroom is ready for today's sessions." : "Ready to make progress today?"}</p>
             </div>
             <img
                 src={portraitSrc}
-                alt="Student Avatar"
+                alt={isTeacher ? "Teacher Avatar" : "Student Avatar"}
                 className="greeting-avatar premium-character-mask"
             />
         </div>

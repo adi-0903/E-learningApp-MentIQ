@@ -3,46 +3,79 @@ import './DoubtsPage.css';
 import { Calendar, MessageSquare, Video, Clock, Bot, User, CheckCircle2, ChevronRight, Loader2 } from 'lucide-react';
 import api from '../api.js';
 
-export function DoubtsPage({ onBack }) {
+export function DoubtsPage({ onBack, userRole }) {
+    const isTeacher = userRole === 'teacher';
     const [selectedMentor, setSelectedMentor] = useState(null);
     const [bookingMode, setBookingMode] = useState(false);
     const [date, setDate] = useState('');
     const [time, setTime] = useState('');
     const [topic, setTopic] = useState('');
     const [mentors, setMentors] = useState([]);
+    const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
 
+    // Generate upcoming 7 days for the premium date selector
+    const getUpcomingDays = () => {
+        const days = [];
+        const today = new Date();
+        for (let i = 0; i < 7; i++) {
+            const nextDay = new Date(today);
+            nextDay.setDate(today.getDate() + i);
+            days.push({
+                fullDate: nextDay.toISOString().split('T')[0],
+                dayName: nextDay.toLocaleDateString('en-US', { weekday: 'short' }),
+                dayNumber: nextDay.getDate(),
+                isToday: i === 0
+            });
+        }
+        return days;
+    };
+
+    const timeSlots = [
+        "09:00 AM", "10:00 AM", "11:30 AM",
+        "02:00 PM", "03:30 PM", "05:00 PM", "07:00 PM"
+    ];
+
+    const upcomingDays = getUpcomingDays();
+
     useEffect(() => {
-        const fetchTeachers = async () => {
+        const fetchData = async () => {
+            setLoading(true);
             try {
-                const response = await api.get('students/my-teachers/');
-                if (response.data && response.data.success) {
-                    const mappedTeachers = response.data.data.map(t => ({
-                        id: t.id,
-                        name: t.name,
-                        role: t.role === 'teacher' ? 'Course Instructor' : t.role,
-                        expertise: t.expertise,
-                        availability: t.availability,
-                        isOnline: t.is_ai ? true : Math.random() > 0.5, // Mock online mostly for offline users
-                        isAI: t.is_ai || false,
-                        image: t.image,
-                        rating: t.rating,
-                        reviews: t.reviews,
-                        phone_number: t.phone_number,
-                        subject: t.subject
-                    }));
-                    setMentors(mappedTeachers);
+                if (isTeacher) {
+                    const response = await api.get('teachers/bookings/');
+                    if (response.data && response.data.success) {
+                        setBookings(response.data.data);
+                    }
+                } else {
+                    const response = await api.get('students/my-teachers/');
+                    if (response.data && response.data.success) {
+                        const mappedTeachers = response.data.data.map(t => ({
+                            id: t.id,
+                            name: t.name,
+                            role: t.role === 'teacher' ? 'Course Instructor' : t.role,
+                            expertise: t.expertise,
+                            availability: t.availability,
+                            isOnline: t.is_ai ? true : Math.random() > 0.5,
+                            isAI: t.is_ai || false,
+                            image: t.image,
+                            rating: t.rating,
+                            reviews: t.reviews,
+                            phone_number: t.phone_number,
+                            subject: t.subject
+                        }));
+                        setMentors(mappedTeachers);
+                    }
                 }
             } catch (error) {
-                console.error("Error fetching teachers:", error);
-                setMentors([]); // Fallback to empty
+                console.error("Error fetching data:", error);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchTeachers();
-    }, []);
+        fetchData();
+    }, [isTeacher]);
 
     const handleBookSession = (mentor) => {
         setSelectedMentor(mentor);
@@ -94,12 +127,33 @@ export function DoubtsPage({ onBack }) {
                     <form className="booking-form" onSubmit={handleConfirmBooking}>
                         <div className="form-group">
                             <label><Calendar size={18} /> Select Date</label>
-                            <input type="date" required value={date} onChange={e => setDate(e.target.value)} />
+                            <div className="premium-date-selector">
+                                {upcomingDays.map((d, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`date-tile ${date === d.fullDate ? 'selected' : ''}`}
+                                        onClick={() => setDate(d.fullDate)}
+                                    >
+                                        <span className="date-tile-name">{d.isToday ? 'Today' : d.dayName}</span>
+                                        <span className="date-tile-number">{d.dayNumber}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
                         <div className="form-group">
-                            <label><Clock size={18} /> Select Time</label>
-                            <input type="time" required value={time} onChange={e => setTime(e.target.value)} />
+                            <label><Clock size={18} /> Select Time Slot</label>
+                            <div className="premium-time-selector">
+                                {timeSlots.map((t, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`time-tile ${time === t ? 'selected' : ''}`}
+                                        onClick={() => setTime(t)}
+                                    >
+                                        {t}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
 
                         <div className="form-group">
@@ -118,8 +172,12 @@ export function DoubtsPage({ onBack }) {
         <div className="doubts-page-wrapper slide-up">
             <div className="page-header">
                 <div className="header-info">
-                    <h1 className="premium-title">Doubts & Support</h1>
-                    <p className="premium-subtitle">Connect with our expert mentors or get instant help from our 24/7 AI Assistant.</p>
+                    <h1 className="premium-title">{isTeacher ? "Student Doubt Requests" : "Doubts & Support"}</h1>
+                    <p className="premium-subtitle">
+                        {isTeacher
+                            ? "Review and manage your upcoming 1:1 sessions with students who need guidance."
+                            : "Connect with our expert mentors or get instant help from our 24/7 AI Assistant."}
+                    </p>
                 </div>
             </div>
 
@@ -127,8 +185,67 @@ export function DoubtsPage({ onBack }) {
                 {loading ? (
                     <div className="mentors-loading">
                         <Loader2 className="spinner" size={32} color="#a855f7" />
-                        <p>Finding your instructors...</p>
+                        <p>{isTeacher ? "Loading your schedule..." : "Finding your instructors..."}</p>
                     </div>
+                ) : isTeacher ? (
+                    bookings.length === 0 ? (
+                        <div className="mentors-loading">
+                            <CheckCircle2 size={48} color="#22c55e" />
+                            <p>You're all caught up! No pending doubt requests.</p>
+                        </div>
+                    ) : (
+                        bookings.map(booking => (
+                            <div key={booking.id} className="mentor-card booking-card">
+                                <div className="mentor-header">
+                                    <div className="mentor-avatar-container">
+                                        <div className="mentor-avatar-initials">
+                                            {booking.student_name ? booking.student_name[0].toUpperCase() : 'S'}
+                                        </div>
+                                    </div>
+                                    <div className="mentor-info">
+                                        <h3 className="mentor-name">{booking.student_name}</h3>
+                                        <div className="mentor-role-row">
+                                            <span className="mentor-role">Student</span>
+                                            <span className="mentor-divider">•</span>
+                                            <span className="status-badge" style={{
+                                                background: booking.status === 'confirmed' ? 'rgba(34, 197, 94, 0.1)' : 'rgba(168, 85, 247, 0.1)',
+                                                color: booking.status === 'confirmed' ? '#22c55e' : '#a855f7',
+                                                padding: '2px 8px',
+                                                borderRadius: '12px',
+                                                fontSize: '0.75rem'
+                                            }}>
+                                                {booking.status}
+                                            </span>
+                                        </div>
+                                        <div className="mentor-phone-chip">
+                                            <MessageSquare size={14} className="phone-icon" />
+                                            {booking.student_email}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="mentor-expertise" style={{ marginTop: '1rem', color: 'var(--text-muted)', fontSize: '0.9rem' }}>
+                                    <strong>Topic:</strong> {booking.topic}
+                                </div>
+
+                                <div className="mentor-availability">
+                                    <Calendar size={16} /> <span>{booking.date} at {booking.time}</span>
+                                </div>
+
+                                <div className="mentor-actions">
+                                    {booking.status === 'pending' ? (
+                                        <button className="action-btn primary-action-btn" onClick={() => alert("Session confirmed. Notification sent to student.")}>
+                                            <CheckCircle2 size={18} /> Confirm Session
+                                        </button>
+                                    ) : (
+                                        <button className="action-btn primary-action-btn" onClick={() => window.open('https://meet.google.com/new', '_blank')}>
+                                            <Video size={18} /> Start Meeting
+                                        </button>
+                                    )}
+                                </div>
+                            </div>
+                        ))
+                    )
                 ) : (
                     mentors.map(mentor => (
                         <div key={mentor.id} className={`mentor-card ${mentor.isAI ? 'ai-mentor-card' : ''}`}>

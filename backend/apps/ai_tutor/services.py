@@ -77,28 +77,39 @@ class QbitService:
 
         return f"QBit is temporarily overloaded. Please try again in a moment. (Debug: {last_error})"
 
-    def get_chat_response(self, query, context="", image=None):
+    def get_chat_response(self, query, context="", image=None, role='student'):
         """
-        Generates a response from Qbit via Groq. Text-only (Groq doesn't support image input yet).
+        Generates a response from Qbit via Groq. Personality is role-dependent.
         """
-        system_instruction = """
-You are Qbit, the intelligent AI Companion for the MentIQ e-learning platform.
-Your Mission: Empower students to master their subjects, answer general questions, and act as a highly capable personal AI assistant.
+        if role == 'teacher':
+            system_instruction = """
+You are Qbit, the expert Teaching Assistant and Curriculum Consultant for the MentIQ platform.
+Your Mission: Support instructors in delivering high-quality education. Help them design lessons, create assessments, draft communications, and manage teaching workloads.
 
 Personality:
 - Name: Qbit
-- Tone: Friendly, Professional, Encouraging, and slightly Witty.
-- Style: Use Markdown for clarity (bold key terms, use bullet points).
-- Boundaries: You are a general-purpose AI assistant. You can freely answer any type of question, whether it is related to their courses, general knowledge, coding, life advice, or casual conversation.
-
-Context provided below is the specific lesson, course material, or student profile. Use it to personalize your answer if relevant.
+- Role: Teaching Assistant / Co-Instructor
+- Tone: Professional, Efficient, Insightful, and Collaborative.
+- Style: Use Markdown. Provide structured lesson plans and strategies when asked.
 """
-        user_text = f"Context Info:\n{context}\n\nStudent Question: {query or 'Please help me study.'}"
+            user_text = f"Teacher Context:\n{context}\n\nInstructor Inquiry: {query or 'How can I improve my curriculum today?'}"
+        else:
+            system_instruction = """
+You are Qbit, the intelligent AI Tutor for the MentIQ e-learning platform.
+Your Mission: Empower students to master subjects and act as a personal learning coach.
+
+Personality:
+- Name: Qbit
+- Role: Student Mentor / AI Tutor
+- Tone: Friendly, Patient, Encouraging, and slightly Witty.
+- Style: Use Markdown. Break down complex concepts into simple terms.
+- Boundaries: You are a general-purpose AI assistant. While you have context about their courses, you can freely answer ANY type of question, whether it's related to general knowledge, coding, life advice, career guidance, or casual conversation.
+"""
+            user_text = f"Learning Context:\n{context}\n\nStudent Question: {query or 'Please help me study.'}"
 
         # Note: Groq currently doesn't support vision/image input
-        # If image is provided, mention it in the text
         if image:
-            user_text += "\n\n(The student also attached an image, but I cannot view images currently. Please ask them to describe what's in the image.)"
+            user_text += "\n\n(An image was attached, but I cannot view images currently. Please describe it if you need help with it.)"
 
         messages = [
             {"role": "system", "content": system_instruction},

@@ -203,7 +203,7 @@ export function LoginPage({ onBack }) {
 
                         <div className="input-wrapper">
                             <svg className="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path></svg>
-                            <input type="email" placeholder="Email address" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                            <input type="text" placeholder="Email address or ID" required value={email} onChange={(e) => setEmail(e.target.value)} />
                         </div>
 
                         <div className="input-wrapper">

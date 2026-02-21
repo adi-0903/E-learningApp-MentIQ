@@ -430,3 +430,102 @@
 .doubts-page-wrapper::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+
+/* Premium Custom Selectors */
+.premium-date-selector {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 6px 0 12px 0;
+    scroll-behavior: smooth;
+}
+
+.premium-date-selector::-webkit-scrollbar {
+    height: 4px;
+}
+
+.premium-date-selector::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 2px;
+}
+
+.premium-date-selector::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 2px;
+}
+
+.date-tile {
+    min-width: 70px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    user-select: none;
+}
+
+.date-tile:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-2px);
+}
+
+.date-tile.selected {
+    background: linear-gradient(135deg, #a855f7 0%, #6b21a8 100%);
+    border-color: transparent;
+    box-shadow: 0 8px 15px rgba(107, 33, 168, 0.4);
+    transform: translateY(-4px);
+}
+
+.date-tile-name {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+.date-tile.selected .date-tile-name {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.date-tile-number {
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: white;
+}
+
+.premium-time-selector {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 12px;
+    padding-top: 6px;
+}
+
+.time-tile {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 10px 14px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+}
+
+.time-tile:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.time-tile.selected {
+    background: rgba(168, 85, 247, 0.15);
+    border-color: #a855f7;
+    color: #bba3ff;
+    box-shadow: 0 0 15px rgba(168, 85, 247, 0.15) inset;
+}

@@ -1,7 +1,9 @@
 import React from 'react';
 import './Sidebar.css';
 
-export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroom, onOpenDoubts, onLogout, currentPage }) {
+export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroom, onOpenDoubts, onLogout, currentPage, userRole }) {
+    const isTeacher = userRole === 'teacher';
+
     return (
         <div className="sidebar">
             <div className="logo-container">
@@ -12,10 +14,10 @@ export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroo
                 <div className={`nav-item ${currentPage === 'dashboard' ? 'active' : ''}`} onClick={onGoHome} title="Home">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
                 </div>
-                <div className={`nav-item ${currentPage === 'courses' ? 'active' : ''}`} onClick={onOpenCourses} title="My Courses">
+                <div className={`nav-item ${currentPage === 'courses' ? 'active' : ''}`} onClick={onOpenCourses} title={isTeacher ? "Manage Courses" : "My Courses"}>
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
                 </div>
-                <div className={`nav-item ${currentPage === 'classroom' ? 'active' : ''}`} onClick={onOpenClassroom} title="Classroom">
+                <div className={`nav-item ${currentPage === 'classroom' ? 'active' : ''}`} onClick={onOpenClassroom} title={isTeacher ? "Host Sessions" : "Classroom"}>
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"></path>
                         <circle cx="9" cy="7" r="4"></circle>
@@ -23,7 +25,7 @@ export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroo
                         <path d="M16 3.13a4 4 0 010 7.75"></path>
                     </svg>
                 </div>
-                <div className={`nav-item ${currentPage === 'doubts' ? 'active' : ''}`} onClick={onOpenDoubts} title="Doubts">
+                <div className={`nav-item ${currentPage === 'doubts' ? 'active' : ''}`} onClick={onOpenDoubts} title={isTeacher ? "Student Doubts" : "My Doubts"}>
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z"></path>
                     </svg>

@@ -8,7 +8,7 @@ import { AIAssistantCard } from './AIAssistantCard';
 import { AttendanceCard } from './AttendanceCard';
 import api from '../api';
 
-export function StudentDashboard({ userData, onSeeAllCourses, onContinueCourse }) {
+export function StudentDashboard({ userData, userRole, onSeeAllCourses, onContinueCourse }) {
     const [dashboardData, setDashboardData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -33,7 +33,7 @@ export function StudentDashboard({ userData, onSeeAllCourses, onContinueCourse }
         <div className="dashboard-grid">
             <StatsCard dashboardData={dashboardData} isLoading={isLoading} />
             <ProgressCard dashboardData={dashboardData} isLoading={isLoading} />
-            <GreetingCard userData={userData} />
+            <GreetingCard userData={userData} userRole={userRole} />
             <AttendanceCard dashboardData={dashboardData} isLoading={isLoading} />
             <LastLessonCard
                 dashboardData={dashboardData}

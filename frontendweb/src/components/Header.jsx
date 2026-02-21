@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Header.css';
 import api from '../api';
 
-export function Header({ onGetStarted, userData, isLoggedIn, onOpenProfile, onOpenNotifications, currentPage }) {
+export function Header({ onGetStarted, userData, isLoggedIn, onOpenProfile, onOpenNotifications, currentPage, userRole }) {
+    const isTeacher = userRole === 'teacher';
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [announcements, setAnnouncements] = useState([]);
     const [unreadCount, setUnreadCount] = useState(0);
@@ -11,12 +12,14 @@ export function Header({ onGetStarted, userData, isLoggedIn, onOpenProfile, onOp
     // Dynamic Title logic
     const getPageTitle = () => {
         switch (currentPage) {
-            case 'courses': return 'Enrolled Courses';
+            case 'courses': return isTeacher ? 'Assigned Courses' : 'Enrolled Courses';
             case 'profile': return 'My Profile';
             case 'notifications': return 'Announcements';
             case 'contact': return 'Contact Support';
+            case 'classroom': return isTeacher ? 'Live Sessions' : 'Virtual Classroom';
+            case 'doubts': return isTeacher ? 'Student Doubts' : 'Mentorship';
             case 'dashboard':
-            default: return 'MentIQ Overview';
+            default: return isTeacher ? 'Teacher Portal' : 'Student Workspace';
         }
     };
 
@@ -142,9 +145,9 @@ export function Header({ onGetStarted, userData, isLoggedIn, onOpenProfile, onOp
                             </div>
                         </div>
                         <img
-                            src={userData?.profile_image || "https://ui-avatars.com/api/?name=" + (userData?.name || 'User') + "&background=6b21a8&color=fff"}
+                            src={userData?.profile_avatar || userData?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.name || 'User')}&background=6b21a8&color=fff`}
                             alt="Profile"
-                            style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)' }}
+                            style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)', backgroundColor: '#6b21a8' }}
                         />
                     </div>
                 )}

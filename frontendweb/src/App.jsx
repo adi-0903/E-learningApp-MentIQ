@@ -124,9 +124,10 @@ function App() {
                 onOpenDoubts={() => setCurrentPage('doubts')}
                 onLogout={handleLogout}
                 currentPage={currentPage}
+                userRole={userRole}
             />
             <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''}`}>
-                {currentPage !== 'profile' && currentPage !== 'notifications' && currentPage !== 'contact' && currentPage !== 'classroom' && (
+                {currentPage !== 'profile' && currentPage !== 'notifications' && currentPage !== 'contact' && currentPage !== 'classroom' && currentPage !== 'courses' && currentPage !== 'doubts' && (
                     <Header
                         onGetStarted={() => setCurrentPage('login')}
                         userData={userData}
@@ -134,6 +135,7 @@ function App() {
                         onOpenProfile={() => setCurrentPage('profile')}
                         onOpenNotifications={() => setCurrentPage('notifications')}
                         currentPage={currentPage}
+                        userRole={userRole}
                     />
                 )}
 
@@ -149,11 +151,11 @@ function App() {
                 ) : currentPage === 'contact' ? (
                     <ContactUsPage onBack={() => setCurrentPage('dashboard')} userData={userData} />
                 ) : currentPage === 'courses' ? (
-                    <MyCoursesPage onBack={() => setCurrentPage('dashboard')} onSelectCourse={(id) => { setSelectedCourseId(id); setCurrentPage('course_detail'); }} />
+                    <MyCoursesPage onBack={() => setCurrentPage('dashboard')} onSelectCourse={(id) => { setSelectedCourseId(id); setCurrentPage('course_detail'); }} userRole={userRole} />
                 ) : currentPage === 'classroom' ? (
-                    <ClassroomPage onBack={() => setCurrentPage('dashboard')} />
+                    <ClassroomPage onBack={() => setCurrentPage('dashboard')} userRole={userRole} />
                 ) : currentPage === 'doubts' ? (
-                    <DoubtsPage onBack={() => setCurrentPage('dashboard')} />
+                    <DoubtsPage onBack={() => setCurrentPage('dashboard')} userRole={userRole} />
                 ) : currentPage === 'course_detail' ? (
                     <CourseDetailPage
                         courseId={selectedCourseId}
@@ -174,10 +176,11 @@ function App() {
                         onRetake={() => setCurrentPage('quiz')}
                     />
                 ) : userRole === 'teacher' ? (
-                    <TeacherDashboard userData={userData} />
+                    <TeacherDashboard userData={userData} userRole={userRole} />
                 ) : (
                     <StudentDashboard
                         userData={userData}
+                        userRole={userRole}
                         onSeeAllCourses={() => setCurrentPage('courses')}
                         onContinueCourse={(id) => { setSelectedCourseId(id); setCurrentPage('course_detail'); }}
                     />

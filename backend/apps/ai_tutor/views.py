@@ -26,26 +26,31 @@ class AskQbitView(APIView):
         if not query and not image_file:
             return Response({"error": "Query or Image is required"}, status=status.HTTP_400_BAD_REQUEST)
 
-        context = ""
-        user = request.user
-
-        # Build context based on scope
-        if scope == "lesson" and lesson_id:
-            try:
-                lesson = Lesson.objects.get(id=lesson_id)
-                context = f"Lesson Title: {lesson.title}\nContent: {lesson.content}\nDescription: {lesson.description}"
-            except Lesson.DoesNotExist:
-                pass # Fallback
-        elif scope == "global":
-            # Global context: Fetch enrolled course titles
-            enrollments = Enrollment.objects.filter(student=user, is_active=True).select_related('course')
-            course_titles = [e.course.title for e in enrollments]
-            context = f"Enrolled Courses: {', '.join(course_titles)}"
-
         # User details for personalization
+        role = getattr(user, 'role', 'student').lower()
         full_name = f"{getattr(user, 'first_name', '')} {getattr(user, 'last_name', '')}".strip()
-        user_name = full_name or getattr(user, 'username', 'Student')
-        context = f"Student Name: {user_name}\n" + context
+        user_name = full_name or getattr(user, 'username', 'User')
+        
+        # Build context based on role and scope
+        if role == 'teacher':
+             # Teacher context: Fetch courses they teach
+             from apps.courses.models import Course
+             taught_courses = Course.objects.filter(teacher=user, is_deleted=False)
+             course_list = [c.title for c in taught_courses]
+             context = f"Instructor Name: {user_name}\nRole: Teacher/Instructor\nCourses Taught: {', '.join(course_list)}"
+        else:
+            # Student context
+            if scope == "lesson" and lesson_id:
+                try:
+                    lesson = Lesson.objects.get(id=lesson_id)
+                    context = f"Lesson Title: {lesson.title}\nContent: {lesson.content}\nDescription: {lesson.description}"
+                except Lesson.DoesNotExist:
+                    pass
+            elif scope == "global":
+                enrollments = Enrollment.objects.filter(student=user, is_active=True).select_related('course')
+                course_titles = [e.course.title for e in enrollments]
+                context = f"Enrolled Courses: {', '.join(course_titles)}"
+            context = f"Student Name: {user_name}\nRole: Student\n" + context
 
         # Process Image if present
         image = None
@@ -56,7 +61,7 @@ class AskQbitView(APIView):
                 return Response({"error": "Invalid image file"}, status=status.HTTP_400_BAD_REQUEST)
 
         service = QbitService()
-        answer = service.get_chat_response(query or "Analyze this image", context, image)
+        answer = service.get_chat_response(query or "Analyze this image", context, image, role=role)
 
         return Response({"answer": answer})
 

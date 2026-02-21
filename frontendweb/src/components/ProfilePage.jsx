@@ -3,26 +3,110 @@ import './ProfilePage.css';
 import '../components/CardLayouts.css';
 import api from '../api';
 
+const AVATARS = [
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor1',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor2',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor3',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor4',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor5',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor6',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor7',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor8',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor9',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor10',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor11',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor12',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor13',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor14',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor15',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor16',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor17',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor18',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor19',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor20',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor21',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor22',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor23',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor24',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor25',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor26',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor27',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor28',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor29',
+    'https://api.dicebear.com/7.x/notionists-neutral/png?seed=Mentor30',
+];
+
 export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdateProfile }) {
     const [isEditing, setIsEditing] = useState(false);
     const [name, setName] = useState(userData?.name || '');
     const [bio, setBio] = useState(userData?.bio || '');
     const [phone, setPhone] = useState(userData?.phone_number || '');
     const [loading, setLoading] = useState(false);
+    const [profileAvatar, setProfileAvatar] = useState(userData?.profile_avatar || '');
+    const [avatarModalVisible, setAvatarModalVisible] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [stats, setStats] = useState({ courses: 0, completed: 0, avg_score: 0 });
+
+    React.useEffect(() => {
+        const fetchStats = async () => {
+            try {
+                const res = await api.get('students/dashboard/');
+                if (res.data && res.data.success) {
+                    const data = res.data.data;
+                    setStats({
+                        courses: data.total_enrolled_courses || 0,
+                        completed: data.completed_courses || 0,
+                        avg_score: data.average_quiz_score || 0
+                    });
+                }
+            } catch (err) {
+                console.error("Failed to fetch profile stats", err);
+            }
+        };
+        if (userData?.role === 'student' || !userData?.role) {
+            fetchStats();
+        }
+    }, [userData]);
+
+    React.useEffect(() => {
+        if (userData) {
+            setName(userData.name || '');
+            setBio(userData.bio || '');
+            setPhone(userData.phone_number || '');
+            setProfileAvatar(userData.profile_avatar || '');
+        }
+    }, [userData]);
+
+    const handleAvatarSelect = async (avatarUrl) => {
+        setUploadingImage(true);
+        try {
+            const res = await api.put('auth/profile/', {
+                profile_avatar: avatarUrl
+            });
+
+            if (res.data && res.data.success) {
+                setProfileAvatar(avatarUrl);
+                onUpdateProfile(res.data.data);
+                setAvatarModalVisible(false);
+            }
+        } catch (error) {
+            console.error('Failed to update avatar', error);
+        } finally {
+            setUploadingImage(false);
+        }
+    };
 
     const handleSave = async () => {
         setLoading(true);
         try {
-            const formData = new FormData();
-            formData.append('name', name);
-            formData.append('bio', bio);
-            formData.append('phone_number', phone);
+            const payload = {
+                name,
+                bio,
+                phone_number: phone
+            };
+            if (profileAvatar) payload.profile_avatar = profileAvatar;
 
-            const res = await api.put('auth/profile/', formData, {
-                headers: {
-                    'Content-Type': 'multipart/form-data'
-                }
-            });
+            const res = await api.put('auth/profile/', payload);
 
             if (res.data && res.data.success) {
                 onUpdateProfile(res.data.data);
@@ -40,7 +124,8 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
     // Deterministic Avatar Hash like GreetingCard
     const firstName = userData?.name ? userData.name.split(' ')[0] : 'Student';
     const isFemale = firstName.length % 2 !== 0;
-    const profileAvatar = isFemale ? "/premium_student_portrait_female.png" : "/premium_student_portrait.png";
+    const defaultAvatarUrl = isFemale ? "/premium_student_portrait_female.png" : "/premium_student_portrait.png";
+    const currentAvatar = profileAvatar || defaultAvatarUrl;
 
     return (
         <div className="profile-dashboard slide-up">
@@ -58,8 +143,11 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
                     {/* Identity Card */}
                     <div className="card identity-card">
                         <div className="identity-glow"></div>
-                        <div className="avatar-container">
-                            <img src={profileAvatar} className="identity-avatar premium-character-mask" alt="Profile" />
+                        <div className="avatar-container" onClick={() => setAvatarModalVisible(true)} style={{ cursor: 'pointer' }}>
+                            <img src={currentAvatar} className={`identity-avatar premium-character-mask ${uploadingImage ? 'loading' : ''}`} alt="Profile" />
+                            <div className="avatar-edit-badge">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </div>
                             <div className="status-badge" title="Online"></div>
                         </div>
                         <h3 className="identity-name">{userData?.name || 'Unknown User'}</h3>
@@ -93,16 +181,16 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
                     {/* Quick Stats Card */}
                     <div className="card quick-stats-card">
                         <div className="stat-box">
-                            <h4>0</h4>
+                            <h4>{stats.courses}</h4>
                             <span>Courses</span>
                         </div>
                         <div className="stat-box">
-                            <h4>0</h4>
+                            <h4>{stats.completed}</h4>
                             <span>Completed</span>
                         </div>
                         <div className="stat-box">
-                            <h4>0%</h4>
-                            <span>Avg Score</span>
+                            <h4>{stats.avg_score}%</h4>
+                            <span>Avg %</span>
                         </div>
                     </div>
                 </div>
@@ -178,6 +266,40 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
 
                 </div>
             </div>
+
+            {/* Avatar Modal */}
+            {avatarModalVisible && (
+                <div className="avatar-modal-overlay popup-overlay active">
+                    <div className="avatar-modal popup-content active">
+                        <div className="modal-header">
+                            <h3>Choose Avatar</h3>
+                            <button className="close-btn" onClick={() => setAvatarModalVisible(false)}>
+                                <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                            </button>
+                        </div>
+                        <p className="modal-subtitle">Select a character that represents you</p>
+
+                        <div className="avatar-grid-scroll">
+                            <div className="avatar-grid">
+                                {AVATARS.map((url, index) => (
+                                    <div
+                                        key={index}
+                                        className={`avatar-slot ${profileAvatar === url ? 'selected' : ''}`}
+                                        onClick={() => handleAvatarSelect(url)}
+                                    >
+                                        <img src={url} alt={`Avatar ${index}`} className="avatar-choice" />
+                                        {profileAvatar === url && (
+                                            <div className="avatar-check">
+                                                <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
