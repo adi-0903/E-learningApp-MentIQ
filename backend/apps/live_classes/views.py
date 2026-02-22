@@ -106,7 +106,7 @@ class StartLiveClassView(APIView):
                 'room_name': live_class.channel_name,
                 'jitsi_domain': settings.JITSI_DOMAIN,
                 'is_class_host': True,
-                'meeting_url': live_class.jitsi_room_url,
+                'meeting_url': f"{live_class.jitsi_room_url}#config.fileRecordingsEnabled=true",
             }
         })
 
@@ -312,4 +312,38 @@ class LiveClassAttendanceView(APIView):
             'success': True,
             'message': 'Attendance updated.',
             'data': results
+        })
+
+
+class UploadRecordingView(APIView):
+    """POST /api/v1/live-classes/<id>/upload-recording/ - Teacher uploads a recording."""
+    permission_classes = [IsAuthenticated, IsTeacher]
+
+    def post(self, request, id):
+        try:
+            live_class = LiveClass.objects.get(id=id, teacher=request.user)
+        except LiveClass.DoesNotExist:
+            return Response({'success': False, 'error': {'message': 'Not found.'}}, status=404)
+
+        recording_file = request.FILES.get('recording')
+        if not recording_file:
+            return Response({'success': False, 'error': {'message': 'No recording file provided.'}}, status=400)
+
+        from django.core.files.storage import default_storage
+        file_path = f"recordings/{live_class.channel_name}/{recording_file.name}"
+        saved_path = default_storage.save(file_path, recording_file)
+
+        # Get URL depending on storage backend (Cloudinary or local)
+        try:
+            file_url = default_storage.url(saved_path)
+        except Exception:
+            file_url = f"/media/{saved_path}"
+
+        live_class.recording_url = file_url
+        live_class.save(update_fields=['recording_url'])
+
+        return Response({
+            'success': True,
+            'message': 'Recording uploaded successfully.',
+            'data': {'recording_url': file_url}
         })

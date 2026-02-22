@@ -20,7 +20,8 @@ class LiveClassListSerializer(serializers.ModelSerializer):
         model = LiveClass
         fields = [
             'id', 'title', 'description', 'teacher_name', 'course', 'course_title',
-            'scheduled_at', 'status', 'max_participants', 'participant_count', 'created_at',
+            'scheduled_at', 'status', 'max_participants', 'participant_count',
+            'channel_name', 'recording_url', 'created_at',
         ]
 
 

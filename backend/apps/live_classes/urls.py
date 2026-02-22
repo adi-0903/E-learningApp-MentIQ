@@ -13,4 +13,5 @@ urlpatterns = [
     path('<uuid:id>/participants/', views.LiveClassParticipantsView.as_view(), name='participants'),
     path('<uuid:id>/chat/', views.LiveClassChatView.as_view(), name='chat'),
     path('<uuid:id>/attendance/', views.LiveClassAttendanceView.as_view(), name='attendance'),
+    path('<uuid:id>/upload-recording/', views.UploadRecordingView.as_view(), name='upload-recording'),
 ]

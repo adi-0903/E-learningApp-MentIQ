@@ -42,7 +42,7 @@ class LiveClass(TimeStampedModel):
     )
     max_participants = models.PositiveIntegerField(default=100)
     channel_name = models.CharField(max_length=255, unique=True)
-    recording_url = models.URLField(blank=True, default='')
+    recording_url = models.URLField(max_length=500, blank=True, default='')
 
     class Meta:
         db_table = 'live_classes'
