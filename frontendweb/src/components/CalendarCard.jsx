@@ -4,7 +4,7 @@ import './CalendarCard.css';
 export function CalendarCard({ liveClasses = [], onRefresh }) {
     const today = new Date();
     const [viewDate, setViewDate] = useState(new Date());
-    const [selectedStatuses, setSelectedStatuses] = useState(['ongoing', 'upcoming', 'completed']);
+    const [selectedStatuses, setSelectedStatuses] = useState(['scheduled', 'live', 'ended']);
     const [currentMonthDate, setCurrentMonthDate] = useState(new Date());
 
     const days = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -113,9 +113,14 @@ export function CalendarCard({ liveClasses = [], onRefresh }) {
             const matchesFilter = selectedStatuses.includes(cls.status);
 
             if (isSameDay && clsTime.getHours() === hour && matchesFilter) {
+                let statusLabel = cls.status;
+                if (statusLabel === 'scheduled') statusLabel = 'upcoming';
+                if (statusLabel === 'live') statusLabel = 'ongoing';
+                if (statusLabel === 'ended') statusLabel = 'completed';
+
                 return (
                     <div key={cls.id} className={`timeline-event ${cls.status}`}>
-                        <span className="event-tag" style={{ fontSize: viewMode === 'week' ? '0.5rem' : '0.65rem' }}>{cls.status}</span>
+                        <span className="event-tag" style={{ fontSize: viewMode === 'week' ? '0.5rem' : '0.65rem' }}>{statusLabel}</span>
                         <strong style={{ fontSize: viewMode === 'week' ? '0.75rem' : '0.9rem' }}>{cls.topic || cls.title}</strong>
                     </div>
                 );
@@ -140,10 +145,10 @@ export function CalendarCard({ liveClasses = [], onRefresh }) {
             <div className="scheduler-header-bar">
                 <div className="legend-container">
                     <strong>Legend:</strong>
-                    <div className="legend-item"><span className="dot upcoming"></span> Upcoming</div>
+                    <div className="legend-item"><span className="dot scheduled"></span> Upcoming</div>
                     <div className="legend-item"><span className="dot delayed"></span> Delayed</div>
-                    <div className="legend-item"><span className="dot ongoing"></span> Ongoing</div>
-                    <div className="legend-item"><span className="dot completed"></span> Completed</div>
+                    <div className="legend-item"><span className="dot live"></span> Ongoing</div>
+                    <div className="legend-item"><span className="dot ended"></span> Completed</div>
                 </div>
             </div>
 
@@ -176,7 +181,7 @@ export function CalendarCard({ liveClasses = [], onRefresh }) {
                             <div className="filter-box">
                                 <label>Status</label>
                                 <div className="status-tags">
-                                    {['ongoing', 'upcoming', 'completed'].map(status => (
+                                    {['scheduled', 'live', 'ended'].map(status => (
                                         <span
                                             key={status}
                                             onClick={() => toggleStatus(status)}
@@ -187,12 +192,12 @@ export function CalendarCard({ liveClasses = [], onRefresh }) {
                                                 textTransform: 'capitalize'
                                             }}
                                         >
-                                            {status} <i style={{ fontStyle: 'normal' }}>&times;</i>
+                                            {status === 'scheduled' ? 'upcoming' : status === 'live' ? 'ongoing' : status === 'ended' ? 'completed' : status} <i style={{ fontStyle: 'normal' }}>&times;</i>
                                         </span>
                                     ))}
                                 </div>
                             </div>
-                            <button className="apply-filter-btn" onClick={() => setSelectedStatuses(['ongoing', 'upcoming', 'completed'])}>
+                            <button className="apply-filter-btn" onClick={() => setSelectedStatuses(['scheduled', 'live', 'ended'])}>
                                 Reset Filters
                             </button>
                         </div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import './ClassroomPage.css';
 import { CalendarCard } from './CalendarCard';
-import api from '../api';
+import api, { API_URL } from '../api';
 
 export function ClassroomPage({ onBack, userRole, userData }) {
     const [liveClasses, setLiveClasses] = useState([]);
@@ -218,8 +218,16 @@ export function ClassroomPage({ onBack, userRole, userData }) {
         URL.revokeObjectURL(url);
     };
 
-    const leaveMeeting = () => {
+    const leaveMeeting = async () => {
         if (isRecording) stopRecording();
+        // If teacher, end the class on the backend
+        if (userRole === 'teacher' && activeMeeting) {
+            try {
+                await api.post(`live-classes/${activeMeeting.id}/end/`);
+            } catch (err) {
+                console.error('Error ending class:', err);
+            }
+        }
         setActiveMeeting(null);
         fetchLiveClasses();
     };
@@ -364,8 +372,8 @@ export function ClassroomPage({ onBack, userRole, userData }) {
                                 <div key={liveClass.id} className="premium-class-card fade-in-blur">
                                     <div className="class-card-header">
                                         <h3 className="class-title">{liveClass.title}</h3>
-                                        <span className={`status-badge ${(liveClass.status === 'ongoing' || liveClass.status === 'live') ? 'status-ongoing' : 'status-scheduled'}`}>
-                                            {liveClass.status === 'live' ? 'ongoing' : liveClass.status}
+                                        <span className={`status-badge ${(liveClass.status === 'ongoing' || liveClass.status === 'live') ? 'status-ongoing' : liveClass.status === 'ended' ? 'status-ended' : 'status-scheduled'}`}>
+                                            {liveClass.status === 'live' ? 'LIVE' : liveClass.status === 'ended' ? 'COMPLETED' : liveClass.status.toUpperCase()}
                                         </span>
                                     </div>
 
@@ -383,21 +391,27 @@ export function ClassroomPage({ onBack, userRole, userData }) {
                                     </div>
 
                                     {liveClass.recording_url && (
-                                        <a href={liveClass.recording_url} target="_blank" rel="noopener noreferrer"
-                                            className="recording-link">
+                                        <a
+                                            href={liveClass.recording_url.startsWith('http') ? liveClass.recording_url : `${API_URL.split('/api/v1/')[0]}${liveClass.recording_url}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="recording-link"
+                                            onClick={(e) => e.stopPropagation()}
+                                        >
                                             🎬 Watch Recording
                                         </a>
                                     )}
 
                                     <button
-                                        className={`join-btn-ultra ${(liveClass.status === 'ongoing' || liveClass.status === 'live') || (userRole === 'teacher' && liveClass.status === 'scheduled') ? 'active' : 'disabled'}`}
-                                        disabled={!(liveClass.status === 'ongoing' || liveClass.status === 'live' || (userRole === 'teacher' && liveClass.status === 'scheduled')) || joiningId === liveClass.id}
+                                        className={`join-btn-ultra ${(liveClass.status === 'ongoing' || liveClass.status === 'live') || (userRole === 'teacher' && liveClass.status === 'scheduled') ? 'active' : liveClass.status === 'ended' ? 'completed' : 'disabled'}`}
+                                        disabled={liveClass.status === 'ended' || (!(liveClass.status === 'ongoing' || liveClass.status === 'live' || (userRole === 'teacher' && liveClass.status === 'scheduled')) || joiningId === liveClass.id)}
                                         onClick={() => handleActionClass(liveClass)}
                                     >
                                         {joiningId === liveClass.id ? 'CONNECTING...'
-                                            : (userRole === 'teacher' && liveClass.status === 'scheduled') ? 'START CLASS'
-                                                : (liveClass.status === 'ongoing' || liveClass.status === 'live') ? 'ENTER CLASSROOM'
-                                                    : 'NOT STARTED'}
+                                            : liveClass.status === 'ended' ? '✓ COMPLETED'
+                                                : (userRole === 'teacher' && liveClass.status === 'scheduled') ? 'START CLASS'
+                                                    : (liveClass.status === 'ongoing' || liveClass.status === 'live') ? 'ENTER CLASSROOM'
+                                                        : 'NOT STARTED'}
                                     </button>
                                 </div>
                             ))}
@@ -407,23 +421,23 @@ export function ClassroomPage({ onBack, userRole, userData }) {
             )}
 
             {isModalOpen && (
-                <div className="modal-overlay fade-in" style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000 }}>
-                    <div className="modal-content modal-content-premium" style={{ padding: '2.5rem', borderRadius: '25px', width: '480px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                            <h2 style={{ color: 'white', margin: 0, fontWeight: 800, fontSize: '1.8rem', background: 'linear-gradient(to right, #fff, #9b6cff)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent' }}>Schedule Class</h2>
-                            <button onClick={() => setIsModalOpen(false)} style={{ background: 'transparent', border: 'none', color: '#94a3b8', fontSize: '1.5rem', cursor: 'pointer', transition: 'color 0.3s' }} onMouseOver={e => e.currentTarget.style.color = 'white'} onMouseOut={e => e.currentTarget.style.color = '#94a3b8'}>&times;</button>
+                <div className="modal-overlay fade-in">
+                    <div className="modal-content-premium">
+                        <div className="modal-header">
+                            <h2 className="modal-title">Schedule Class</h2>
+                            <button className="modal-close" onClick={() => setIsModalOpen(false)}>&times;</button>
                         </div>
 
-                        <form onSubmit={handleScheduleClass} style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                        <form onSubmit={handleScheduleClass} className="modal-form">
                             <div className="premium-input-group">
-                                <span style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Class Title</span>
+                                <label className="input-label">Class Title</label>
                                 <input type="text" className="premium-input" placeholder="e.g. Advanced System Design" required value={newClassTitle} onChange={e => setNewClassTitle(e.target.value)} />
                             </div>
 
                             <div className="premium-input-group">
-                                <span style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Link to Course (Optional)</span>
+                                <label className="input-label">Link to Course (Optional)</label>
                                 <select className="premium-input" value={selectedCourseId} onChange={e => setSelectedCourseId(e.target.value)}>
-                                    <option value="" style={{ color: '#94a3b8' }}>-- Platform Wide Session --</option>
+                                    <option value="">-- Platform Wide Session --</option>
                                     {teacherCourses.map(c => (
                                         <option key={c.id} value={c.id}>{c.title}</option>
                                     ))}
@@ -431,22 +445,22 @@ export function ClassroomPage({ onBack, userRole, userData }) {
                             </div>
 
                             <div className="premium-input-group">
-                                <span style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Description</span>
-                                <textarea className="premium-input" placeholder="What will be covered in this session?" rows="3" required value={newClassDescription} onChange={e => setNewClassDescription(e.target.value)} style={{ resize: 'vertical' }}></textarea>
+                                <label className="input-label">Description</label>
+                                <textarea className="premium-input" placeholder="What will be covered in this session?" rows="3" required value={newClassDescription} onChange={e => setNewClassDescription(e.target.value)}></textarea>
                             </div>
 
                             <div className="premium-date-time-wrapper">
                                 <div className="premium-input-group" style={{ flex: 1 }}>
-                                    <span style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Date</span>
+                                    <label className="input-label">Date</label>
                                     <input type="date" className="premium-input" required value={newClassDate} onChange={e => setNewClassDate(e.target.value)} />
                                 </div>
                                 <div className="premium-input-group" style={{ flex: 1 }}>
-                                    <span style={{ display: 'block', fontSize: '0.8rem', color: '#94a3b8', marginBottom: '8px', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.5px' }}>Time</span>
+                                    <label className="input-label">Time</label>
                                     <input type="time" className="premium-input" required value={newClassTime} onChange={e => setNewClassTime(e.target.value)} />
                                 </div>
                             </div>
 
-                            <div style={{ display: 'flex', gap: '15px', marginTop: '1.5rem' }}>
+                            <div className="modal-actions">
                                 <button type="button" className="premium-cancel-btn" onClick={() => setIsModalOpen(false)}>CANCEL</button>
                                 <button type="submit" className="premium-submit-btn">SCHEDULE NOW</button>
                             </div>

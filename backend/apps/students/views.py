@@ -23,7 +23,8 @@ from apps.lessons.models import Lesson
 from apps.progress.models import CourseProgress, LessonProgress
 from apps.quizzes.models import QuizAttempt
 
-from apps.live_classes.models import Attendance, SessionBooking
+from apps.live_classes.models import SessionBooking
+from apps.attendance.models import AttendanceRecord, AttendanceSession
 from .serializers import (
     StudentCourseSerializer,
     StudentDashboardSerializer,
@@ -85,17 +86,17 @@ class StudentDashboardView(APIView):
 
         # Core Stats
         overall = course_progresses.aggregate(avg=Avg('progress_percentage'))['avg'] or 0.0
-        attendances = Attendance.objects.filter(student=student)
-        total_attendance = attendances.count()
-        present_count = attendances.filter(is_present=True).count()
+        records = AttendanceRecord.objects.filter(student=student)
+        total_attendance = records.count()
+        present_count = records.filter(is_present=True).count()
         attendance_percentage = round((present_count / total_attendance) * 100, 1) if total_attendance > 0 else 0.0
 
         # Per-course attendance
         course_attendance_stats = []
         for course in enrolled_courses:
-            course_attendances = Attendance.objects.filter(student=student, live_class__course=course)
-            c_total = course_attendances.count()
-            c_present = course_attendances.filter(is_present=True).count()
+            course_records = AttendanceRecord.objects.filter(student=student, session__course=course)
+            c_total = course_records.count()
+            c_present = course_records.filter(is_present=True).count()
             c_percentage = round((c_present / c_total) * 100, 1) if c_total > 0 else 0.0
             
             course_attendance_stats.append({
@@ -362,20 +363,9 @@ class StudentKnowledgeGraphView(APIView):
             quiz__course_id__in=course_ids,
         ).aggregate(total=Sum('time_taken'))['total'] or 0
 
+        # Accurate course study time (Lessons + Quizzes) for the enrolled courses
+        total_time_seconds = lesson_time_seconds + quiz_time_seconds
         warnings = []
-
-        activity_seconds = 0
-        if _table_exists(UserActivityLog._meta.db_table):
-            try:
-                activity_seconds = UserActivityLog.objects.filter(
-                    user=student,
-                ).aggregate(total=Sum('duration_seconds'))['total'] or 0
-            except DatabaseError:
-                warnings.append('user_activity_logs_unavailable')
-        else:
-            warnings.append('user_activity_logs_unavailable')
-
-        total_time_seconds = max(activity_seconds, lesson_time_seconds + quiz_time_seconds)
 
         decks_generated = 0
         cards_generated = 0

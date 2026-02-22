@@ -45,6 +45,7 @@
     box-shadow: 0 0 10px currentColor;
 }
 
+.dot.scheduled,
 .dot.upcoming {
     color: #3b82f6;
     background: #3b82f6;
@@ -55,11 +56,13 @@
     background: #ef4444;
 }
 
+.dot.live,
 .dot.ongoing {
     color: #10b981;
     background: #10b981;
 }
 
+.dot.ended,
 .dot.completed {
     color: #64748b;
     background: #64748b;
@@ -496,9 +499,21 @@
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
 }
 
+.timeline-event.scheduled {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(59, 130, 246, 0.05));
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.timeline-event.live,
 .timeline-event.ongoing {
     background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(16, 185, 129, 0.05));
     border-color: rgba(16, 185, 129, 0.3);
+}
+
+.timeline-event.ended,
+.timeline-event.completed {
+    background: linear-gradient(135deg, rgba(100, 116, 139, 0.1), rgba(100, 116, 139, 0.05));
+    border-color: rgba(100, 116, 139, 0.2);
 }
 
 .event-tag {

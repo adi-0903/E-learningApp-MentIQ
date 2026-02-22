@@ -190,15 +190,20 @@
 
 .status-badge {
     position: absolute;
-    top: 1.5rem;
-    right: 1.5rem;
-    padding: 5px 10px;
+    top: 1.2rem;
+    right: 2.5rem;
+    padding: 4px 10px;
     border-radius: 8px;
     font-size: 0.6rem;
     font-weight: 900;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 1.2px;
     white-space: nowrap;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(10px);
 }
 
 .status-ongoing {
@@ -224,6 +229,12 @@
     color: #c4a7ff;
     border: 1px solid rgba(155, 108, 255, 0.4);
     box-shadow: 0 0 10px rgba(155, 108, 255, 0.1);
+}
+
+.status-ended {
+    background: rgba(100, 116, 139, 0.15);
+    color: #94a3b8;
+    border: 1px solid rgba(100, 116, 139, 0.3);
 }
 
 .class-desc {
@@ -323,6 +334,14 @@
     cursor: not-allowed;
     background: rgba(0, 0, 0, 0.25);
     color: #475569;
+}
+
+.join-btn-ultra.completed {
+    cursor: default;
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    letter-spacing: 2px;
 }
 
 .join-btn-ultra::after {
@@ -555,9 +574,189 @@
     width: fit-content;
 }
 
-.recording-link:hover {
-    background: rgba(155, 108, 255, 0.15);
-    color: #c4a7ff;
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(155, 108, 255, 0.2);
+/* ─── Premium Modal & Inputs ────────────────────────────── */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-content-premium {
+    background: linear-gradient(135deg, rgba(20, 18, 50, 0.95) 0%, rgba(10, 15, 30, 0.98) 100%);
+    border: 1px solid rgba(155, 108, 255, 0.3);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(155, 108, 255, 0.15);
+    border-radius: 28px;
+    width: 100%;
+    max-width: 500px;
+    padding: 2.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.modal-title {
+    color: white;
+    margin: 0;
+    font-weight: 800;
+    font-size: 1.8rem;
+    background: linear-gradient(to right, #fff, #9b6cff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.modal-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    line-height: 1;
+}
+
+.modal-close:hover {
+    color: white;
+    transform: rotate(90deg);
+}
+
+.modal-form {
+    display: flex;
+    flex-direction: column;
+}
+
+
+.modal-content-premium::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #9b6cff, #3b82f6);
+}
+
+.premium-input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 1.5rem;
+}
+
+.input-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    margin-left: 4px;
+}
+
+.premium-input {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 14px;
+    padding: 12px 16px;
+    color: white;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.premium-input:focus {
+    background: rgba(155, 108, 255, 0.05);
+    border-color: rgba(155, 108, 255, 0.5);
+    box-shadow: 0 0 15px rgba(155, 108, 255, 0.1);
+}
+
+.premium-input::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+select.premium-input option {
+    background: #0f172a;
+    color: white;
+}
+
+.premium-date-time-wrapper {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.modal-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 1rem;
+}
+
+.premium-submit-btn {
+    flex: 2;
+    background: linear-gradient(45deg, #9b6cff, #3b82f6);
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 16px;
+    font-weight: 800;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: 0 8px 20px rgba(155, 108, 255, 0.3);
+}
+
+.premium-submit-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 12px 25px rgba(155, 108, 255, 0.5);
+}
+
+.premium-submit-btn:active {
+    transform: scale(0.98);
+}
+
+.premium-cancel-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 14px;
+    border-radius: 16px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.premium-cancel-btn:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator,
+input[type="time"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    cursor: pointer;
+    opacity: 0.6;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover,
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
 }

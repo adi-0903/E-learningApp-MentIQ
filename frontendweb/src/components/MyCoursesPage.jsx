@@ -2,33 +2,84 @@ import React, { useState, useEffect } from 'react';
 import './MyCoursesPage.css';
 import api from '../api';
 
-export function MyCoursesPage({ onBack, onSelectCourse, userRole }) {
+export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourses }) {
     const isTeacher = userRole === 'teacher';
     const [courses, setCourses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchCourses = async () => {
-            try {
-                const endpoint = isTeacher ? 'teachers/courses/' : 'students/courses/';
-                const res = await api.get(endpoint);
-                if (res.data && res.data.success) {
-                    setCourses(res.data.data);
-                }
-            } catch (err) {
-                console.error("Error fetching courses:", err);
-            } finally {
-                setIsLoading(false);
+    // Create Course Modal State
+    const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isCreating, setIsCreating] = useState(false);
+    const [formData, setFormData] = useState({
+        title: '',
+        description: '',
+        category: 'technology',
+        level: 'beginner',
+        price: '0',
+        is_free: true,
+        duration: '10 hours',
+        is_published: true
+    });
+
+    const fetchCourses = async () => {
+        setIsLoading(true);
+        try {
+            const endpoint = isTeacher ? 'teachers/courses/' : 'students/courses/';
+            const res = await api.get(endpoint);
+            if (res.data && res.data.success) {
+                setCourses(res.data.data);
             }
-        };
+        } catch (err) {
+            console.error("Error fetching courses:", err);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    useEffect(() => {
         fetchCourses();
     }, [isTeacher]);
 
+    const handleCreateCourse = async (e) => {
+        e.preventDefault();
+        setIsCreating(true);
+        try {
+            const res = await api.post('courses/', formData);
+            if (res.data && res.data.success) {
+                setIsCreateModalOpen(false);
+                setFormData({
+                    title: '',
+                    description: '',
+                    category: 'Development',
+                    level: 'Intermediate',
+                    price: '0',
+                    is_free: true,
+                    duration: '10 hours',
+                    is_published: true
+                });
+                fetchCourses();
+            }
+        } catch (err) {
+            console.error("Error creating course:", err);
+            alert("Failed to create course. Please try again.");
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
     return (
         <div className="courses-dashboard slide-up">
-            <div className="courses-header">
-                <h1 className="courses-title">{isTeacher ? "My Assigned Courses" : "My Enrolled Courses"}</h1>
-                <p className="courses-subtitle">{isTeacher ? "Manage your curriculum and track student progress across your active courses." : "Manage and continue your learning journey to perfection."}</p>
+            <div className="courses-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+                <div>
+                    <h1 className="courses-title">{isTeacher ? "My Assigned Courses" : "My Enrolled Courses"}</h1>
+                    <p className="courses-subtitle">{isTeacher ? "Manage your curriculum and track student progress across your active courses." : "Manage and continue your learning journey to perfection."}</p>
+                </div>
+                {isTeacher && (
+                    <button className="premium-add-course-btn" onClick={() => setIsCreateModalOpen(true)}>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4"></path></svg>
+                        <span>NEW COURSE</span>
+                    </button>
+                )}
             </div>
 
             {isLoading ? (
@@ -43,6 +94,15 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole }) {
                     </div>
                     <h3>{isTeacher ? "No Assigned Courses" : "No Courses Yet"}</h3>
                     <p>{isTeacher ? "It looks like you haven't been assigned to any courses yet." : "It looks like you haven't enrolled in any courses yet. Explore our catalog to find your next great lesson!"}</p>
+                    {isTeacher ? (
+                        <button className="btn-continue" style={{ width: 'auto', marginTop: '20px', padding: '12px 30px' }} onClick={() => setIsCreateModalOpen(true)}>
+                            CREATE FIRST COURSE
+                        </button>
+                    ) : (
+                        <button className="btn-continue" style={{ width: 'auto', marginTop: '20px', padding: '12px 30px' }} onClick={onBrowseCourses}>
+                            BROWSE MISSION CATALOG
+                        </button>
+                    )}
                 </div>
             ) : (
                 <div className="courses-grid">
@@ -71,11 +131,11 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole }) {
                                 <div className="course-meta">
                                     <div className="meta-item">
                                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        <span>Self-paced</span>
+                                        <span>{course.duration || 'Self-paced'}</span>
                                     </div>
                                     <div className="meta-item">
                                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                                        <span>Modules inside</span>
+                                        <span>{course.lesson_count || 0} Lessons</span>
                                     </div>
                                 </div>
 
@@ -91,6 +151,94 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole }) {
                             </div>
                         </div>
                     ))}
+                </div>
+            )}
+
+            {/* Create Course Modal */}
+            {isCreateModalOpen && (
+                <div className="modal-overlay fade-in">
+                    <div className="modal-content-premium course-creation-modal">
+                        <div className="modal-header">
+                            <h2 className="modal-title">Create New Course</h2>
+                            <button className="modal-close" onClick={() => setIsCreateModalOpen(false)}>&times;</button>
+                        </div>
+
+                        <form onSubmit={handleCreateCourse} className="modal-form">
+                            <div className="premium-input-group">
+                                <label className="input-label">Course Title</label>
+                                <input
+                                    type="text"
+                                    className="premium-input"
+                                    placeholder="e.g. Master React & Next.js"
+                                    required
+                                    value={formData.title}
+                                    onChange={e => setFormData({ ...formData, title: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="premium-input-grid">
+                                <div className="premium-input-group">
+                                    <label className="input-label">Category</label>
+                                    <select
+                                        className="premium-input"
+                                        value={formData.category}
+                                        onChange={e => setFormData({ ...formData, category: e.target.value })}
+                                    >
+                                        <option value="technology">Technology</option>
+                                        <option value="computer_science">Computer Science</option>
+                                        <option value="business">Business</option>
+                                        <option value="mathematics">Mathematics</option>
+                                        <option value="science">Science</option>
+                                        <option value="art">Art</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                                <div className="premium-input-group">
+                                    <label className="input-label">Difficulty Level</label>
+                                    <select
+                                        className="premium-input"
+                                        value={formData.level}
+                                        onChange={e => setFormData({ ...formData, level: e.target.value })}
+                                    >
+                                        <option value="beginner">Beginner</option>
+                                        <option value="intermediate">Intermediate</option>
+                                        <option value="advanced">Advanced</option>
+                                        <option value="all_levels">All Levels</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div className="premium-input-group">
+                                <label className="input-label">Course Description</label>
+                                <textarea
+                                    className="premium-input"
+                                    placeholder="What will students learn in this course?"
+                                    rows="4"
+                                    required
+                                    value={formData.description}
+                                    onChange={e => setFormData({ ...formData, description: e.target.value })}
+                                ></textarea>
+                            </div>
+
+                            <div className="premium-input-group">
+                                <label className="input-label">Course Duration</label>
+                                <input
+                                    type="text"
+                                    className="premium-input"
+                                    placeholder="e.g. 15 hours (Self-paced)"
+                                    value={formData.duration}
+                                    onChange={e => setFormData({ ...formData, duration: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="modal-actions">
+                                <button type="button" className="premium-cancel-btn" onClick={() => setIsCreateModalOpen(false)}>CANCEL</button>
+                                <button type="submit" className="premium-submit-btn" disabled={isCreating}>
+                                    {isCreating ? "CREATING..." : "PUBLISH COURSE"}
+                                </button>
+                            </div>
+                        </form>
+                    </div>
                 </div>
             )}
         </div>

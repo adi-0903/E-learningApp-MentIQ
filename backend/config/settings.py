@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'apps.ai_tutor',
     'apps.intelligence',
     'apps.emails',
+    'apps.attendance',
 ]
 
 MIDDLEWARE = [

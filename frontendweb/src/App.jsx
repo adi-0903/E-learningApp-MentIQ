@@ -13,6 +13,9 @@ import { MyCoursesPage } from './components/MyCoursesPage';
 import { CourseDetailPage } from './components/CourseDetailPage';
 import { QuizTakingPage } from './components/QuizTakingPage';
 import { DoubtsPage } from './components/DoubtsPage';
+import { CurriculumManagementPage } from './components/CurriculumManagementPage';
+import { AttendanceMarkingPage } from './components/AttendanceMarkingPage';
+import { CourseCatalogPage } from './components/CourseCatalogPage';
 
 import { QuizResultPage } from './components/QuizResultPage';
 import { ClassroomPage } from './components/ClassroomPage';
@@ -26,6 +29,7 @@ function App() {
     const [selectedCourseId, setSelectedCourseId] = useState(null);
     const [selectedQuizId, setSelectedQuizId] = useState(null);
     const [quizResult, setQuizResult] = useState(null);
+    const [selectedCourseTitle, setSelectedCourseTitle] = useState('');
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
@@ -127,7 +131,7 @@ function App() {
                 userRole={userRole}
             />
             <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''}`}>
-                {currentPage !== 'profile' && currentPage !== 'notifications' && currentPage !== 'contact' && currentPage !== 'classroom' && currentPage !== 'courses' && currentPage !== 'doubts' && (
+                {currentPage !== 'profile' && currentPage !== 'notifications' && currentPage !== 'contact' && currentPage !== 'classroom' && currentPage !== 'courses' && currentPage !== 'doubts' && currentPage !== 'curriculum_management' && currentPage !== 'attendance' && currentPage !== 'course_catalog' && (
                     <Header
                         onGetStarted={() => setCurrentPage('login')}
                         userData={userData}
@@ -151,7 +155,15 @@ function App() {
                 ) : currentPage === 'contact' ? (
                     <ContactUsPage onBack={() => setCurrentPage('dashboard')} userData={userData} />
                 ) : currentPage === 'courses' ? (
-                    <MyCoursesPage onBack={() => setCurrentPage('dashboard')} onSelectCourse={(id) => { setSelectedCourseId(id); setCurrentPage('course_detail'); }} userRole={userRole} />
+                    <MyCoursesPage
+                        onBack={() => setCurrentPage('dashboard')}
+                        onSelectCourse={(id) => {
+                            setSelectedCourseId(id);
+                            setCurrentPage(userRole === 'teacher' ? 'curriculum_management' : 'course_detail');
+                        }}
+                        onBrowseCourses={() => setCurrentPage('course_catalog')}
+                        userRole={userRole}
+                    />
                 ) : currentPage === 'classroom' ? (
                     <ClassroomPage onBack={() => setCurrentPage('dashboard')} userRole={userRole} />
                 ) : currentPage === 'doubts' ? (
@@ -175,8 +187,35 @@ function App() {
                         onBack={() => setCurrentPage('course_detail')}
                         onRetake={() => setCurrentPage('quiz')}
                     />
+                ) : currentPage === 'curriculum_management' ? (
+                    <CurriculumManagementPage
+                        courseId={selectedCourseId}
+                        onBack={() => setCurrentPage('courses')}
+                    />
+                ) : currentPage === 'attendance' ? (
+                    <AttendanceMarkingPage
+                        courseId={selectedCourseId}
+                        courseTitle={selectedCourseTitle}
+                        onBack={() => setCurrentPage('dashboard')}
+                    />
+                ) : currentPage === 'course_catalog' ? (
+                    <CourseCatalogPage
+                        onBack={() => setCurrentPage('dashboard')}
+                        onEnrollSuccess={(courseId) => {
+                            setSelectedCourseId(courseId);
+                            setCurrentPage('course_detail');
+                        }}
+                    />
                 ) : userRole === 'teacher' ? (
-                    <TeacherDashboard userData={userData} userRole={userRole} />
+                    <TeacherDashboard
+                        userData={userData}
+                        userRole={userRole}
+                        onMarkAttendance={(id, title) => {
+                            setSelectedCourseId(id);
+                            setSelectedCourseTitle(title);
+                            setCurrentPage('attendance');
+                        }}
+                    />
                 ) : (
                     <StudentDashboard
                         userData={userData}

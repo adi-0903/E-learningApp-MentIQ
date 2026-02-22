@@ -47,9 +47,8 @@ class QuizQuestion(TimeStampedModel):
     option_c = models.CharField(max_length=500, blank=True, default='')
     option_d = models.CharField(max_length=500, blank=True, default='')
     correct_answer = models.CharField(
-        max_length=1,
-        choices=[('a', 'A'), ('b', 'B'), ('c', 'C'), ('d', 'D')],
-        help_text='The correct option letter (a, b, c, or d)',
+        max_length=15,
+        help_text='The correct option(s), e.g., "a" or "a,b,c"',
     )
     sequence_number = models.PositiveIntegerField(default=1)
     explanation = models.TextField(blank=True, default='', help_text='Explanation shown after answering')

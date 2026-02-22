@@ -1,0 +1,256 @@
+.attendance-marking-page {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    color: white;
+}
+
+.marking-header {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    background: rgba(255, 255, 255, 0.02);
+    padding: 1.5rem;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.back-btn-minimal {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+}
+
+.back-btn-minimal:hover {
+    background: #6366f1;
+    border-color: #6366f1;
+}
+
+.title-stack h1 {
+    font-size: 1.5rem;
+    font-weight: 900;
+    margin: 0;
+}
+
+.title-stack p {
+    font-size: 0.9rem;
+    color: #818cf8;
+    margin: 4px 0 0 0;
+    font-weight: 700;
+}
+
+.date-display {
+    margin-left: auto;
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+}
+
+.date-display .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    color: #64748b;
+    letter-spacing: 1px;
+}
+
+.date-display .value {
+    font-weight: 700;
+    color: #cbd5e1;
+}
+
+.marking-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 2rem;
+}
+
+.premium-marking-input {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 10px 15px;
+    border-radius: 10px;
+    font-family: inherit;
+    font-weight: 700;
+    margin-top: 8px;
+    display: block;
+}
+
+.control-group label {
+    font-size: 11px;
+    text-transform: uppercase;
+    color: #94a3b8;
+    letter-spacing: 1px;
+}
+
+.attendance-summary {
+    display: flex;
+    gap: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px 24px;
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.stat .num {
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+
+.stat .lab {
+    font-size: 9px;
+    text-transform: uppercase;
+    color: #64748b;
+}
+
+.stat.present .num {
+    color: #10b981;
+}
+
+.stat.absent .num {
+    color: #ef4444;
+}
+
+.student-roster {
+    background: rgba(30, 41, 59, 0.3);
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.roster-header {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 24px;
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 10px;
+    font-weight: 800;
+    color: #64748b;
+    letter-spacing: 1.5px;
+}
+
+.roster-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.roster-row:hover {
+    background: rgba(255, 255, 255, 0.02);
+}
+
+.roster-row:last-child {
+    border-bottom: none;
+}
+
+.student-info-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.avatar-mini {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: rgba(99, 102, 241, 0.2);
+    color: #818cf8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 800;
+}
+
+.text-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.text-info .name {
+    font-weight: 700;
+    font-size: 0.95rem;
+}
+
+.text-info .uid {
+    font-size: 0.75rem;
+    color: #64748b;
+}
+
+.status-pill {
+    font-size: 10px;
+    font-weight: 900;
+    padding: 6px 14px;
+    border-radius: 20px;
+    letter-spacing: 0.5px;
+}
+
+.status-pill.present {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-pill.absent {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.marking-footer {
+    margin-top: 2rem;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.save-attendance-btn {
+    background: linear-gradient(135deg, #6366f1, #a855f7);
+    color: white;
+    border: none;
+    padding: 16px 40px;
+    border-radius: 16px;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    transition: all 0.3s;
+}
+
+.save-attendance-btn:hover:not(:disabled) {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+}
+
+.save-attendance-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.attendance-loader {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 0;
+}

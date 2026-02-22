@@ -228,7 +228,11 @@ class QuizSubmitView(APIView):
 
         for question in questions:
             submitted = submitted_answers.get(str(question.id), '').lower()
-            if submitted == question.correct_answer.lower():
+            # Normalize for MSQ (sort options to avoid order issues)
+            sub_list = sorted([s.strip() for s in submitted.split(',') if s.strip()])
+            cor_list = sorted([c.strip() for c in question.correct_answer.lower().split(',') if c.strip()])
+            
+            if sub_list == cor_list:
                 score += 1
 
         # Save attempt

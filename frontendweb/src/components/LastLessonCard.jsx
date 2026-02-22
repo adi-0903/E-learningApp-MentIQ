@@ -38,8 +38,15 @@ export function LastLessonCard({ dashboardData, isLoading, onSeeAllCourses, onCo
             </div>
             <div className="lessons-list">
                 {recentCourses.length === 0 ? (
-                    <div style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', margin: '2rem 0' }}>
-                        No recent courses found.<br />Enroll in a course to get started!
+                    <div style={{ color: '#94a3b8', fontSize: '14px', textAlign: 'center', margin: '2rem 0', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                        <span>No recent courses found. Enroll in a course to get started!</span>
+                        <button
+                            className="continue-btn"
+                            style={{ width: 'auto', padding: '8px 20px' }}
+                            onClick={onSeeAllCourses}
+                        >
+                            BROWSE MISSIONS
+                        </button>
                     </div>
                 ) : (
                     recentCourses.map((course) => (
