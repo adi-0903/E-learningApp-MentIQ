@@ -331,7 +331,7 @@
 }
 
 .ai-modal-content {
-    background: var(--card-bg-light);
+    background: #0f172a;
     border: 1px solid rgba(255, 255, 255, 0.08);
     border-radius: 24px;
     width: 100%;
@@ -358,58 +358,522 @@
     align-items: center;
 }
 
-.modal-title-area h2 {
-    margin: 0;
-    font-size: 20px;
+.modal-tabs {
+    display: flex;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 4px;
+    border-radius: 12px;
+}
+
+.modal-tabs button {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    padding: 8px 16px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.modal-tabs button.active {
+    background: var(--primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+}
+
+.ai-modal-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 2rem;
+}
+
+/* AI Hub Tabs - Premium Enhancement */
+.flashcard-generator,
+.planner-generator {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.flashcard-generator h3,
+.planner-generator h3 {
+    font-size: 24px;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    color: white;
+}
+
+.flashcard-generator p,
+.planner-generator p {
+    color: #94a3b8;
+    font-size: 15px;
+    margin-bottom: 1.5rem;
+}
+
+.flashcard-input-row {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    width: 100%;
+    max-width: 450px;
+    margin: 0 auto;
+}
+
+.tab-hero-icon {
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.2), rgba(99, 102, 241, 0.05));
+    width: 120px;
+    height: 120px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 2rem;
+    color: var(--primary);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3), inset 0 0 20px rgba(124, 58, 237, 0.2);
+    border: 1px solid rgba(124, 58, 237, 0.1);
+    animation: floatOrb 5s ease-in-out infinite;
+}
+
+.fancy-input-wrapper {
+    position: relative;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+}
+
+.input-sparkle {
+    position: absolute;
+    left: 15px;
+    color: var(--primary);
+    opacity: 0.6;
+}
+
+.fancy-input-wrapper input {
+    width: 100%;
+    height: 48px;
+    padding: 0 16px 0 45px !important;
+    background: rgba(15, 23, 42, 0.6) !important;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 12px;
+    color: white !important;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.fancy-input-wrapper input:focus {
+    border-color: var(--primary) !important;
+    box-shadow: 0 0 20px rgba(124, 58, 237, 0.2);
+    background: rgba(15, 23, 42, 0.8) !important;
+}
+
+.premium-gen-btn {
+    background: linear-gradient(135deg, #7c3aed, #4f46e5);
+    color: white;
+    border: none;
+    padding: 0 32px;
+    height: 52px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+    transition: all 0.3s;
+    width: 100%;
+}
+
+.premium-gen-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(124, 58, 237, 0.4);
+}
+
+.premium-gen-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    background: #334155;
+}
+
+.flashcard-generator,
+.planner-generator {
+    text-align: center;
+    max-width: 800px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Flashcards Premium Viewer - Fixed & Perfected */
+.flashcard-viewer {
+    width: 100%;
+    max-width: 550px;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.flashcard-stats {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #94a3b8;
+}
+
+.progress-lbl {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: 700;
+}
+
+.progress-val {
+    font-size: 14px;
     font-weight: 800;
     color: white;
 }
 
-.close-modal-btn {
+.progress-bar-container {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 3px;
+    width: 100%;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #7c3aed, #4f46e5);
+    box-shadow: 0 0 15px rgba(124, 58, 237, 0.5);
+    transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-container {
+    perspective: 2000px;
+    width: 100%;
+    height: 400px;
+    margin: 1rem 0;
+}
+
+.flashcard-item {
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+    transform-style: preserve-3d;
+    transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+    position: relative;
+}
+
+.flashcard-item.flipped {
+    transform: rotateY(180deg);
+}
+
+.flashcard-front,
+.flashcard-back {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    padding: 2.5rem;
+    border-radius: 32px;
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+.flashcard-back {
+    transform: rotateY(180deg);
+    background: linear-gradient(135deg, rgba(124, 58, 237, 0.1), rgba(30, 41, 59, 0.9));
+}
+
+.card-lbl-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 2.5rem;
+    color: var(--primary);
+}
+
+.card-lbl {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.card-txt {
+    font-size: 24px;
+    font-weight: 600;
+    color: white;
+    line-height: 1.5;
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+.card-hint {
+    margin-top: auto;
+    font-size: 12px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 16px;
+    border-radius: 20px;
+}
+
+.flashcard-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.nav-btn {
+    width: 56px;
+    height: 56px;
+    border-radius: 20px;
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #94a3b8 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: rgba(124, 58, 237, 0.2) !important;
+    border-color: var(--primary) !important;
+    color: white !important;
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(124, 58, 237, 0.3);
+}
+
+.nav-btn:disabled {
+    opacity: 0.2;
+    cursor: not-allowed;
+}
+
+.flip-instruction {
+    font-size: 13px;
+    color: #475569;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+}
+
+/* Premium Planner Calendar */
+.planner-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 2.5rem;
+    align-items: start;
+    margin-top: 1rem;
+    text-align: left;
+}
+
+.planner-calendar-container {
+    background: rgba(15, 23, 42, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    padding: 1.5rem;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.calendar-header h4 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+}
+
+.calendar-header button {
     background: transparent;
     border: none;
     color: #94a3b8;
     cursor: pointer;
+    padding: 5px;
+    border-radius: 8px;
     transition: all 0.2s;
+}
+
+.calendar-header button:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    margin-bottom: 0.5rem;
+}
+
+.calendar-weekdays div {
+    text-align: center;
+    font-size: 11px;
+    font-weight: 800;
+    color: #475569;
+    text-transform: uppercase;
+}
+
+.calendar-days-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.calendar-day {
+    aspect-ratio: 1;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 50%;
-    padding: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: #94a3b8;
 }
 
-.close-modal-btn:hover {
+.calendar-day:hover:not(.empty) {
     background: rgba(255, 255, 255, 0.05);
     color: white;
-    transform: rotate(90deg);
 }
 
-.ai-modal-inner {
-    padding: 0 32px 32px 32px;
+.calendar-day.today {
+    color: var(--primary);
+    background: rgba(124, 58, 237, 0.1);
 }
 
-.ai-modal-inner .ai-chat-area {
-    margin-bottom: 24px;
+.calendar-day.selected {
+    background: var(--primary) !important;
+    color: white !important;
+    box-shadow: 0 5px 15px rgba(124, 58, 237, 0.4);
 }
 
-.ai-chat-area::-webkit-scrollbar {
-    width: 6px;
+/* Planner Options */
+.planner-options {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
 }
 
-.ai-chat-area::-webkit-scrollbar-track {
+.select-wrapper select {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    appearance: none;
+    cursor: pointer;
+}
+
+.selected-date-preview {
+    background: rgba(124, 58, 237, 0.05);
+    border: 1px dashed rgba(124, 58, 237, 0.3);
+    border-radius: 12px;
+    padding: 1rem;
+    display: flex;
+    justify-content: center;
+}
+
+.date-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #a78bfa;
+}
+
+.planner-cta {
+    width: 100%;
+    justify-content: center;
+    height: 60px;
+    font-size: 16px;
+}
+
+/* Planner Viewer Refinement */
+.back-btn {
     background: transparent;
+    border: none;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
 }
 
-.ai-chat-area::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.1);
+.back-btn:hover {
+    color: white;
+}
+
+.action-group {
+    display: flex;
+    gap: 10px;
+}
+
+.reset-btn-square {
+    width: 36px;
+    height: 36px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
+    color: #94a3b8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
 }
 
-.ai-chat-area::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.2);
+.plan-markdown-container {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    padding: 2.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow-y: auto;
+    flex-grow: 1;
 }
 
-
+@media (max-width: 900px) {
+    .planner-grid {
+        grid-template-columns: 1fr;
+    }
+}
 
 @media (max-width: 768px) {
     .ai-modal-overlay {
@@ -419,7 +883,54 @@
     .ai-modal-content {
         height: 100vh;
         border-radius: 0;
-        max-width: 100%;
-        border: none;
+    }
+
+    .modal-tabs {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10;
+        backdrop-filter: blur(20px);
+    }
+}
+
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    .planner-viewer,
+    .planner-viewer * {
+        visibility: visible;
+    }
+
+    .planner-viewer {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        background: white !important;
+        color: black !important;
+        padding: 0 !important;
+    }
+
+    .planner-actions,
+    .reset-btn {
+        display: none !important;
+    }
+
+    .plan-markdown {
+        background: white !important;
+        border: none !important;
+        color: black !important;
+    }
+
+    .plan-content-rendered h1,
+    .plan-content-rendered h2,
+    .plan-content-rendered h3,
+    .plan-content-rendered p,
+    .plan-content-rendered li {
+        color: black !important;
     }
 }

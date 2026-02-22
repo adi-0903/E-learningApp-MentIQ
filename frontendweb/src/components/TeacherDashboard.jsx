@@ -8,7 +8,7 @@ export function TeacherDashboard({ userData, userRole }) {
     return (
         <div className="dashboard-grid teacher-grid">
             <GreetingCard userData={userData} userRole={userRole} />
-            <AIAssistantCard />
+            <AIAssistantCard userRole={userRole} />
         </div>
     );
 }

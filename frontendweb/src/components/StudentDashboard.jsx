@@ -41,7 +41,7 @@ export function StudentDashboard({ userData, userRole, onSeeAllCourses, onContin
                 onSeeAllCourses={onSeeAllCourses}
                 onContinueCourse={onContinueCourse}
             />
-            <AIAssistantCard />
+            <AIAssistantCard userRole={userRole} />
         </div>
     );
 }
