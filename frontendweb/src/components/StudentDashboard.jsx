@@ -6,6 +6,7 @@ import { LastLessonCard } from './LastLessonCard';
 import { GreetingCard } from './GreetingCard';
 import { AIAssistantCard } from './AIAssistantCard';
 import { AttendanceCard } from './AttendanceCard';
+import { KnowledgeGraphCard } from './KnowledgeGraphCard';
 import api from '../api';
 
 export function StudentDashboard({ userData, userRole, onSeeAllCourses, onContinueCourse }) {
@@ -42,6 +43,7 @@ export function StudentDashboard({ userData, userRole, onSeeAllCourses, onContin
                 onContinueCourse={onContinueCourse}
             />
             <AIAssistantCard userRole={userRole} />
+            <KnowledgeGraphCard isLoading={isLoading} />
         </div>
     );
 }

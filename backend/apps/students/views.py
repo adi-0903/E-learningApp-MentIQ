@@ -2,13 +2,19 @@
 Student-specific views.
 All endpoints here are restricted to users with role='student'.
 """
+from collections import defaultdict
+
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, Count, Q
+from django.db import connection
+from django.db.models import Avg, Count, ExpressionWrapper, F, FloatField, Q, Sum
+from django.db.utils import DatabaseError
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from apps.ai_tutor.models import FlashcardSession
+from apps.analytics.models import UserActivityLog
 from apps.core.pagination import StandardPagination
 from apps.core.permissions import IsStudent
 from apps.courses.models import Course
@@ -17,7 +23,7 @@ from apps.lessons.models import Lesson
 from apps.progress.models import CourseProgress, LessonProgress
 from apps.quizzes.models import QuizAttempt
 
-from apps.live_classes.models import Attendance
+from apps.live_classes.models import Attendance, SessionBooking
 from .serializers import (
     StudentCourseSerializer,
     StudentDashboardSerializer,
@@ -28,6 +34,17 @@ from .serializers import (
 )
 
 User = get_user_model()
+
+
+def _clamp(value, min_value=0.0, max_value=100.0):
+    return max(min_value, min(max_value, value))
+
+
+def _table_exists(table_name):
+    try:
+        return table_name in connection.introspection.table_names()
+    except DatabaseError:
+        return False
 
 
 class StudentDashboardView(APIView):
@@ -110,6 +127,297 @@ class StudentDashboardView(APIView):
             'overall_progress': round(overall, 1),
         }
 
+
+        return Response({'success': True, 'data': data})
+
+
+class StudentKnowledgeGraphView(APIView):
+    """
+    GET /api/v1/students/knowledge-graph/
+    Returns live course mastery nodes + inferred prerequisite edges for the student.
+    """
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    LEVEL_ORDER = {
+        'beginner': 1,
+        'all_levels': 2,
+        'intermediate': 3,
+        'advanced': 4,
+    }
+
+    def _build_edges(self, nodes):
+        categorized_nodes = defaultdict(list)
+        for node in nodes:
+            categorized_nodes[node['category']].append(node)
+
+        edge_set = set()
+        edges = []
+
+        for category_nodes in categorized_nodes.values():
+            if len(category_nodes) < 2:
+                continue
+
+            ordered_nodes = sorted(
+                category_nodes,
+                key=lambda n: (self.LEVEL_ORDER.get(n['level'], 2), n['label'].lower()),
+            )
+
+            for idx in range(1, len(ordered_nodes)):
+                source_id = ordered_nodes[idx - 1]['id']
+                target_id = ordered_nodes[idx]['id']
+                edge_key = (source_id, target_id)
+                if edge_key in edge_set:
+                    continue
+
+                edge_set.add(edge_key)
+                edges.append({
+                    'source': source_id,
+                    'target': target_id,
+                    'relation': 'prerequisite',
+                })
+
+        return edges
+
+    def _apply_layout(self, nodes, edges):
+        if not nodes:
+            return []
+
+        node_map = {node['id']: node for node in nodes}
+
+        if not edges:
+            ordered_ids = sorted(node_map.keys(), key=lambda n_id: node_map[n_id]['label'].lower())
+            columns = min(4, max(1, len(ordered_ids)))
+            rows = (len(ordered_ids) + columns - 1) // columns
+
+            for idx, node_id in enumerate(ordered_ids):
+                row = idx // columns
+                col = idx % columns
+                x = 12.0 if columns == 1 else 12.0 + (col * (76.0 / (columns - 1)))
+                y = 50.0 if rows == 1 else 20.0 + (row * (60.0 / (rows - 1)))
+                node_map[node_id]['x'] = round(x, 2)
+                node_map[node_id]['y'] = round(y, 2)
+
+            return [node_map[node['id']] for node in nodes]
+
+        adjacency = defaultdict(list)
+        incoming_counts = {node_id: 0 for node_id in node_map.keys()}
+
+        for edge in edges:
+            source = edge['source']
+            target = edge['target']
+            if source not in node_map or target not in node_map or source == target:
+                continue
+            adjacency[source].append(target)
+            incoming_counts[target] += 1
+
+        levels = {node_id: 0 for node_id in node_map.keys()}
+        queue = [node_id for node_id, in_degree in incoming_counts.items() if in_degree == 0]
+        visited = set()
+
+        while queue:
+            current_id = queue.pop(0)
+            visited.add(current_id)
+
+            for neighbor_id in adjacency[current_id]:
+                levels[neighbor_id] = max(levels[neighbor_id], levels[current_id] + 1)
+                incoming_counts[neighbor_id] -= 1
+                if incoming_counts[neighbor_id] == 0:
+                    queue.append(neighbor_id)
+
+        for node_id in node_map.keys():
+            if node_id not in visited:
+                levels[node_id] = 0
+
+        max_level = max(levels.values()) if levels else 0
+        level_buckets = defaultdict(list)
+        for node_id, level in levels.items():
+            level_buckets[level].append(node_id)
+
+        for level, node_ids in level_buckets.items():
+            node_ids.sort(key=lambda n_id: node_map[n_id]['label'].lower())
+            x = 12.0 if max_level == 0 else 12.0 + (level * (76.0 / max_level))
+            count = len(node_ids)
+
+            for idx, node_id in enumerate(node_ids, start=1):
+                y = (idx * (100.0 / (count + 1)))
+                node_map[node_id]['x'] = round(x, 2)
+                node_map[node_id]['y'] = round(_clamp(y, 10.0, 90.0), 2)
+
+        return [node_map[node['id']] for node in nodes]
+
+    def get(self, request):
+        student = request.user
+
+        enrolled_courses = Course.objects.filter(
+            enrollments__student=student,
+            enrollments__is_active=True,
+            is_deleted=False,
+        ).distinct().order_by('category', 'created_at')
+        course_ids = list(enrolled_courses.values_list('id', flat=True))
+
+        progress_map = {
+            str(row['course_id']): float(row['progress_percentage'])
+            for row in CourseProgress.objects.filter(
+                student=student,
+                course_id__in=course_ids,
+            ).values('course_id', 'progress_percentage')
+        }
+
+        total_lessons_map = {
+            str(row['course']): int(row['total'])
+            for row in Lesson.objects.filter(
+                course_id__in=course_ids,
+                is_deleted=False,
+            ).values('course').annotate(total=Count('id'))
+        }
+
+        completed_lessons_map = {
+            str(row['lesson__course']): int(row['completed'])
+            for row in LessonProgress.objects.filter(
+                student=student,
+                completed=True,
+                lesson__course_id__in=course_ids,
+            ).values('lesson__course').annotate(completed=Count('id'))
+        }
+
+        percentage_expression = ExpressionWrapper(
+            100.0 * F('score') / F('total_questions'),
+            output_field=FloatField(),
+        )
+
+        course_quiz_stats = {
+            str(row['quiz__course']): {
+                'average_percentage': float(row['avg_percentage']) if row['avg_percentage'] is not None else None,
+                'attempt_count': int(row['attempt_count']),
+            }
+            for row in QuizAttempt.objects.filter(
+                student=student,
+                quiz__course_id__in=course_ids,
+                total_questions__gt=0,
+            ).values('quiz__course').annotate(
+                avg_percentage=Avg(percentage_expression),
+                attempt_count=Count('id'),
+            )
+        }
+
+        nodes = []
+        for course in enrolled_courses:
+            course_id = str(course.id)
+            total_lessons = total_lessons_map.get(course_id, 0)
+            completed_lessons = completed_lessons_map.get(course_id, 0)
+
+            progress_percentage = progress_map.get(course_id)
+            if progress_percentage is None:
+                if total_lessons > 0:
+                    progress_percentage = (completed_lessons / total_lessons) * 100.0
+                else:
+                    progress_percentage = 0.0
+
+            quiz_stats = course_quiz_stats.get(course_id, {})
+            quiz_average = quiz_stats.get('average_percentage')
+            quiz_attempts = quiz_stats.get('attempt_count', 0)
+
+            if quiz_average is None:
+                mastery = progress_percentage
+            else:
+                mastery = (progress_percentage * 0.6) + (quiz_average * 0.4)
+
+            level_rank = self.LEVEL_ORDER.get(course.level, 2)
+            importance = 1
+            if total_lessons >= 4:
+                importance += 1
+            if total_lessons >= 8:
+                importance += 1
+            if level_rank >= 3:
+                importance += 1
+            if quiz_attempts >= 3:
+                importance += 1
+
+            nodes.append({
+                'id': course_id,
+                'label': course.title,
+                'mastery': round(_clamp(mastery), 1),
+                'importance': min(5, max(1, importance)),
+                'category': course.category,
+                'level': course.level,
+                'progress_percentage': round(_clamp(progress_percentage), 1),
+                'quiz_average': round(quiz_average, 1) if quiz_average is not None else None,
+            })
+
+        edges = self._build_edges(nodes)
+        positioned_nodes = self._apply_layout(nodes, edges)
+
+        overall_quiz_accuracy = QuizAttempt.objects.filter(
+            student=student,
+            total_questions__gt=0,
+        ).aggregate(avg=Avg(percentage_expression))['avg'] or 0.0
+
+        lesson_time_seconds = LessonProgress.objects.filter(
+            student=student,
+            lesson__course_id__in=course_ids,
+        ).aggregate(total=Sum('time_spent'))['total'] or 0
+
+        quiz_time_seconds = QuizAttempt.objects.filter(
+            student=student,
+            quiz__course_id__in=course_ids,
+        ).aggregate(total=Sum('time_taken'))['total'] or 0
+
+        warnings = []
+
+        activity_seconds = 0
+        if _table_exists(UserActivityLog._meta.db_table):
+            try:
+                activity_seconds = UserActivityLog.objects.filter(
+                    user=student,
+                ).aggregate(total=Sum('duration_seconds'))['total'] or 0
+            except DatabaseError:
+                warnings.append('user_activity_logs_unavailable')
+        else:
+            warnings.append('user_activity_logs_unavailable')
+
+        total_time_seconds = max(activity_seconds, lesson_time_seconds + quiz_time_seconds)
+
+        decks_generated = 0
+        cards_generated = 0
+        if _table_exists(FlashcardSession._meta.db_table):
+            try:
+                flashcard_qs = FlashcardSession.objects.filter(student=student)
+                decks_generated = flashcard_qs.count()
+                cards_generated = flashcard_qs.aggregate(total=Sum('cards_generated'))['total'] or 0
+            except DatabaseError:
+                warnings.append('flashcard_sessions_unavailable')
+        else:
+            warnings.append('flashcard_sessions_unavailable')
+
+        expected_cards = max(20, len(positioned_nodes) * 20)
+        flashcards_performance = (cards_generated / expected_cards) * 100 if cards_generated else 0.0
+
+        doubts_asked = 0
+        if _table_exists(SessionBooking._meta.db_table):
+            try:
+                doubts_asked = SessionBooking.objects.filter(student=student).count()
+            except DatabaseError:
+                warnings.append('session_bookings_unavailable')
+        else:
+            warnings.append('session_bookings_unavailable')
+
+        data = {
+            'nodes': positioned_nodes,
+            'edges': edges,
+            'signals': {
+                'quiz_accuracy': round(_clamp(overall_quiz_accuracy), 1),
+                'time_spent_hours': round(total_time_seconds / 3600.0, 1),
+                'flashcards_performance': round(_clamp(flashcards_performance), 1),
+                'flashcards_generated': decks_generated,
+                'doubts_asked': doubts_asked,
+            },
+            'meta': {
+                'node_count': len(positioned_nodes),
+                'edge_count': len(edges),
+                'source': 'live_backend',
+                'warnings': warnings,
+            }
+        }
 
         return Response({'success': True, 'data': data})
 

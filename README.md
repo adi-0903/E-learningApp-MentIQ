@@ -51,6 +51,7 @@ Core domains implemented in code:
 - Live classes with Jitsi links, participant tracking, chat, and attendance.
 - Announcements, notification settings, and notification delivery hooks.
 - AI tutor (`QBit`) for chat, flashcards, quiz generation, and study plan generation.
+- Student-only **AI Knowledge Graph** (web) with live backend signals and no seeded/demo graph data.
 - Media upload service and email/contact workflows.
 
 Audit baseline for this README: **February 22, 2026**.
@@ -168,7 +169,7 @@ Capstone Project/
 |---|---|
 | `apps.core` | Base models (UUID/timestamps/soft delete), custom permissions, middleware, exception handler, health check |
 | `apps.users` | JWT login/register/logout, profile update, password change, phone OTP, FCM token |
-| `apps.students` | Student dashboard, enrolled courses, progress summary, quiz history, teacher list, 1:1 session booking |
+| `apps.students` | Student dashboard, live knowledge graph, enrolled courses, progress summary, quiz history, teacher list, 1:1 session booking |
 | `apps.teachers` | Teacher dashboard, own courses, student analytics, per-student detailed breakdown, booking management |
 | `apps.courses` | Course CRUD, publish/unpublish, reviews |
 | `apps.lessons` | Lesson CRUD, reorder, content/media fields |
@@ -181,7 +182,7 @@ Capstone Project/
 | `apps.payments` | Stripe checkout, webhook handling, payment history |
 | `apps.analytics` | Daily analytics, course analytics, user activity logs |
 | `apps.media` | Upload/list/delete media files with MIME/file-type inference |
-| `apps.ai_tutor` | QBit AI chat + generation endpoints |
+| `apps.ai_tutor` | QBit AI chat + generation endpoints + flashcard session persistence for live analytics |
 | `apps.emails` | Contact forms, campaigns, email logs, IMAP inbox sync, EmailJS config endpoint |
 | `apps.intelligence` | Present but currently scaffold-level only |
 
@@ -205,6 +206,7 @@ Capstone Project/
 | User/Auth | `User`, `PhoneOTP` |
 | Learning | `Course`, `Lesson`, `Enrollment`, `LessonProgress`, `CourseProgress` |
 | Assessment | `Quiz`, `QuizQuestion`, `QuizAttempt` |
+| AI | `FlashcardSession` |
 | Live | `LiveClass`, `LiveClassParticipant`, `LiveClassChat`, `Attendance`, `SessionBooking` |
 | Communication | `Announcement`, `Notification`, `NotificationSetting`, `ContactMessage`, `EmailCampaign`, `InboxEmail` |
 | Business/Insights | `Payment`, `DailyAnalytics`, `CourseAnalytics`, `UserActivityLog` |
@@ -218,7 +220,7 @@ All backend routes are mounted in `backend/config/urls.py`.
 |---|---|---|
 | Health | `/api/health/` | `GET` health |
 | Auth | `/api/v1/auth/` | `login`, `register`, `logout`, `token/refresh`, `profile`, OTP, FCM token |
-| Students | `/api/v1/students/` | `dashboard`, `courses`, `browse`, `progress`, `quiz-history`, `my-teachers`, `book-session` |
+| Students | `/api/v1/students/` | `dashboard`, `knowledge-graph`, `courses`, `browse`, `progress`, `quiz-history`, `my-teachers`, `book-session` |
 | Teachers | `/api/v1/teachers/` | `dashboard`, `courses`, `students`, `courses/<id>/students`, `bookings` |
 | Courses | `/api/v1/courses/` | list/create/detail, reviews |
 | Lessons | `/api/v1/lessons/` | list/create/detail/reorder |
@@ -231,7 +233,7 @@ All backend routes are mounted in `backend/config/urls.py`.
 | Payments | `/api/v1/payments/` | checkout, webhook, history |
 | Analytics | `/api/v1/analytics/` | platform, history, course analytics, user activity |
 | Media | `/api/v1/media/` | list, upload, delete |
-| AI Tutor | `/api/v1/ai/` | ask, generate quiz, flashcards, study plan |
+| AI Tutor | `/api/v1/ai/` | ask, generate quiz, flashcards, study plan (flashcard sessions are logged for students) |
 | Emails | `/api/v1/emails/` | contact, admin contact, campaigns, inbox, logs, EmailJS config |
 
 ### Async Workloads
@@ -332,6 +334,38 @@ Stores in `frontend/store/`:
 - Flashcard generation (`ai/generate-flashcards/`)
 - Study plan generation (`ai/generate-plan/`)
 - Modal expansion with multi-tab AI workflows
+
+### Student AI Knowledge Graph (Live)
+
+`frontendweb/src/components/KnowledgeGraphCard.jsx` adds a student-only flagship graph card to the dashboard.
+
+- Route used: `GET /api/v1/students/knowledge-graph/`
+- Scope: student dashboard only (`frontendweb/src/components/StudentDashboard.jsx`)
+- Graph semantics:
+  - Nodes = enrolled courses (mastery + importance)
+  - Edges = inferred prerequisite progression inside category/level ordering
+  - Node color = mastery band
+  - Node size = importance signal
+- Live signals currently exposed to UI:
+  - `quiz_accuracy`
+  - `time_spent_hours`
+  - `flashcards_performance`
+  - `doubts_asked`
+- Signal calculation summary:
+  - `quiz_accuracy`: average of attempt percentages where each attempt uses `(score / total_questions) * 100`
+  - `time_spent_hours`: `max(user_activity_seconds, lesson_time_seconds + quiz_time_seconds) / 3600`
+  - `flashcards_performance`: cards generated from persisted student flashcard sessions against expected-card baseline
+  - `doubts_asked`: count of student `SessionBooking` records
+- Reliability behavior:
+  - Primary source is `students/knowledge-graph`
+  - If that endpoint is temporarily unavailable, web falls back to live `students/courses` + `students/progress` (still no demo data)
+
+Migration note for new environments:
+
+```powershell
+cd backend
+python manage.py migrate ai_tutor
+```
 
 ### Web Styling And Motion
 
@@ -499,7 +533,8 @@ Default local web URL: `http://localhost:5173`
 4. Enroll as student and submit quiz.
 5. Start and join a live class.
 6. Open AI Center and generate flashcards/study plan.
-7. Confirm notification, progress, and analytics endpoints return expected data.
+7. Open student web dashboard and confirm AI Knowledge Graph loads enrolled course nodes from live backend data.
+8. Confirm notification, progress, analytics, and graph endpoints return expected data.
 
 ---
 
@@ -507,19 +542,17 @@ Default local web URL: `http://localhost:5173`
 
 These are implementation-level findings from current repository state.
 
-1. `backend/apps/ai_tutor/views.py`:
-   `AskQbitView` uses `user` before assignment; should define `user = request.user` early in `post()`.
-2. `backend/config/celery.py`:
+1. `backend/config/celery.py`:
    Beat schedule references tasks that are not present with matching names:
    - `apps.analytics.tasks.generate_daily_report` (existing function is `generate_daily_analytics`)
    - `apps.notifications.tasks.send_weekly_progress_reminders` (current reminder task exists in `apps.users.tasks`)
-3. Frontend/backend payload mismatches exist in several paths:
+2. Frontend/backend payload mismatches exist in several paths:
    - Lesson reorder payload shape mismatch (`frontend/services/api.ts` vs `backend/apps/lessons/views.py`).
    - Live class create/update field mismatch (`scheduled_start_time` vs `scheduled_at`).
    - Live class status mapping mismatch (`active/completed` in some frontend stores vs `live/ended` in backend).
    - Quiz create/update field mismatch (`time_limit`, `total_questions` vs backend serializer `duration`, `questions`).
-4. `backend/.env.example` includes legacy service variables (Agora/S3/SendGrid) not aligned with current code paths (Jitsi/Cloudinary/Gmail/Groq).
-5. Firebase config is hardcoded in `frontend/services/firebase.ts`; while client Firebase keys are usually public, environment-driven configuration is still recommended.
+3. `backend/.env.example` includes legacy service variables (Agora/S3/SendGrid) not aligned with current code paths (Jitsi/Cloudinary/Gmail/Groq).
+4. Firebase config is hardcoded in `frontend/services/firebase.ts`; while client Firebase keys are usually public, environment-driven configuration is still recommended.
 
 ---
 

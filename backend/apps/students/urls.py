@@ -5,6 +5,7 @@ app_name = 'students'
 
 urlpatterns = [
     path('dashboard/', views.StudentDashboardView.as_view(), name='dashboard'),
+    path('knowledge-graph/', views.StudentKnowledgeGraphView.as_view(), name='knowledge-graph'),
     path('courses/', views.StudentEnrolledCoursesView.as_view(), name='enrolled-courses'),
     path('my-teachers/', views.StudentTeachersView.as_view(), name='my-teachers'),
     path('book-session/', views.StudentSessionBookingCreateView.as_view(), name='book-session'),

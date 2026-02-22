@@ -2,12 +2,20 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
-from django.shortcuts import get_object_or_404
+from django.db import connection
+from django.db.utils import DatabaseError
 from .services import QbitService
+from .models import FlashcardSession
 from apps.lessons.models import Lesson
 from apps.enrollments.models import Enrollment
 from PIL import Image
-import io
+
+
+def _table_exists(table_name):
+    try:
+        return table_name in connection.introspection.table_names()
+    except DatabaseError:
+        return False
 
 class AskQbitView(APIView):
     permission_classes = [IsAuthenticated]
@@ -27,9 +35,11 @@ class AskQbitView(APIView):
             return Response({"error": "Query or Image is required"}, status=status.HTTP_400_BAD_REQUEST)
 
         # User details for personalization
+        user = request.user
         role = getattr(user, 'role', 'student').lower()
         full_name = f"{getattr(user, 'first_name', '')} {getattr(user, 'last_name', '')}".strip()
         user_name = full_name or getattr(user, 'username', 'User')
+        context = ""
         
         # Build context based on role and scope
         if role == 'teacher':
@@ -45,11 +55,14 @@ class AskQbitView(APIView):
                     lesson = Lesson.objects.get(id=lesson_id)
                     context = f"Lesson Title: {lesson.title}\nContent: {lesson.content}\nDescription: {lesson.description}"
                 except Lesson.DoesNotExist:
-                    pass
+                    context = "Requested lesson context is unavailable."
             elif scope == "global":
                 enrollments = Enrollment.objects.filter(student=user, is_active=True).select_related('course')
                 course_titles = [e.course.title for e in enrollments]
                 context = f"Enrolled Courses: {', '.join(course_titles)}"
+
+            if not context:
+                context = "No course context available for this student yet."
             context = f"Student Name: {user_name}\nRole: Student\n" + context
 
         # Process Image if present
@@ -57,7 +70,7 @@ class AskQbitView(APIView):
         if image_file:
             try:
                 image = Image.open(image_file)
-            except Exception as e:
+            except Exception:
                 return Response({"error": "Invalid image file"}, status=status.HTTP_400_BAD_REQUEST)
 
         service = QbitService()
@@ -111,6 +124,16 @@ class GenerateFlashcardsView(APIView):
         import json
         try:
             data = json.loads(cards_json)
+            if isinstance(data, list) and request.user.role == 'student' and _table_exists(FlashcardSession._meta.db_table):
+                try:
+                    FlashcardSession.objects.create(
+                        student=request.user,
+                        topic=str(topic)[:255],
+                        cards_generated=len(data),
+                    )
+                except DatabaseError:
+                    # Keep flashcard generation successful even if analytics table is unavailable.
+                    pass
             return Response(data)
         except json.JSONDecodeError:
             return Response({"error": "Failed to generate flashcards"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

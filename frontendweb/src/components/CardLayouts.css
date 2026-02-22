@@ -1,15 +1,16 @@
 /* ================================================
-   DASHBOARD GRID — Explicit 3-col × 3-row layout
+   DASHBOARD GRID — Explicit 3-col × 4-row layout
    ================================================
    Row 1: Attendance | Stats      | Greeting
    Row 2: (cont.)    | Progress   | (cont.)
    Row 3: LastLesson | LastLesson | AI Tutor
+   Row 4: Knowledge Graph (all columns)
    ================================================ */
 
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1.4fr 1fr;
-    grid-template-rows: auto auto auto;
+    grid-template-rows: auto auto auto auto;
     gap: 1.5rem;
     flex-grow: 1;
     align-items: stretch;
@@ -53,11 +54,16 @@
     grid-row: 3 / 4;
 }
 
+.knowledge-graph-card {
+    grid-column: 1 / 4;
+    grid-row: 4 / 5;
+}
+
 /* ---- Responsive ---- */
 @media (max-width: 1200px) {
     .dashboard-grid {
         grid-template-columns: 1fr 1fr;
-        grid-template-rows: auto auto auto auto auto;
+        grid-template-rows: auto auto auto auto auto auto;
     }
 
     .attendance-card-wrapper {
@@ -88,6 +94,11 @@
     .ai-assistant-card {
         grid-column: 1 / -1;
         grid-row: 5 / 6;
+    }
+
+    .knowledge-graph-card {
+        grid-column: 1 / -1;
+        grid-row: 6 / 7;
     }
 }
 
