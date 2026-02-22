@@ -574,3 +574,12 @@ These are implementation-level findings from current repository state.
 
 - This README was rewritten from direct code inspection of backend, mobile, and web modules in this repository.
 - The visual section intentionally uses image assets already present in the project folders, as requested.
+
+---
+
+## Contact
+
+For any reference or support, contact the MentiQ team:
+
+- Email: `mentiq.learn@gmail.com`
+- Location: Punjab, India
