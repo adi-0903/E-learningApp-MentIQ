@@ -9,7 +9,6 @@
 <p align="center">
   <img src="frontendweb/public/Logo.png" alt="MentiQ Logo" width="140" />
 </p>
-
 <p align="center">
   <a href="#">
     <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=700&size=28&duration=3000&pause=1000&color=0EA5E9&center=true&vCenter=true&multiline=true&repeat=true&width=900&height=80&lines=🚀+NEXT-GEN+LEARNING+MANAGEMENT+SYSTEM;🤖+INTEGRATED+GENERATIVE+AI+INTELLIGENCE;🎬+REAL-TIME+VIRTUAL+CLASSROOMS+%26+SYNC;📊+ENTERPRISE+ANALYTICS+%26+AUTOMATION" alt="Typing SVG" />
