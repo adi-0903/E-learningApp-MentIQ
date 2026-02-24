@@ -64,6 +64,30 @@ class IsCourseTeacher(BasePermission):
         return False
 
 
+class IsAdmin(BasePermission):
+    """Only allows access to users with role='admin'."""
+    message = 'Only admins can perform this action.'
+
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == 'admin'
+        )
+
+
+class IsAdminOrTeacher(BasePermission):
+    """Allows access to admins and teachers."""
+    message = 'Only admins or teachers can perform this action.'
+
+    def has_permission(self, request, view):
+        return (
+            request.user
+            and request.user.is_authenticated
+            and request.user.role in ('admin', 'teacher')
+        )
+
+
 class IsEnrolledStudent(BasePermission):
     """Only enrolled students can access course content."""
     message = 'You must be enrolled in this course to access this content.'

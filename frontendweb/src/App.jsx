@@ -19,6 +19,18 @@ import { CourseCatalogPage } from './components/CourseCatalogPage';
 
 import { QuizResultPage } from './components/QuizResultPage';
 import { ClassroomPage } from './components/ClassroomPage';
+
+// Admin Pages
+import { AdminDashboard } from './admin/AdminDashboard';
+import { AdminTeachers } from './admin/AdminTeachers';
+import { AdminStudents } from './admin/AdminStudents';
+import { AdminUserDetail } from './admin/AdminUserDetail';
+import { AdminCourses } from './admin/AdminCourses';
+import { AdminEnrollments } from './admin/AdminEnrollments';
+import { AdminProfile } from './admin/AdminProfile';
+import { AdminAnnouncements } from './admin/AdminAnnouncements';
+import { AdminPremium } from './admin/AdminPremium';
+
 import api from './api';
 
 function App() {
@@ -30,6 +42,10 @@ function App() {
     const [selectedQuizId, setSelectedQuizId] = useState(null);
     const [quizResult, setQuizResult] = useState(null);
     const [selectedCourseTitle, setSelectedCourseTitle] = useState('');
+
+    // Admin-specific state
+    const [adminSelectedUserId, setAdminSelectedUserId] = useState(null);
+    const [adminSelectedUserType, setAdminSelectedUserType] = useState(null);
 
     useEffect(() => {
         const token = localStorage.getItem('accessToken');
@@ -110,6 +126,15 @@ function App() {
         setCurrentPage('login');
     }
 
+    // Admin navigation handler
+    const handleAdminNavigate = (page, id, type) => {
+        if (page === 'admin_user_detail' && id) {
+            setAdminSelectedUserId(id);
+            setAdminSelectedUserType(type || 'student');
+        }
+        setCurrentPage(page);
+    };
+
     if (currentPage === 'onboarding') {
         return <OnboardingScreen onFinish={handleOnboardingFinish} />;
     }
@@ -117,6 +142,13 @@ function App() {
     if (currentPage === 'login') {
         return <LoginPage onBack={handleLoginSuccess} />;
     }
+
+    const isAdmin = userRole === 'admin';
+    const isAdminPage = currentPage.startsWith('admin');
+
+    // Determine which pages should hide the header
+    const hideHeaderPages = ['profile', 'notifications', 'contact', 'classroom', 'courses', 'doubts', 'curriculum_management', 'attendance', 'course_catalog'];
+    const shouldHideHeader = hideHeaderPages.includes(currentPage) || isAdminPage;
 
     return (
         <>
@@ -129,9 +161,15 @@ function App() {
                 onLogout={handleLogout}
                 currentPage={currentPage}
                 userRole={userRole}
+                // Admin navigation
+                onOpenAdminTeachers={() => setCurrentPage('admin_teachers')}
+                onOpenAdminStudents={() => setCurrentPage('admin_students')}
+                onOpenAdminCourses={() => setCurrentPage('admin_courses')}
+                onOpenAdminAnnouncements={() => setCurrentPage('admin_announcements')}
+                onOpenAdminPremium={() => setCurrentPage('admin_premium')}
             />
             <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''}`}>
-                {currentPage !== 'profile' && currentPage !== 'notifications' && currentPage !== 'contact' && currentPage !== 'classroom' && currentPage !== 'courses' && currentPage !== 'doubts' && currentPage !== 'curriculum_management' && currentPage !== 'attendance' && currentPage !== 'course_catalog' && (
+                {!shouldHideHeader && (
                     <Header
                         onGetStarted={() => setCurrentPage('login')}
                         userData={userData}
@@ -143,13 +181,69 @@ function App() {
                     />
                 )}
 
-                {currentPage === 'profile' ? (
-                    <ProfilePage
-                        userData={userData}
-                        onBackToDashboard={() => setCurrentPage('dashboard')}
-                        onLogout={handleLogout}
-                        onUpdateProfile={(newProfile) => setUserData({ ...userData, ...newProfile })}
+                {/* ══════════ ADMIN PAGES ══════════ */}
+                {currentPage === 'dashboard' && isAdmin ? (
+                    <AdminDashboard
+                        onNavigate={handleAdminNavigate}
                     />
+                ) : currentPage === 'admin_teachers' ? (
+                    <AdminTeachers
+                        onBack={() => setCurrentPage('dashboard')}
+                        onViewDetail={(id, type) => handleAdminNavigate('admin_user_detail', id, type)}
+                    />
+                ) : currentPage === 'admin_students' ? (
+                    <AdminStudents
+                        onBack={() => setCurrentPage('dashboard')}
+                        onViewDetail={(id, type) => handleAdminNavigate('admin_user_detail', id, type)}
+                    />
+                ) : currentPage === 'admin_user_detail' ? (
+                    <AdminUserDetail
+                        userId={adminSelectedUserId}
+                        userType={adminSelectedUserType}
+                        onBack={() => setCurrentPage(adminSelectedUserType === 'teacher' ? 'admin_teachers' : 'admin_students')}
+                    />
+                ) : currentPage === 'admin_courses' ? (
+                    <AdminCourses
+                        onBack={() => setCurrentPage('dashboard')}
+                    />
+                ) : currentPage === 'admin_enrollments' ? (
+                    <AdminEnrollments
+                        onBack={() => setCurrentPage('dashboard')}
+                    />
+                ) : currentPage === 'admin_add_teacher' ? (
+                    <AdminTeachers
+                        onBack={() => setCurrentPage('dashboard')}
+                        onViewDetail={(id, type) => handleAdminNavigate('admin_user_detail', id, type)}
+                    />
+                ) : currentPage === 'admin_add_student' ? (
+                    <AdminStudents
+                        onBack={() => setCurrentPage('dashboard')}
+                        onViewDetail={(id, type) => handleAdminNavigate('admin_user_detail', id, type)}
+                    />
+                ) : currentPage === 'admin_announcements' ? (
+                    <AdminAnnouncements
+                        onBack={() => setCurrentPage('dashboard')}
+                    />
+                ) : currentPage === 'admin_premium' ? (
+                    <AdminPremium />
+
+                    /* ══════════ EXISTING PAGES ══════════ */
+                ) : currentPage === 'profile' ? (
+                    isAdmin ? (
+                        <AdminProfile
+                            userData={userData}
+                            onBackToDashboard={() => setCurrentPage('dashboard')}
+                            onLogout={handleLogout}
+                            onUpdateProfile={(newProfile) => setUserData({ ...userData, ...newProfile })}
+                        />
+                    ) : (
+                        <ProfilePage
+                            userData={userData}
+                            onBackToDashboard={() => setCurrentPage('dashboard')}
+                            onLogout={handleLogout}
+                            onUpdateProfile={(newProfile) => setUserData({ ...userData, ...newProfile })}
+                        />
+                    )
                 ) : currentPage === 'notifications' ? (
                     <NotificationsPage onBack={() => setCurrentPage('dashboard')} />
                 ) : currentPage === 'contact' ? (

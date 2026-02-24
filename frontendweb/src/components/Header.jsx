@@ -10,6 +10,7 @@ export function Header({ onGetStarted, userData, isLoggedIn, onOpenProfile, onOp
     const dropdownRef = useRef(null);
 
     // Dynamic Title logic
+    const isAdmin = userRole === 'admin';
     const getPageTitle = () => {
         switch (currentPage) {
             case 'courses': return isTeacher ? 'Assigned Courses' : 'Enrolled Courses';
@@ -19,9 +20,10 @@ export function Header({ onGetStarted, userData, isLoggedIn, onOpenProfile, onOp
             case 'classroom': return isTeacher ? 'Live Sessions' : 'Virtual Classroom';
             case 'doubts': return isTeacher ? 'Student Doubts' : 'Mentorship';
             case 'dashboard':
-            default: return isTeacher ? 'Teacher Portal' : 'Student Workspace';
+            default: return isAdmin ? 'Admin Portal' : isTeacher ? 'Teacher Portal' : 'Student Workspace';
         }
     };
+
 
     useEffect(() => {
         if (isLoggedIn) {

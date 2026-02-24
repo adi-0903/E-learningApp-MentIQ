@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     'apps.intelligence',
     'apps.emails',
     'apps.attendance',
+    'apps.admin_panel',
 ]
 
 MIDDLEWARE = [

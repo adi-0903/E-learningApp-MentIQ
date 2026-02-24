@@ -32,15 +32,27 @@ class AnnouncementListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         user = self.request.user
         if user.role == 'teacher':
-            return Announcement.objects.filter(teacher=user).select_related('course')
-        else:
-            # Students see global + enrolled course announcements
+            # Teachers see: their own announcements + admin announcements targeted to teachers or all
+            own = Q(teacher=user)
+            admin_for_teachers = Q(created_by_admin=True) & (
+                Q(target_audience='teachers') | Q(target_audience='all')
+            )
+            return Announcement.objects.filter(
+                own | admin_for_teachers
+            ).select_related('teacher', 'course').distinct()
+        elif user.role == 'student':
+            # Students see: enrolled course announcements + global, BUT only if audience is 'all' or 'students'
             enrolled_ids = Enrollment.objects.filter(
                 student=user, is_active=True
             ).values_list('course_id', flat=True)
+            audience_filter = Q(target_audience='all') | Q(target_audience='students')
+            course_filter = Q(course__isnull=True) | Q(course_id__in=enrolled_ids)
             return Announcement.objects.filter(
-                Q(course__isnull=True) | Q(course_id__in=enrolled_ids)
-            ).select_related('teacher', 'course')
+                audience_filter & course_filter
+            ).select_related('teacher', 'course').distinct()
+        else:
+            # Admin sees all
+            return Announcement.objects.all().select_related('teacher', 'course')
 
     def create(self, request, *args, **kwargs):
         serializer = AnnouncementCreateSerializer(data=request.data, context={'request': request})
@@ -103,7 +115,7 @@ class AnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.teacher != request.user:
+        if instance.teacher != request.user and not request.user.role == 'admin':
             return Response(
                 {'success': False, 'error': {'message': 'Only the author can update.'}},
                 status=status.HTTP_403_FORBIDDEN,
@@ -123,7 +135,7 @@ class AnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.teacher != request.user:
+        if instance.teacher != request.user and not request.user.role == 'admin':
             return Response(
                 {'success': False, 'error': {'message': 'Only the author can delete.'}},
                 status=status.HTTP_403_FORBIDDEN,
