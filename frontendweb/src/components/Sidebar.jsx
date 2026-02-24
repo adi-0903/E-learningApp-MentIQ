@@ -1,4 +1,5 @@
 import React from 'react';
+import { Crown } from 'lucide-react';
 import './Sidebar.css';
 
 export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroom, onOpenDoubts, onLogout, currentPage, userRole, onOpenAdminTeachers, onOpenAdminStudents, onOpenAdminCourses, onOpenAdminAnnouncements, onOpenAdminPremium }) {
@@ -43,9 +44,7 @@ export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroo
                             </svg>
                         </div>
                         <div className={`nav-item nav-item-premium ${currentPage === 'admin_premium' ? 'active' : ''}`} onClick={onOpenAdminPremium} title="Premium Plans">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path>
-                            </svg>
+                            <Crown size={22} strokeWidth={2.5} />
                         </div>
                     </>
                 ) : (
