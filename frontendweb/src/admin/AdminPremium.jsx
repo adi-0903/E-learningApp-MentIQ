@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import {
     Crown, Check, X, Sparkles, Zap, Shield, BarChart3,
     Video, Award, Download, BookOpen, Bot, Headphones,
-    RefreshCw, ChevronRight
+    RefreshCw, ChevronRight, Mail, Phone
 } from 'lucide-react';
 import api from '../api';
 import './AdminPremium.css';
@@ -30,6 +30,7 @@ export function AdminPremium() {
     const [processingPlan, setProcessingPlan] = useState(null);
     const [billingCycle, setBillingCycle] = useState('annual'); // 'annual' or 'quarterly'
     const [message, setMessage] = useState({ type: '', text: '' });
+    const [showContactModal, setShowContactModal] = useState(false);
 
     useEffect(() => {
         fetchPlans();
@@ -83,7 +84,7 @@ export function AdminPremium() {
     };
 
     const getTierIcon = (tier) => {
-        if (tier === 'basic') return <BookOpen size={20} />;
+        if (tier === 'custom') return <Sparkles size={20} />;
         if (tier === 'pro') return <Zap size={20} />;
         return <Crown size={20} />;
     };
@@ -179,25 +180,36 @@ export function AdminPremium() {
                             <p className="admin-premium-desc">{plan.description}</p>
 
                             {/* Pricing */}
-                            <div className="admin-premium-pricing">
-                                <div className="admin-premium-price">
-                                    <span className="admin-premium-currency">₹</span>
-                                    <span className="admin-premium-amount">
-                                        {billingCycle === 'annual'
-                                            ? parseFloat(plan.annual_price || 0).toLocaleString('en-IN')
-                                            : parseFloat(plan.quarterly_price || 0).toLocaleString('en-IN')
-                                        }
-                                    </span>
-                                    <span className="admin-premium-period">
-                                        /{billingCycle === 'annual' ? 'yr' : 'qtr'}
-                                    </span>
-                                </div>
-                                {billingCycle === 'annual' && parseFloat(plan.quarterly_price) > 0 && (
-                                    <div className="admin-premium-annual">
-                                        Equivalent to ₹{Math.round(parseFloat(plan.annual_price) / 4).toLocaleString('en-IN')}/qtr
+                            {plan.tier === 'custom' ? (
+                                <div className="admin-premium-pricing">
+                                    <div className="admin-premium-price" style={{ fontSize: '1.8rem', marginTop: '10px' }}>
+                                        Custom Pricing
                                     </div>
-                                )}
-                            </div>
+                                    <div className="admin-premium-annual">
+                                        Based on school size
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="admin-premium-pricing">
+                                    <div className="admin-premium-price">
+                                        <span className="admin-premium-currency">₹</span>
+                                        <span className="admin-premium-amount">
+                                            {billingCycle === 'annual'
+                                                ? parseFloat(plan.annual_price || 0).toLocaleString('en-IN')
+                                                : parseFloat(plan.quarterly_price || 0).toLocaleString('en-IN')
+                                            }
+                                        </span>
+                                        <span className="admin-premium-period">
+                                            /{billingCycle === 'annual' ? 'yr' : 'qtr'}
+                                        </span>
+                                    </div>
+                                    {billingCycle === 'annual' && parseFloat(plan.quarterly_price) > 0 && (
+                                        <div className="admin-premium-annual">
+                                            Equivalent to ₹{Math.round(parseFloat(plan.annual_price) / 4).toLocaleString('en-IN')}/qtr
+                                        </div>
+                                    )}
+                                </div>
+                            )}
 
                             {/* Limits */}
                             <div className="admin-premium-limits">
@@ -245,25 +257,35 @@ export function AdminPremium() {
                             {/* Subscribe / Current Plan Button */}
                             {plan.is_active && (
                                 <div style={{ marginTop: '1.5rem' }}>
-                                    <button
-                                        className="admin-premium-save-btn"
-                                        style={{
-                                            width: '100%',
-                                            background: activePlanId === plan.id ? 'rgba(52, 211, 153, 0.15)' : '',
-                                            color: activePlanId === plan.id ? '#34d399' : '',
-                                            boxShadow: activePlanId === plan.id ? 'none' : ''
-                                        }}
-                                        onClick={() => handleSubscribe(plan)}
-                                        disabled={processingPlan === plan.id || activePlanId === plan.id}
-                                    >
-                                        {processingPlan === plan.id ? (
-                                            <><RefreshCw size={15} className="spinning" /> Processing...</>
-                                        ) : activePlanId === plan.id ? (
-                                            <><Check size={16} /> Current Plan</>
-                                        ) : (
-                                            <>Subscribe <ChevronRight size={16} /></>
-                                        )}
-                                    </button>
+                                    {plan.tier === 'custom' ? (
+                                        <button
+                                            className="admin-premium-save-btn"
+                                            style={{ width: '100%', background: '#10b981', color: 'white' }}
+                                            onClick={() => setShowContactModal(true)}
+                                        >
+                                            Contact MentiQ <ChevronRight size={16} />
+                                        </button>
+                                    ) : (
+                                        <button
+                                            className="admin-premium-save-btn"
+                                            style={{
+                                                width: '100%',
+                                                background: activePlanId === plan.id ? 'rgba(52, 211, 153, 0.15)' : '',
+                                                color: activePlanId === plan.id ? '#34d399' : '',
+                                                boxShadow: activePlanId === plan.id ? 'none' : ''
+                                            }}
+                                            onClick={() => handleSubscribe(plan)}
+                                            disabled={processingPlan === plan.id || activePlanId === plan.id}
+                                        >
+                                            {processingPlan === plan.id ? (
+                                                <><RefreshCw size={15} className="spinning" /> Processing...</>
+                                            ) : activePlanId === plan.id ? (
+                                                <><Check size={16} /> Current Plan</>
+                                            ) : (
+                                                <>Subscribe <ChevronRight size={16} /></>
+                                            )}
+                                        </button>
+                                    )}
                                 </div>
                             )}
 
@@ -277,6 +299,46 @@ export function AdminPremium() {
                     );
                 })}
             </div>
+
+            {/* Contact Modal */}
+            {showContactModal && (
+                <div className="admin-premium-modal-overlay" onClick={() => setShowContactModal(false)}>
+                    <div className="admin-premium-modal" onClick={e => e.stopPropagation()}>
+                        <div className="admin-premium-modal-header">
+                            <div>
+                                <h3>Contact MentiQ Enterprise</h3>
+                                <p>Get a custom plan tailored for your network.</p>
+                            </div>
+                            <button className="admin-premium-close-btn" onClick={() => setShowContactModal(false)}>
+                                <X size={20} />
+                            </button>
+                        </div>
+                        <div className="admin-premium-modal-content">
+                            <div className="admin-premium-contact-card">
+                                <div className="admin-premium-contact-icon" style={{ background: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8' }}>
+                                    <Mail size={24} />
+                                </div>
+                                <div className="admin-premium-contact-info">
+                                    <h4>Email Us</h4>
+                                    <a href="mailto:enterprise@mentiq.com">mentiq.learn@gmail.com</a>
+                                    <p>We reply within 24 hours.</p>
+                                </div>
+                            </div>
+
+                            <div className="admin-premium-contact-card">
+                                <div className="admin-premium-contact-icon" style={{ background: 'rgba(16, 185, 129, 0.15)', color: '#10b981' }}>
+                                    <Phone size={24} />
+                                </div>
+                                <div className="admin-premium-contact-info">
+                                    <h4>Call Us Directly</h4>
+                                    <a href="tel:+917009812679">+91 70098 12679</a>
+                                    <p>Available Mon-Fri, 9am - 6pm EST.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

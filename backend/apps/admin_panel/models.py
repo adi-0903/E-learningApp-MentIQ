@@ -12,16 +12,16 @@ class PremiumPlan(models.Model):
     """
 
     class TierChoices(models.TextChoices):
-        BASIC = 'basic', 'Basic'
         PRO = 'pro', 'Pro'
         ENTERPRISE = 'enterprise', 'Enterprise'
+        CUSTOM = 'custom', 'Custom'
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     tier = models.CharField(
         max_length=12,
         choices=TierChoices.choices,
         unique=True,
-        help_text='Plan tier (basic / pro / enterprise)',
+        help_text='Plan tier (pro / enterprise / custom)',
     )
     name = models.CharField(
         max_length=100,
