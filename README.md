@@ -318,6 +318,12 @@ This masterwork was constructed to redefine education. If you are captivated by 
   <p><i>Code written with undeniable perfection and purpose.</i></p>
 </div>
 
+---
+
+## 📜 License
+
+This project is officially licensed under the **[MIT License](LICENSE)**. See the `LICENSE` file for more details.
+
 <p align="center">
   <img src="https://readme-typing-svg.herokuapp.com?font=Space+Grotesk&weight=500&size=14&duration=4000&pause=500&color=64748B&center=true&vCenter=true&width=1000&lines=Developed+with+unyielding+passion+for+a+better+future;©+MentiQ+2026.+Distributed+under+the+MIT+License." alt="Footer Typing SVG" />
 </p>
