@@ -13,6 +13,7 @@
   <img src="https://img.shields.io/badge/Mobile-React_Native_Expo-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React Native" />
   <img src="https://img.shields.io/badge/Web-Vite_React-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
   <img src="https://img.shields.io/badge/Database-PostgreSQL-336791?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
+  <img src="https://img.shields.io/badge/Auth-Firebase_OTP-FFCA28?style=for-the-badge&logo=firebase&logoColor=white" alt="Firebase Auth" />
   <img src="https://img.shields.io/badge/Caching-Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" alt="Redis" />
   <img src="https://img.shields.io/badge/AI-Groq_Llama_3-f3ac2e?style=for-the-badge" alt="AI Agent" />
 </div>
@@ -22,34 +23,41 @@
 <div align="center">
   <img src="https://img.shields.io/badge/Status-Active_Development-success?style=flat-square" />
   <img src="https://img.shields.io/badge/Build-Passing-brightgreen?style=flat-square" />
-  <img src="https://img.shields.io/badge/Version-1.2.0--stable-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/Version-1.5.0--stable-blue?style=flat-square" />
 </div>
 
 ---
 
 ## 📖 Project Overview
 
-**MentiQ** is a state-of-the-art e-learning platform that harmonizes traditional educational workflows with cutting-edge **Generative AI**. By providing a unified experience across **iOS/Android**, **Web**, and a robust **RESTful Backend**, MentiQ eliminates technical friction for both educators and learners.
+**MentiQ** is a state-of-the-art e-learning platform that harmonizes traditional educational workflows with cutting-edge **Generative AI** and **Real-Time Synchronization**. By providing a unified experience across **iOS/Android (Expo)**, **Web (Vite/React)**, and a robust **RESTful Backend (Django/DRF)**, MentiQ eliminates technical friction for both educators and learners.
 
 ### 🌟 Vision
->
-> *"To democratize intelligence-driven education by making classroom management effortless and learning deeply personalized."*
+> *"To democratize intelligence-driven education by making classroom management effortless, learning deeply personalized, and assessments fair and insightful."*
 
 ---
 
 ## 🚀 Key Modules & Perfect Detail
 
 <details open>
-<summary><b>🤖 AI Intelligence Center (QBit)</b></summary>
+<summary><b>🤖 AI Intelligence Center (QBit) & Planner</b></summary>
 <br/>
 
 * **⚡ Conversational Tutor**: Real-time context-aware chat utilizing Groq-powered Llama 3 models.
 * **📚 Smart Flashcards**: Converts lesson content into interactive card decks with spaced-repetition logic.
-* **📅 Adaptive Study Planner**: Dynamic generation of weekly schedules exported as premium-styled PDFs.
-* **📊 Multi-Dimensional Knowledge Graph**:
-  * *Nodes*: Enrolled courses representing mastery levels.
-  * *Edges*: Prerequisite paths and progress signals.
-  * *Signals*: Weights based on `quiz_accuracy`, `time_spent`, `doubts_asked`, and `flashcard_performance`.
+* **📅 Dynamic Study Planner**: Generates weekly schedules using smart inputs (DataList integration) and exports them as **Premium Stylized PDFs**.
+* **📊 Multi-Dimensional Knowledge Graph**: Maps course mastery, tracking `quiz_accuracy`, `time_spent`, and `flashcard_performance`.
+
+</details>
+
+<details>
+<summary><b>🔐 Advanced Security & Smart Authentication</b></summary>
+<br/>
+
+* **📱 Firebase OTP Integration**: Passwordless, fast, and secure login verification utilizing Firebase Phone Authentication.
+* **🔑 Multi-Mode Login**: Dynamic logic allowing users to authenticate via Email, Student ID, or Teacher ID accurately.
+* **🛡️ JWT Token Management**: Secure stateless session handling via simpleJWT, complete with auto-refresh and blacklisting.
+* **🌐 Dynamic IP Configuration**: Smart IP bypass mechanisms for seamless local network testing across multiple devices automatically capturing backend addresses.
 
 </details>
 
@@ -57,12 +65,23 @@
 <summary><b>🎥 Virtual Classroom & Live Sync</b></summary>
 <br/>
 
-* **🎬 Pro-Grade Video**: Seamless Jitsi Meet integration for 1:1 sessions and group classes.
-* **💬 Real-Time Interaction**: Integrated chat system with participation tracking.
-* **📍 Precision Attendance**:
-  * *Teacher Side*: One-tap session creation and student marking.
-  * *Student Side*: Live dashboard updates and historical attendance logs.
+* **🎬 Pro-Grade Video**: Seamless Jitsi Meet integration for 1:1 sessions and massive group classes.
+* **💬 Real-Time Interaction**: Integrated chat system with immediate participation tracking.
+* **📍 Synchronized Attendance Engine**:
+  * *Teacher Side*: One-tap session creation and rapid student marking.
+  * *Student Side*: Immediate automatic dashboard data updates reflecting their presence instantly.
 * **📅 Intelligent Booking**: Role-aware calendar for scheduling mentorship sessions.
+
+</details>
+
+<details>
+<summary><b>💯 Assessment & Advanced Analytics</b></summary>
+<br/>
+
+* **🧠 Comprehensive Quizzes**: Engaging assessments (MCQ, True/False, MSQ) backed by rigorous validation.
+* **⚖️ Fair-Play Quiz Logic**: Integrated **Daily 3-Attempt Limits** per quiz to ensure honest learning progression and deliberate practice.
+* **📈 Detailed Result Analysis**: Comprehensive post-quiz breakdowns revealing exact question counts, chosen answers versus correct answers, and mastery gaps seamlessly.
+* **🎖️ Visual Gamification**: Premium card UI and circular progress tracks showcasing enrollment milestones.
 
 </details>
 
@@ -70,23 +89,11 @@
 <summary><b>📧 Enterprise Communication Engine</b></summary>
 <br/>
 
-* **📩 Advanced Emailing**:
-  * *Outbound*: Automated welcome, enrollment, and progress update emails.
-  * *Campaigns*: Admin-led promotional and informational bulk emailing.
+* **📩 Advanced Emailing System**:
+  * *Outbound*: Automated welcome, enrollment, and triggered progress update emails.
+  * *Campaigns*: Admin-led promotional and informational bulk emailing targeted by cohorts.
   * *Inbound*: Integrated IMAP reader to sync platform inquiries directly to the dashboard.
-* **🔔 Intelligent Notifications**: Trigger-based alerts for quiz results, new announcements, and class reminders.
-
-</details>
-
-<details>
-<summary><b>� Assessment & Analytics</b></summary>
-<br/>
-
-* **🧠 Comprehensive Quizzes**: Support for MCQs, True/False, and time-boxed challenges.
-* **📈 Growth Analytics**:
-  * *Daily Snapshots*: Automatic Celery tasks generating platform-wide health reports.
-  * *Course Insights*: Detailed breakdown of student engagement, average scores, and revenue.
-* **🎖️ Gamified Progress**: Visual circle-based tracking for lesson completion and course milestones.
+* **🔔 Intelligent Notifications**: Trigger-based alerts for quiz publications, class announcements, and system updates.
 
 </details>
 
@@ -106,8 +113,8 @@ graph LR
     end
 
     subgraph "Backend Core (Django)"
-        API[DRF Gateway]
-        Apps[19 Local Domain Apps]
+        API[DRF Gateway | Auth & Rate Limits]
+        Apps[20+ Local Domain Apps]
         Tasks[Celery Async Workers]
     end
 
@@ -117,20 +124,22 @@ graph LR
     end
 
     subgraph "Third-Party Cloud"
-        Groq[🤖 Groq AI]
+        Groq[🤖 Groq Llama 3]
+        Firebase[🔥 Firebase OTP]
         Media[☁️ Cloudinary]
-        Stripe[💳 Stripe]
+        Stripe[💳 Stripe API]
         Jitsi[📹 Jitsi Meet]
         Mail[📧 Gmail/EmailJS]
     end
 
-    Mobile --> API
-    Web --> API
+    Mobile -->|JWT / OTP| API
+    Web -->|JWT / OTP| API
     API --> Apps
     Apps --> DB
     Apps --> Redis
     Tasks --> Redis
     Apps --> Groq
+    Apps --> Firebase
     Apps --> Media
     Apps --> Stripe
     Apps --> Jitsi
@@ -145,20 +154,21 @@ graph LR
 Capstone Project/
 ├── backend/                     # 🐍 Django 5.x REST API
 │   ├── config/                  # Core settings, Celery, and ASGI/WSGI
-│   ├── apps/                    # � Core Domain Logic (19 Apps)
-│   │   ├── ai_tutor/            # QBit intelligence & flashcards
-│   │   ├── emails/              # Campaign & IMAP integration
-│   │   ├── attendance/          # Session-based tracking
-│   │   └── live_classes/        # Jitsi coordination
+│   ├── apps/                    # 📦 Core Domain Logic (20+ Apps)
+│   │   ├── ai_tutor/            # QBit intelligence & premium plan generator
+│   │   ├── emails/              # Campaign & IMAP integrations
+│   │   ├── attendance/          # Teacher-Student synchronized tracking
+│   │   ├── quizzes/             # 3-Attempt validation & result analysis
+│   │   └── live_classes/        # Jitsi coordination & room management
 │   ├── requirements.txt         # Dependencies
 │   └── manage.py                # CLI Entrypoint
 ├── frontend/                    # 📱 React Native Expo Mobile
 │   ├── app/                     # Navigation & Role-Based Routing
 │   ├── store/                   # Zustand Global State
-│   └── services/                # API & Integration Clients
+│   └── services/                # API, Firebase SDK & Third-party Clients
 ├── frontendweb/                 # 💻 Vite React Web Dashboard
-│   ├── src/components/          # UI Components & Dashboards
-│   └── public/                  # Static Assets & Branding
+│   ├── src/components/          # Premium Cards, Auto IPLinks & UI Elements
+│   └── public/                  # Static Assets & Styling (Logo)
 └── README.md                    # This master documentation
 ```
 
@@ -170,12 +180,13 @@ Align your local environment with these specific variable groups:
 
 | Variable Group | Purpose | Key Keys |
 |:---|:---|:---|
-| **Core** | Platform Identity | `DEBUG`, `SECRET_KEY`, `ALLOWED_HOSTS` |
-| **Database** | Persistence | `DATABASE_URL` (Postgres) |
-| **AI (Groq)** | Intelligence | `GROQ_API_KEY` |
-| **Messaging** | Communication | `EMAIL_HOST_USER`, `IMAP_USER`, `EMAILJS_PUBLIC_KEY` |
-| **Payment** | Revenue | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
-| **Background** | Scheduling | `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND` |
+| **Core & Auth** | Platform Identity | `DEBUG`, `SECRET_KEY`, `ALLOWED_HOSTS` |
+| **Database** | Persistence Engine | `DATABASE_URL` (Postgres Config) |
+| **AI (Groq)** | Generative Intelligence | `GROQ_API_KEY` |
+| **Messaging** | Comms & Sync | `EMAIL_HOST_USER`, `IMAP_USER`, `EMAILJS_PUBLIC_KEY` |
+| **Payment** | Subscriptions/Courses | `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET` |
+| **Firebase** | OTP Infrastructure | `google-services.json` setup required |
+| **Background** | Job Scheduling | `CELERY_BROKER_URL`, `CELERY_RESULT_BACKEND` |
 
 ---
 
@@ -195,67 +206,79 @@ cd backend
 python -m venv .venv
 source .venv/bin/activate # or .venv\Scripts\activate on Windows
 
-# Install & Sync
+# Install Dependencies
 pip install -r requirements.txt
+
+# Migrate Database
 python manage.py migrate
-python manage.py runserver
+
+# Start Server (Dynamic IP logic auto-handles local network access)
+python manage.py runserver 0.0.0.0:8000
 ```
 
 ### ⚡ 2. Real-Time Task Processing
 
 ```bash
-# Requires Redis: docker run -p 6379:6379 redis
+# Requires Redis locally or via Docker: docker run -p 6379:6379 redis
 # In separate terminals (with venv active)
 celery -A config worker -l info
 celery -A config beat -l info
 ```
 
-### 📱 3. Cross-Platform Mobile Launch
+### 📱 3. Cross-Platform Launch (Web & Mobile)
 
 ```bash
+# Mobile Launch (Expo)
 cd frontend
 npm install
-npx expo start --clear # Use --android or --ios for direct launch
+npx expo start --clear # Scan the QR with your phone
+
+# Web Portal Launch (Vite)
+cd frontendweb
+npm install
+npm run dev
 ```
 
 ---
 
 ## 🧪 System Verification Runbook
 
-1. **🔍 Health Check**: Verify `GET /api/health/` returns `{"status": "healthy"}`.
-2. **📜 Documentation**: Access auto-generated Swagger UI at `/api/docs/`.
-3. **🤖 AI Validation**: Trigger `POST /api/v1/ai/ask/` to verify LLM connectivity.
-4. **📧 Mail Audit**: check `Email Logs` in Admin panel after a new registration.
-5. **📍 Presence Test**: Create a live class and mark attendance via the Teacher dashboard.
+1. **🔐 Authentication Check**: Login with Mobile OTP via Firebase or test the Email/ID dual-login logic.
+2. **📝 Fair-Play Quiz Test**: Attempt a quiz; verify that only up to **3 attempts per day** are allowed, and evaluate the post-quiz performance analysis.
+3. **📍 Attendance Sync**: Mark a student present in the Teacher web portal, then view the instant sync on the Student's mobile dashboard metrics.
+4. **🧠 AI Plan Generator**: Use the dynamic DataList to pick a subject and export the newly designed **Premium PDF Study Plan**.
+5. **📧 Mail Audit**: Verify IMAP synchronization by sending an email to the support address and checking the admin console logs.
+6. **📱 Dynamic Rendering**: Checkout the new Premium UI cards and the sleek premium Sidebar Icon integrations in Admin sections.
 
 ---
 
 ## 🗺️ Visual Roadmap & Milestones
 
 <div align="center">
-  <img src="https://geps.dev/progress/85?dangerColor=ff0000&warningColor=ffcc00&successColor=00ff00" alt="Progress Bar" width="80%" />
+  <img src="https://geps.dev/progress/92?dangerColor=ff0000&warningColor=ffcc00&successColor=00ff00" alt="Progress Bar" width="80%" />
 </div>
 
-| Milestone | Status | Details |
+| Milestone | Status | Key Deliverables |
 |:---|:---:|:---|
-| **V1: Core Learning** | Done | Courses, Lessons, Basic Auth |
-| **V2: Real-time** | Done | Live Classes, Jitsi, Chat |
-| **V3: AI Integration** | Done | QBit Chat, Flashcards, Plan Generator |
-| **V4: Automation** | Active | Campaign Emails, Auto-Attendance, Analytics |
-| **V5: Scaling** | Planned | Local LLM, Content Personalization |
+| **V1: Core Learning** | ✅ Done | Courses, Lessons, Unified Auth |
+| **V2: Real-time** | ✅ Done | Live Classes, Jitsi, Auto-Attendance |
+| **V3: AI Integration** | ✅ Done | QBit Chat, Flashcards, Premium Plan |
+| **V4: Advanced Logic** | ✅ Done | Firebase OTP, 3-Attempts, Dynamic IP |
+| **V5: Full Automation**| 🟡 Active| Campaign Emails, IMAP Sync, UI Cards |
+| **V6: Global Scaling** | ⚪ Planned| Multi-Lingual AI, Advanced ML Profiles |
 
 ---
 
 ## 📬 Contact & Premium Support
 
 <div align="center">
-  <img src="frontendweb/public/Logo.png" width="80" />
+  <img src="frontendweb/public/Logo.png" width="80" alt="MentiQ Footer Logo" />
   <br/>
-  <b>The MentiQ Core Team</b>
+  <b>The MentiQ Core Development Team</b>
   <br/>
   <a href="mailto:mentiq.learn@gmail.com">Contact via Email</a> | <a href="http://mentiq.com">Official Website</a>
   <br/>
-  <i>Bridging the digital divide in modern education.</i>
+  <i>Bridging the digital divide in modern education with deeply integrated AI.</i>
   <br/>
   📍 Punjab, India
 </div>
