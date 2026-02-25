@@ -38,6 +38,8 @@ urlpatterns = [
 
     # ── Attendance Overview ───────────────────────────────────
     path('attendance/', views.AdminAttendanceListView.as_view(), name='attendance-list'),
+    path('attendance/students/', views.AdminAttendanceStudentSummaryView.as_view(), name='attendance-students'),
+    path('attendance/alert/', views.AdminSendAttendanceAlertView.as_view(), name='attendance-alert'),
 
     # ── Quiz Overview ─────────────────────────────────────────
     path('quizzes/', views.AdminQuizListView.as_view(), name='quiz-list'),

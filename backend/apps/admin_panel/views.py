@@ -21,7 +21,7 @@ from apps.courses.models import Course
 from apps.enrollments.models import Enrollment
 from apps.quizzes.models import Quiz, QuizAttempt
 from apps.lessons.models import Lesson
-from apps.attendance.models import AttendanceSession
+from apps.attendance.models import AttendanceSession, AttendanceRecord
 from apps.payments.models import Payment
 from apps.announcements.models import Announcement
 from apps.live_classes.models import LiveClass
@@ -518,7 +518,169 @@ class AdminAttendanceListView(generics.ListAPIView):
     ordering = ['-date', '-start_time']
 
     def get_queryset(self):
-        return AttendanceSession.objects.select_related('course', 'teacher').all()
+        qs = AttendanceSession.objects.select_related('course', 'teacher').all()
+        course_id = self.request.query_params.get('course')
+        if course_id:
+            qs = qs.filter(course_id=course_id)
+        return qs
+
+    def list(self, request, *args, **kwargs):
+        response = super().list(request, *args, **kwargs)
+        return Response({
+            'success': True,
+            'count': self.get_queryset().count(),
+            'data': response.data,
+        })
+
+
+class AdminAttendanceStudentSummaryView(APIView):
+    """
+    GET /api/v1/admin/attendance/students/
+    Returns attendance summary for all students across all courses.
+    Supports ?search= and ?course= query params.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        from apps.enrollments.models import Enrollment
+        from django.db.models import Count, Q, Subquery, OuterRef, Value, FloatField
+        from django.db.models.functions import Coalesce
+
+        search = request.query_params.get('search', '')
+        course_id = request.query_params.get('course', '')
+
+        # Get all enrolled students
+        students_qs = User.objects.filter(role='student', is_active=True)
+        if search:
+            students_qs = students_qs.filter(
+                Q(name__icontains=search) | Q(email__icontains=search) | Q(student_id__icontains=search)
+            )
+
+        result = []
+        for student in students_qs[:100]:  # Cap at 100
+            # Get enrolled courses
+            enrollments = Enrollment.objects.filter(
+                student=student, is_active=True
+            ).select_related('course')
+
+            if course_id:
+                enrollments = enrollments.filter(course_id=course_id)
+
+            courses_data = []
+            total_sessions = 0
+            total_present = 0
+
+            for enrollment in enrollments:
+                course = enrollment.course
+                # All sessions for this course
+                sessions = AttendanceSession.objects.filter(course=course)
+                session_count = sessions.count()
+
+                # Student's attendance for this course
+                present_count = AttendanceRecord.objects.filter(
+                    session__course=course,
+                    student=student,
+                    is_present=True
+                ).count()
+
+                absent_count = AttendanceRecord.objects.filter(
+                    session__course=course,
+                    student=student,
+                    is_present=False
+                ).count()
+
+                recorded = present_count + absent_count
+                percentage = round((present_count / recorded) * 100, 1) if recorded > 0 else 0
+
+                courses_data.append({
+                    'course_id': str(course.id),
+                    'course_title': course.title,
+                    'total_sessions': session_count,
+                    'present': present_count,
+                    'absent': absent_count,
+                    'percentage': percentage,
+                })
+
+                total_sessions += session_count
+                total_present += present_count
+
+            overall_records = AttendanceRecord.objects.filter(student=student)
+            overall_total = overall_records.count()
+            overall_present = overall_records.filter(is_present=True).count()
+            overall_pct = round((overall_present / overall_total) * 100, 1) if overall_total > 0 else 0
+
+            result.append({
+                'student_id': str(student.id),
+                'student_uid': student.uid,
+                'name': student.name,
+                'email': student.email,
+                'profile_image_url': student.profile_image_url if hasattr(student, 'profile_image_url') else '',
+                'overall_percentage': overall_pct,
+                'total_present': overall_present,
+                'total_records': overall_total,
+                'courses': courses_data,
+            })
+
+        # Sort by attendance percentage ascending (lowest first)
+        result.sort(key=lambda x: x['overall_percentage'])
+
+        return Response({
+            'success': True,
+            'count': len(result),
+            'data': result,
+        })
+
+
+class AdminSendAttendanceAlertView(APIView):
+    """
+    POST /api/v1/admin/attendance/alert/
+    Send an attendance alert notification to a specific student.
+    Body: { student_id, message }
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request):
+        student_id = request.data.get('student_id')
+        message = request.data.get('message', '')
+
+        if not student_id:
+            return Response({
+                'success': False,
+                'error': {'message': 'student_id is required.'}
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            student = User.objects.get(id=student_id, role='student')
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': {'message': 'Student not found.'}
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        if not message:
+            message = f"Your attendance is below the required threshold. Please ensure regular attendance to avoid academic penalties."
+
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+
+            create_notification(
+                user=student,
+                title="⚠️ Attendance Alert",
+                body=message,
+                notification_type=Notification.TypeChoices.SYSTEM,
+                data={'type': 'attendance_alert', 'from': 'admin'}
+            )
+        except Exception as e:
+            return Response({
+                'success': False,
+                'error': {'message': f'Failed to send notification: {str(e)}'}
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+        return Response({
+            'success': True,
+            'message': f'Attendance alert sent to {student.name} successfully.',
+        })
 
 
 # ═══════════════════════════════════════════════════════════════

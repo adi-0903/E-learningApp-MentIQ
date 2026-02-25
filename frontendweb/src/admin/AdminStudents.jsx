@@ -53,8 +53,16 @@ export function AdminStudents({ onBack, onViewDetail }) {
             }
         } catch (err) {
             const errData = err.response?.data;
-            if (errData) {
-                const messages = Object.values(errData).flat().join(' ');
+            if (errData?.error) {
+                const errorObj = errData.error;
+                if (errorObj.details && typeof errorObj.details === 'object' && Object.keys(errorObj.details).length > 0) {
+                    const detailMessages = Object.values(errorObj.details).flat().join(' ');
+                    setFormError(detailMessages);
+                } else {
+                    setFormError(errorObj.message || 'Failed to create student.');
+                }
+            } else if (errData) {
+                const messages = typeof errData === 'string' ? errData : Object.values(errData).flat().join(' ');
                 setFormError(messages || 'Failed to create student.');
             } else {
                 setFormError('Network error. Please try again.');

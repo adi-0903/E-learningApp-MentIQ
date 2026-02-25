@@ -4,23 +4,30 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 2rem 0;
+    padding: 1.5rem 0;
     border-right: 1px solid rgba(255, 255, 255, 0.05);
     z-index: 10;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Hide scrollbar but keep functionality */
+.sidebar::-webkit-scrollbar {
+    width: 0;
 }
 
 .logo-container {
-    height: 80px;
+    height: 56px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 30px;
-    margin-top: 10px;
+    margin-bottom: 1rem;
+    flex-shrink: 0;
 }
 
 .sidebar-logo-img {
-    width: 60px;
-    height: 60px;
+    width: 48px;
+    height: 48px;
     object-fit: contain;
     filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.3));
     transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
@@ -33,21 +40,25 @@
 .nav-links {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    align-items: center;
+    gap: 0.35rem;
     flex-grow: 1;
 }
 
+/* ── Nav Item (icon + label) ──────────────────────────── */
 .nav-item {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    width: 56px;
+    height: 44px;
+    border-radius: 12px;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     color: var(--text-muted);
     cursor: pointer;
     transition: var(--transition);
     position: relative;
+    gap: 2px;
 }
 
 .nav-item:hover,
@@ -63,34 +74,67 @@
 }
 
 .nav-item svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
 }
 
 .nav-item.active::before {
     content: '';
     position: absolute;
-    left: -20px;
+    left: -17px;
     top: 50%;
     transform: translateY(-50%);
     width: 4px;
-    height: 24px;
+    height: 20px;
     background: var(--accent-purple);
     border-radius: 0 4px 4px 0;
     box-shadow: 0 0 10px var(--accent-purple);
 }
 
+/* ── Mini Labels (admin only) ─────────────────────────── */
+.nav-label {
+    font-size: 0.55rem;
+    font-weight: 600;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+    line-height: 1;
+    opacity: 0.7;
+    white-space: nowrap;
+    transition: opacity 0.2s ease;
+}
 
+.nav-item:hover .nav-label,
+.nav-item.active .nav-label {
+    opacity: 1;
+}
+
+.nav-label-premium {
+    color: #ffd700;
+}
+
+/* ── Group Dividers ───────────────────────────────────── */
+.nav-divider {
+    width: 28px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.06);
+    margin: 0.25rem 0;
+    flex-shrink: 0;
+}
+
+/* ── Bottom Actions ───────────────────────────────────── */
 .bottom-actions {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    align-items: center;
+    gap: 0.35rem;
+    padding-top: 0.5rem;
+    flex-shrink: 0;
 }
 
-/* Premium Button Styling */
+/* ── Premium Button Styling ───────────────────────────── */
 .nav-item-premium {
     color: #ffd700;
-    /* Rich gold color */
     background: rgba(255, 215, 0, 0.05);
     border: 1px solid rgba(255, 215, 0, 0.2);
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.1);
@@ -107,13 +151,17 @@
     background: linear-gradient(135deg, #d4af37, #f3e5ab);
     border-color: #ffd700;
     box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
-    transform: scale(1.1);
+    transform: scale(1.05);
 }
 
 .nav-item-premium:hover svg {
     color: #1a1a2e;
-    /* Dark contrast color when hovering */
     filter: none;
+}
+
+.nav-item-premium:hover .nav-label {
+    color: #1a1a2e;
+    opacity: 1;
 }
 
 .nav-item-premium.active {
@@ -132,6 +180,10 @@
 .nav-item-premium.active svg {
     color: #1a1a2e;
     filter: none;
+}
+
+.nav-item-premium.active .nav-label {
+    color: #1a1a2e;
 }
 
 @keyframes premiumPulse {

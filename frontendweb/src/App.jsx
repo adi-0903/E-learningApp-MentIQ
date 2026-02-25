@@ -30,6 +30,7 @@ import { AdminEnrollments } from './admin/AdminEnrollments';
 import { AdminProfile } from './admin/AdminProfile';
 import { AdminAnnouncements } from './admin/AdminAnnouncements';
 import { AdminPremium } from './admin/AdminPremium';
+import { AdminAttendance } from './admin/AdminAttendance';
 
 import api from './api';
 
@@ -147,7 +148,7 @@ function App() {
     const isAdminPage = currentPage.startsWith('admin');
 
     // Determine which pages should hide the header
-    const hideHeaderPages = ['profile', 'notifications', 'contact', 'classroom', 'courses', 'doubts', 'curriculum_management', 'attendance', 'course_catalog'];
+    const hideHeaderPages = ['profile', 'notifications', 'contact', 'classroom', 'courses', 'doubts', 'curriculum_management', 'attendance', 'course_catalog', 'admin_attendance'];
     const shouldHideHeader = hideHeaderPages.includes(currentPage) || isAdminPage;
 
     return (
@@ -167,6 +168,7 @@ function App() {
                 onOpenAdminCourses={() => setCurrentPage('admin_courses')}
                 onOpenAdminAnnouncements={() => setCurrentPage('admin_announcements')}
                 onOpenAdminPremium={() => setCurrentPage('admin_premium')}
+                onOpenAdminAttendance={() => setCurrentPage('admin_attendance')}
             />
             <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''}`}>
                 {!shouldHideHeader && (
@@ -226,6 +228,8 @@ function App() {
                     />
                 ) : currentPage === 'admin_premium' ? (
                     <AdminPremium />
+                ) : currentPage === 'admin_attendance' ? (
+                    <AdminAttendance onBack={() => setCurrentPage('dashboard')} />
 
                     /* ══════════ EXISTING PAGES ══════════ */
                 ) : currentPage === 'profile' ? (

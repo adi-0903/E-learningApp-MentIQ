@@ -11,7 +11,7 @@ class LessonListSerializer(serializers.ModelSerializer):
         model = Lesson
         fields = [
             'id', 'title', 'description', 'sequence_number',
-            'file_type', 'duration', 'created_at',
+            'file_type', 'video_url', 'duration', 'created_at',
         ]
 
 
@@ -32,6 +32,8 @@ class LessonDetailSerializer(serializers.ModelSerializer):
 
 class LessonCreateSerializer(serializers.ModelSerializer):
     """Create a new lesson (teacher only)."""
+    sequence_number = serializers.IntegerField(required=False, default=None)
+
     class Meta:
         model = Lesson
         fields = [
@@ -39,12 +41,22 @@ class LessonCreateSerializer(serializers.ModelSerializer):
             'sequence_number', 'video_url', 'video_file',
             'attachment', 'file_type', 'duration',
         ]
+        # Disable DRF's auto UniqueTogetherValidator — we handle it manually in validate()
+        validators = []
 
     def validate(self, attrs):
         course = attrs.get('course')
         request = self.context.get('request')
         if request and course.teacher != request.user:
             raise serializers.ValidationError('You can only add lessons to your own courses.')
+
+        # Auto-calculate sequence_number — always use max+1 from ALL lessons (including soft-deleted)
+        from django.db.models import Max
+        max_seq = Lesson.all_objects.filter(course=course).aggregate(
+            max_seq=Max('sequence_number')
+        )['max_seq'] or 0
+        attrs['sequence_number'] = max_seq + 1
+
         return attrs
 
 

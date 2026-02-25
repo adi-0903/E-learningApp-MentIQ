@@ -21,9 +21,7 @@ export function CurriculumManagementPage({ courseId, onBack }) {
         content: '',
         file_type: 'video',
         video_url: '',
-        file_url: '',
-        duration: 0,
-        sequence_number: 1
+        duration: 0
     });
 
     const [quizData, setQuizData] = useState({
@@ -60,10 +58,13 @@ export function CurriculumManagementPage({ courseId, onBack }) {
 
             if (courseRes.data?.success) setCourse(courseRes.data.data);
 
-            const lessonList = lessonsRes.data?.data?.results || lessonsRes.data?.results || [];
+            // Backend StandardPagination returns: { success: true, data: [...], pagination: {...} }
+            const lessonsData = lessonsRes.data?.data;
+            const lessonList = Array.isArray(lessonsData) ? lessonsData : lessonsData?.results || [];
             setLessons(lessonList);
 
-            const quizList = quizzesRes.data?.data?.results || quizzesRes.data?.results || [];
+            const quizzesData = quizzesRes.data?.data;
+            const quizList = Array.isArray(quizzesData) ? quizzesData : quizzesData?.results || [];
             setQuizzes(quizList);
 
         } catch (err) {
@@ -77,12 +78,21 @@ export function CurriculumManagementPage({ courseId, onBack }) {
     const handleCreateLesson = async (e) => {
         e.preventDefault();
         setIsSaving(true);
+        setError(null);
         try {
             const payload = {
-                ...lessonData,
+                title: lessonData.title,
+                description: lessonData.description,
+                content: lessonData.content,
+                file_type: lessonData.file_type,
+                video_url: lessonData.video_url,
+                duration: parseInt(lessonData.duration) || 0,
                 course: courseId,
-                sequence_number: lessons.length + 1
             };
+            // Remove empty optional fields
+            if (!payload.video_url) delete payload.video_url;
+            if (!payload.content) delete payload.content;
+
             await api.post('lessons/', payload);
             setShowLessonModal(false);
             fetchCurriculum();
@@ -92,12 +102,21 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                 content: '',
                 file_type: 'video',
                 video_url: '',
-                file_url: '',
-                duration: 0,
-                sequence_number: 1
+                duration: 0
             });
         } catch (err) {
-            alert("Failed to publish lesson. Check console.");
+            console.error('Create lesson error:', err.response?.data || err);
+            const errData = err.response?.data;
+            if (errData?.error) {
+                const errorObj = errData.error;
+                if (errorObj.details && typeof errorObj.details === 'object' && Object.keys(errorObj.details).length > 0) {
+                    alert(Object.entries(errorObj.details).map(([k, v]) => `${k}: ${[].concat(v).join(', ')}`).join('\n'));
+                } else {
+                    alert(errorObj.message || 'Failed to create lesson.');
+                }
+            } else {
+                alert('Failed to publish lesson. Check console.');
+            }
         } finally {
             setIsSaving(false);
         }
@@ -106,6 +125,7 @@ export function CurriculumManagementPage({ courseId, onBack }) {
     const handleCreateQuiz = async (e) => {
         e.preventDefault();
         setIsSaving(true);
+        setError(null);
         try {
             const payload = {
                 ...quizData,
@@ -120,7 +140,18 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                 option_c: '', option_d: '', correct_answer: '', explanation: '', type: 'MCQ'
             });
         } catch (err) {
-            alert("Failed to create quiz.");
+            console.error('Create quiz error:', err.response?.data || err);
+            const errData = err.response?.data;
+            if (errData?.error) {
+                const errorObj = errData.error;
+                if (errorObj.details && typeof errorObj.details === 'object' && Object.keys(errorObj.details).length > 0) {
+                    alert(Object.entries(errorObj.details).map(([k, v]) => `${k}: ${[].concat(v).join(', ')}`).join('\n'));
+                } else {
+                    alert(errorObj.message || 'Failed to create quiz.');
+                }
+            } else {
+                alert('Failed to create quiz.');
+            }
         } finally {
             setIsSaving(false);
         }
@@ -333,16 +364,7 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                                                 placeholder="Write your lesson content here..."
                                             />
                                         </div>
-                                        <div className="curriculum-input-group">
-                                            <label className="curriculum-input-label">Resource URL (Optional)</label>
-                                            <input
-                                                type="url"
-                                                className="curriculum-form-input"
-                                                value={lessonData.file_url}
-                                                onChange={e => setLessonData({ ...lessonData, file_url: e.target.value })}
-                                                placeholder="Link to PDF or external resource"
-                                            />
-                                        </div>
+
                                     </>
                                 )}
 
@@ -352,7 +374,7 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                                         type="number"
                                         className="curriculum-form-input"
                                         value={lessonData.duration}
-                                        onChange={e => setLessonData({ ...lessonData, duration: parseInt(e.target.value) })}
+                                        onChange={e => setLessonData({ ...lessonData, duration: parseInt(e.target.value) || 0 })}
                                     />
                                 </div>
                             </div>
@@ -394,7 +416,7 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                                             type="number"
                                             className="curriculum-form-input"
                                             value={quizData.passing_score}
-                                            onChange={e => setQuizData({ ...quizData, passing_score: parseInt(e.target.value) })}
+                                            onChange={e => setQuizData({ ...quizData, passing_score: parseInt(e.target.value) || 0 })}
                                         />
                                     </div>
                                     <div className="curriculum-input-group">
@@ -403,7 +425,7 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                                             type="number"
                                             className="curriculum-form-input"
                                             value={quizData.time_limit}
-                                            onChange={e => setQuizData({ ...quizData, time_limit: parseInt(e.target.value) })}
+                                            onChange={e => setQuizData({ ...quizData, time_limit: parseInt(e.target.value) || 0 })}
                                         />
                                     </div>
                                 </div>

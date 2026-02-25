@@ -53,8 +53,18 @@ export function AdminTeachers({ onBack, onViewDetail }) {
             }
         } catch (err) {
             const errData = err.response?.data;
-            if (errData) {
-                const messages = Object.values(errData).flat().join(' ');
+            if (errData?.error) {
+                // Backend returns { success: false, error: { code, message, details } }
+                const errorObj = errData.error;
+                if (errorObj.details && typeof errorObj.details === 'object' && Object.keys(errorObj.details).length > 0) {
+                    const detailMessages = Object.values(errorObj.details).flat().join(' ');
+                    setFormError(detailMessages);
+                } else {
+                    setFormError(errorObj.message || 'Failed to create teacher.');
+                }
+            } else if (errData) {
+                // Fallback for non-standard error formats
+                const messages = typeof errData === 'string' ? errData : Object.values(errData).flat().join(' ');
                 setFormError(messages || 'Failed to create teacher.');
             } else {
                 setFormError('Network error. Please try again.');
