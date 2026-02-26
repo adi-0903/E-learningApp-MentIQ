@@ -33,22 +33,29 @@ class AnnouncementListCreateView(generics.ListCreateAPIView):
         user = self.request.user
         if user.role == 'teacher':
             # Teachers see: their own announcements + admin announcements targeted to teachers or all
-            own = Q(teacher=user)
+            # PLUS personal announcements targeted directly at this teacher
+            own = Q(teacher=user) & Q(target_student__isnull=True)
             admin_for_teachers = Q(created_by_admin=True) & (
                 Q(target_audience='teachers') | Q(target_audience='all')
-            )
+            ) & Q(target_student__isnull=True)
+            personal = Q(target_student=user)
             return Announcement.objects.filter(
-                own | admin_for_teachers
+                own | admin_for_teachers | personal
             ).select_related('teacher', 'course').distinct()
         elif user.role == 'student':
             # Students see: enrolled course announcements + global, BUT only if audience is 'all' or 'students'
+            # PLUS personal announcements targeted directly at this student
             enrolled_ids = Enrollment.objects.filter(
                 student=user, is_active=True
             ).values_list('course_id', flat=True)
             audience_filter = Q(target_audience='all') | Q(target_audience='students')
             course_filter = Q(course__isnull=True) | Q(course_id__in=enrolled_ids)
+            # General announcements (not personal) matching audience + course
+            general = audience_filter & course_filter & Q(target_student__isnull=True)
+            # Personal announcements addressed to this student specifically
+            personal = Q(target_student=user)
             return Announcement.objects.filter(
-                audience_filter & course_filter
+                general | personal
             ).select_related('teacher', 'course').distinct()
         else:
             # Admin sees all

@@ -51,6 +51,14 @@ class Announcement(TimeStampedModel):
         default=AudienceChoices.ALL,
         help_text='Who can see this announcement',
     )
+    target_student = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='personal_announcements',
+        null=True,
+        blank=True,
+        help_text='If set, this is a personal announcement for this student only.',
+    )
     created_by_admin = models.BooleanField(
         default=False,
         help_text='True if created by admin rather than a teacher',

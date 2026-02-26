@@ -281,7 +281,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
             <Animated.View style={{ opacity: avatarOpacity }}>
               <TouchableOpacity
                 style={styles.notificationBtn}
-                onPress={() => navigation.navigate('AnnouncementsTab')}
+                onPress={() => navigation.navigate('Announcements')}
               >
                 <MaterialCommunityIcons name="bell-outline" size={24} color="#fff" />
                 {unreadCount > 0 && (
@@ -383,7 +383,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
           {/* Recent Broadcasts Section */}
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Executive Briefings</Text>
-            <TouchableOpacity onPress={() => navigation.navigate('AnnouncementsTab')}>
+            <TouchableOpacity onPress={() => navigation.navigate('Announcements')}>
               <Text style={styles.seeAllText}>Hub View</Text>
             </TouchableOpacity>
           </View>
@@ -398,7 +398,7 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
                 <TouchableOpacity
                   key={announcement.id}
                   style={styles.announcementCard}
-                  onPress={() => navigation.navigate('AnnouncementsTab')}
+                  onPress={() => navigation.navigate('Announcements')}
                   activeOpacity={0.9}
                 >
                   <LinearGradient

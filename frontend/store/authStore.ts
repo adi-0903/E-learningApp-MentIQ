@@ -157,7 +157,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         await AsyncStorage.setItem('currentUser', JSON.stringify(freshUser));
         return freshUser;
       } catch (error) {
-        console.error('Session validation failed:', error);
+        console.log('Session expired — redirecting to login.');
         // Token is invalid and refresh failed (apiRequest already tried refreshing)
         await clearTokens();
         await AsyncStorage.removeItem('currentUser');

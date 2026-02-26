@@ -19,6 +19,7 @@ urlpatterns = [
     path('teachers/<uuid:id>/update/', views.AdminTeacherUpdateView.as_view(), name='teacher-update'),
     path('teachers/<uuid:id>/deactivate/', views.AdminTeacherDeactivateView.as_view(), name='teacher-deactivate'),
     path('teachers/<uuid:id>/reset-password/', views.AdminTeacherResetPasswordView.as_view(), name='teacher-reset-password'),
+    path('teachers/<uuid:id>/send-announcement/', views.AdminTeacherSendAnnouncementView.as_view(), name='teacher-send-announcement'),
 
     # ── Student Management ────────────────────────────────────
     path('students/', views.AdminStudentListView.as_view(), name='student-list'),
@@ -27,6 +28,7 @@ urlpatterns = [
     path('students/<uuid:id>/update/', views.AdminStudentUpdateView.as_view(), name='student-update'),
     path('students/<uuid:id>/deactivate/', views.AdminStudentDeactivateView.as_view(), name='student-deactivate'),
     path('students/<uuid:id>/reset-password/', views.AdminStudentResetPasswordView.as_view(), name='student-reset-password'),
+    path('students/<uuid:id>/send-announcement/', views.AdminStudentSendAnnouncementView.as_view(), name='student-send-announcement'),
 
     # ── Course Overview ───────────────────────────────────────
     path('courses/', views.AdminCourseListView.as_view(), name='course-list'),

@@ -11,7 +11,7 @@ export interface LiveClass {
   description?: string;
   roomId?: string;
   channelName?: string;
-  status: 'scheduled' | 'active' | 'completed' | 'cancelled';
+  status: 'scheduled' | 'live' | 'ended' | 'completed' | 'cancelled';
   scheduledStartTime?: string | Date;
   actualStartTime?: string | Date;
   endTime?: string | Date;
@@ -19,6 +19,7 @@ export interface LiveClass {
   createdAt?: string;
   updatedAt?: string;
   participantCount?: number;
+  recordingUrl?: string;
   // Jitsi fields
   jitsiDomain?: string;
   meetingUrl?: string;
@@ -47,12 +48,13 @@ function normalizeLiveClass(raw: any): LiveClass {
     roomId: raw.room_id || raw.roomId || raw.channel_name || '',
     channelName: raw.channel_name || raw.channelName || '',
     status: raw.status || 'scheduled',
-    scheduledStartTime: raw.scheduled_start_time || raw.scheduledStartTime,
-    actualStartTime: raw.actual_start_time || raw.actualStartTime,
-    endTime: raw.end_time || raw.endTime,
+    scheduledStartTime: raw.scheduled_at || raw.scheduled_start_time || raw.scheduledStartTime,
+    actualStartTime: raw.started_at || raw.actual_start_time || raw.actualStartTime,
+    endTime: raw.ended_at || raw.end_time || raw.endTime,
     maxParticipants: raw.max_participants || raw.maxParticipants,
     createdAt: raw.created_at || raw.createdAt,
     updatedAt: raw.updated_at || raw.updatedAt,
+    recordingUrl: raw.recording_url || raw.recordingUrl || '',
     participantCount: raw.participant_count || raw.participantCount || 0,
     jitsiDomain: raw.jitsi_domain || raw.jitsiDomain,
     meetingUrl: raw.meeting_url || raw.meetingUrl,
@@ -146,7 +148,7 @@ export const useLiveClassStore = create<LiveClassState>((set) => ({
       const { data } = await liveClassApi.list();
       const results = data.results || data;
       const all = (Array.isArray(results) ? results : []).map(normalizeLiveClass);
-      set({ activeClasses: all.filter(c => c.status === 'active') });
+      set({ activeClasses: all.filter(c => c.status === 'live') });
     } catch (error) {
       console.error('Error fetching active live classes:', error);
     } finally {
@@ -203,7 +205,8 @@ export const useLiveClassStore = create<LiveClassState>((set) => ({
       const liveClassData = normalizeLiveClass({
         ...data.data,
         id: classId,
-        status: 'active',
+        channel_name: data.data?.room_name || data.data?.channel_name,
+        status: 'live',
       });
       set({ currentLiveClass: liveClassData });
       return liveClassData;
@@ -229,7 +232,8 @@ export const useLiveClassStore = create<LiveClassState>((set) => ({
       const liveClassData = normalizeLiveClass({
         ...data.data,
         id: classId,
-        status: 'active',
+        channel_name: data.data?.room_name || data.data?.channel_name,
+        status: 'live',
       });
       set({ currentLiveClass: liveClassData });
       return liveClassData;

@@ -107,7 +107,7 @@ async function refreshAccessToken(): Promise<string | null> {
       return data.access;
     }
   } catch (e) {
-    console.error('Token refresh network error:', e);
+    console.log('Token refresh failed (session expired).');
   }
 
   // Refresh failed — force logout

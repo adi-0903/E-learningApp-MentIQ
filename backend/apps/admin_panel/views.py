@@ -248,6 +248,64 @@ class AdminTeacherResetPasswordView(APIView):
         })
 
 
+class AdminTeacherSendAnnouncementView(APIView):
+    """
+    POST /api/v1/admin/teachers/<id>/send-announcement/
+    Send a personal announcement to a specific teacher.
+    Body: { title, content, priority? }
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request, id):
+        try:
+            teacher = User.objects.get(id=id, role='teacher')
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': {'message': 'Teacher not found.'},
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        title = request.data.get('title', '').strip()
+        content = request.data.get('content', '').strip()
+        priority = request.data.get('priority', 'high')
+
+        if not title or not content:
+            return Response({
+                'success': False,
+                'error': {'message': 'Title and content are required.'},
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        announcement = Announcement.objects.create(
+            title=title,
+            content=content,
+            priority=priority,
+            target_audience='teachers',
+            target_student=teacher,
+            created_by_admin=True,
+            teacher=None,
+        )
+
+        # Send in-app notification
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+
+            create_notification(
+                user=teacher,
+                title=f"📩 Personal Message: {title}",
+                body=content[:100] + ('...' if len(content) > 100 else ''),
+                notification_type=Notification.TypeChoices.ANNOUNCEMENT,
+                data={'announcement_id': str(announcement.id), 'personal': True}
+            )
+        except Exception as e:
+            print(f"Personal announcement notification failed: {e}")
+
+        return Response({
+            'success': True,
+            'message': f'Personal announcement sent to {teacher.name}.',
+        }, status=status.HTTP_201_CREATED)
+
+
 # ═══════════════════════════════════════════════════════════════
 # STUDENT MANAGEMENT
 # ═══════════════════════════════════════════════════════════════
@@ -405,6 +463,64 @@ class AdminStudentResetPasswordView(APIView):
             'success': True,
             'message': 'Student password reset successfully.',
         })
+
+
+class AdminStudentSendAnnouncementView(APIView):
+    """
+    POST /api/v1/admin/students/<id>/send-announcement/
+    Send a personal announcement to a specific student.
+    Body: { title, content, priority? }
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request, id):
+        try:
+            student = User.objects.get(id=id, role='student')
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': {'message': 'Student not found.'},
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        title = request.data.get('title', '').strip()
+        content = request.data.get('content', '').strip()
+        priority = request.data.get('priority', 'high')
+
+        if not title or not content:
+            return Response({
+                'success': False,
+                'error': {'message': 'Title and content are required.'},
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        announcement = Announcement.objects.create(
+            title=title,
+            content=content,
+            priority=priority,
+            target_audience='students',
+            target_student=student,
+            created_by_admin=True,
+            teacher=None,
+        )
+
+        # Send in-app notification
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+
+            create_notification(
+                user=student,
+                title=f"📩 Personal Message: {title}",
+                body=content[:100] + ('...' if len(content) > 100 else ''),
+                notification_type=Notification.TypeChoices.ANNOUNCEMENT,
+                data={'announcement_id': str(announcement.id), 'personal': True}
+            )
+        except Exception as e:
+            print(f"Personal announcement notification failed: {e}")
+
+        return Response({
+            'success': True,
+            'message': f'Personal announcement sent to {student.name}.',
+        }, status=status.HTTP_201_CREATED)
 
 
 # ═══════════════════════════════════════════════════════════════

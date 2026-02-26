@@ -5,6 +5,7 @@ from .models import Announcement
 class AnnouncementListSerializer(serializers.ModelSerializer):
     teacher_name = serializers.CharField(source='teacher.name', read_only=True, default='Admin')
     course_title = serializers.CharField(source='course.title', read_only=True, default=None)
+    target_student_name = serializers.CharField(source='target_student.name', read_only=True, default=None)
     is_author = serializers.SerializerMethodField()
 
     class Meta:
@@ -12,7 +13,7 @@ class AnnouncementListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'content', 'priority', 'is_pinned',
             'teacher', 'teacher_name', 'course', 'course_title', 'attachment',
-            'target_audience', 'created_by_admin',
+            'target_audience', 'target_student', 'target_student_name', 'created_by_admin',
             'created_at', 'is_author'
         ]
 

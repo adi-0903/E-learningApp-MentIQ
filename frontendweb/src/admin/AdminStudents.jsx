@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { ArrowLeft, Search, Plus, Eye, UserX, X } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Eye, UserX, X, Send, MessageSquare } from 'lucide-react';
 import api from '../api';
 import './AdminUsers.css';
 
@@ -14,6 +14,14 @@ export function AdminStudents({ onBack, onViewDetail }) {
     const [formError, setFormError] = useState('');
     const [formSuccess, setFormSuccess] = useState('');
     const [submitting, setSubmitting] = useState(false);
+
+    // Personal announcement modal state
+    const [showMsgModal, setShowMsgModal] = useState(false);
+    const [msgTarget, setMsgTarget] = useState(null); // { id, name }
+    const [msgForm, setMsgForm] = useState({ title: '', content: '', priority: 'high' });
+    const [msgSending, setMsgSending] = useState(false);
+    const [msgSuccess, setMsgSuccess] = useState('');
+    const [msgError, setMsgError] = useState('');
 
     useEffect(() => {
         fetchStudents();
@@ -79,6 +87,46 @@ export function AdminStudents({ onBack, onViewDetail }) {
             fetchStudents();
         } catch (err) {
             console.error('Failed to toggle student status:', err);
+        }
+    };
+
+    const openMsgModal = (e, student) => {
+        e.stopPropagation();
+        setMsgTarget({ id: student.id, name: student.name, email: student.email });
+        setMsgForm({ title: '', content: '', priority: 'high' });
+        setMsgSuccess('');
+        setMsgError('');
+        setShowMsgModal(true);
+    };
+
+    const handleSendMsg = async () => {
+        if (!msgForm.title.trim() || !msgForm.content.trim()) {
+            setMsgError('Title and message are required.');
+            return;
+        }
+        setMsgSending(true);
+        setMsgError('');
+        setMsgSuccess('');
+        try {
+            const res = await api.post(`admin/students/${msgTarget.id}/send-announcement/`, {
+                title: msgForm.title.trim(),
+                content: msgForm.content.trim(),
+                priority: msgForm.priority,
+            });
+            if (res.data?.success) {
+                setMsgSuccess(res.data.message || 'Message sent!');
+                setTimeout(() => {
+                    setShowMsgModal(false);
+                    setMsgSuccess('');
+                }, 1800);
+            }
+        } catch (err) {
+            const msg = err.response?.data?.error?.message
+                || err.response?.data?.message
+                || 'Failed to send message.';
+            setMsgError(msg);
+        } finally {
+            setMsgSending(false);
         }
     };
 
@@ -166,6 +214,9 @@ export function AdminStudents({ onBack, onViewDetail }) {
                                             <button className="admin-table-action-btn" title="View Detail" onClick={(e) => { e.stopPropagation(); onViewDetail(s.id, 'student'); }}>
                                                 <Eye />
                                             </button>
+                                            <button className="admin-table-action-btn admin-msg-btn" title="Send Personal Message" onClick={(e) => openMsgModal(e, s)}>
+                                                <MessageSquare />
+                                            </button>
                                             <button className="admin-table-action-btn" title="Toggle Active" onClick={(e) => handleDeactivate(e, s.id)}>
                                                 <UserX />
                                             </button>
@@ -245,6 +296,83 @@ export function AdminStudents({ onBack, onViewDetail }) {
                                     {submitting ? 'Creating...' : 'Create Student Account'}
                                 </button>
                             </form>
+                        </div>
+                    </div>
+                </div>,
+                document.body
+            )}
+
+            {/* Send Personal Announcement Modal */}
+            {showMsgModal && ReactDOM.createPortal(
+                <div className="admin-modal-overlay" onClick={() => setShowMsgModal(false)}>
+                    <div className="admin-modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '540px' }}>
+                        <div className="admin-modal-header">
+                            <h2><MessageSquare size={20} /> Send Personal Message</h2>
+                            <button className="admin-modal-close" onClick={() => setShowMsgModal(false)}>
+                                <X />
+                            </button>
+                        </div>
+                        <div className="admin-modal-body">
+                            {/* Recipient preview */}
+                            <div className="admin-audience-preview" style={{ marginBottom: '1.2rem' }}>
+                                <div className="admin-audience-preview-icon">
+                                    <img
+                                        src={`https://ui-avatars.com/api/?name=${encodeURIComponent(msgTarget?.name || '')}&background=6366f1&color=fff&bold=true&size=40`}
+                                        alt=""
+                                        style={{ width: 40, height: 40, borderRadius: '50%' }}
+                                    />
+                                </div>
+                                <div className="admin-audience-preview-text">
+                                    <strong>Sending to: {msgTarget?.name}</strong>
+                                    <span>{msgTarget?.email} — Only this student will see this message as a popup.</span>
+                                </div>
+                            </div>
+
+                            <div className="admin-form-group">
+                                <label>Subject</label>
+                                <input
+                                    type="text"
+                                    placeholder="e.g. Regarding Your Attendance"
+                                    value={msgForm.title}
+                                    onChange={(e) => setMsgForm({ ...msgForm, title: e.target.value })}
+                                />
+                            </div>
+
+                            <div className="admin-form-group">
+                                <label>Message</label>
+                                <textarea
+                                    placeholder="Write your personal message to this student..."
+                                    value={msgForm.content}
+                                    onChange={(e) => setMsgForm({ ...msgForm, content: e.target.value })}
+                                    rows={5}
+                                    style={{ resize: 'vertical' }}
+                                />
+                            </div>
+
+                            <div className="admin-form-group">
+                                <label>Priority</label>
+                                <select
+                                    value={msgForm.priority}
+                                    onChange={(e) => setMsgForm({ ...msgForm, priority: e.target.value })}
+                                >
+                                    <option value="normal">Normal</option>
+                                    <option value="high">High — Shows as popup twice</option>
+                                    <option value="urgent">Urgent — Shows popup every visit</option>
+                                </select>
+                            </div>
+
+                            {msgError && <div className="admin-form-error">{msgError}</div>}
+                            {msgSuccess && <div className="admin-form-success">{msgSuccess}</div>}
+
+                            <button
+                                className="admin-submit-btn"
+                                onClick={handleSendMsg}
+                                disabled={msgSending || !msgForm.title.trim() || !msgForm.content.trim()}
+                            >
+                                {msgSending ? 'Sending...' : (
+                                    <><Send size={16} /> Send Personal Message</>
+                                )}
+                            </button>
                         </div>
                     </div>
                 </div>,

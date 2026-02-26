@@ -16,6 +16,7 @@ import { DoubtsPage } from './components/DoubtsPage';
 import { CurriculumManagementPage } from './components/CurriculumManagementPage';
 import { AttendanceMarkingPage } from './components/AttendanceMarkingPage';
 import { CourseCatalogPage } from './components/CourseCatalogPage';
+import { AnnouncementPopup } from './components/AnnouncementPopup';
 
 import { QuizResultPage } from './components/QuizResultPage';
 import { ClassroomPage } from './components/ClassroomPage';
@@ -323,6 +324,11 @@ function App() {
                     />
                 )}
             </div>
+
+            {/* Priority Announcement Popup — only for student/teacher on dashboard */}
+            {currentPage === 'dashboard' && !isAdmin && userData && (
+                <AnnouncementPopup userRole={userRole} />
+            )}
         </>
     );
 }

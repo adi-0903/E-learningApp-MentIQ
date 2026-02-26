@@ -532,7 +532,7 @@ function ProfileScreen({ navigation }: any) {
         </TouchableOpacity>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>EduBloom • Version 1.2.0</Text>
+          <Text style={styles.footerText}>MentIQ • Version 1.0.0</Text>
           <Text style={styles.footerSub}>Proudly Made In INDIA 🇮🇳</Text>
         </View>
       </View>

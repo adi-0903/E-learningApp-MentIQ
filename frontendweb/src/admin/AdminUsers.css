@@ -262,6 +262,12 @@
     border-color: rgba(139, 92, 246, 0.3);
 }
 
+.admin-table-action-btn.admin-msg-btn:hover {
+    background: rgba(99, 102, 241, 0.15);
+    border-color: rgba(99, 102, 241, 0.4);
+    color: #818cf8;
+}
+
 .admin-table-action-btn svg {
     width: 15px;
     height: 15px;

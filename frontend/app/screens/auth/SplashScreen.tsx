@@ -198,7 +198,7 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
 
           {/* Bottom branding */}
           <View style={styles.brandingSection}>
-            <Text style={styles.brandingMainText}>BLOOM COLLECTIVE</Text>
+            <Text style={styles.brandingMainText}>MentIQ COLLECTIVE</Text>
             <View style={styles.originBadge}>
               <Text style={styles.originLabel}>ENGINEERED IN INDIA</Text>
             </View>

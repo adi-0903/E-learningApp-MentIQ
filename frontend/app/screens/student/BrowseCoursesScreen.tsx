@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/store/authStore';
 import { Course, useCourseStore } from '@/store/courseStore';
-import { useProgressStore } from '@/store/progressStore';
+import { useProgressStore, Enrollment } from '@/store/progressStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState } from 'react';
 import { FlatList, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -11,7 +11,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 function BrowseCoursesScreen({ navigation }: any) {
   const { courses, isLoading, fetchCourses } = useCourseStore();
   const { user } = useAuthStore();
-  const { enrollInCourse } = useProgressStore();
+  const { enrollments, fetchStudentEnrollments } = useProgressStore();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [refreshing, setRefreshing] = useState(false);
@@ -29,7 +29,18 @@ function BrowseCoursesScreen({ navigation }: any) {
     fetchCourses().catch(err => {
       console.error('BrowseCourses - fetch error:', err);
     });
+    // Fetch student enrollments to know which courses are already enrolled
+    if (user?.id) {
+      fetchStudentEnrollments(user.id).catch(console.error);
+    }
   }, []);
+
+  // Helper to check if student is already enrolled in a course
+  const isEnrolled = (courseId: string): boolean => {
+    return enrollments.some(
+      (e: Enrollment) => String(e.courseId) === String(courseId) || String(e.course) === String(courseId)
+    );
+  };
 
   useEffect(() => {
     try {
@@ -52,7 +63,10 @@ function BrowseCoursesScreen({ navigation }: any) {
   const onRefresh = async () => {
     setRefreshing(true);
     try {
-      await fetchCourses();
+      await Promise.all([
+        fetchCourses(),
+        user?.id ? fetchStudentEnrollments(user.id) : Promise.resolve(),
+      ]);
     } catch (error) {
       console.error('Error refreshing courses:', error);
     } finally {
@@ -60,24 +74,9 @@ function BrowseCoursesScreen({ navigation }: any) {
     }
   };
 
-  const handleEnroll = async (courseId: string) => {
-    if (!user?.id) {
-      alert('Please log in to enroll in courses'); // keeping alert for simplicity or could use a custom modal
-      return;
-    }
-
-    try {
-      await enrollInCourse(user.id, courseId);
-      navigation.navigate('StudentHome');
-    } catch (error) {
-      // Error handling remains same
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-      if (errorMessage.includes('Already enrolled')) {
-        alert('You are already enrolled in this course');
-      } else {
-        alert('Failed to enroll in course: ' + errorMessage);
-      }
-    }
+  const handleCourseAction = (courseId: string) => {
+    // Navigate to course detail where the student can review and enroll
+    navigation.navigate('CourseDetail', { courseId });
   };
 
   const renderCourseCard = (course: Course) => (
@@ -126,18 +125,25 @@ function BrowseCoursesScreen({ navigation }: any) {
 
           {/* Action Footer */}
           <View style={styles.cardFooter}>
-            <TouchableOpacity
-              onPress={(e) => {
-                e.stopPropagation();
-                handleEnroll(course.id);
-              }}
-              disabled={user?.role !== 'student'}
-            >
-              <View style={styles.enrollButtonSimple}>
-                <Text style={styles.enrollButtonTextSimple}>Enroll Now</Text>
-                <MaterialCommunityIcons name="arrow-right" size={16} color={Colors.light.primary} />
+            {isEnrolled(course.id) ? (
+              <View style={styles.enrolledBadge}>
+                <MaterialCommunityIcons name="check-circle" size={16} color="#059669" />
+                <Text style={styles.enrolledBadgeText}>Enrolled</Text>
               </View>
-            </TouchableOpacity>
+            ) : (
+              <TouchableOpacity
+                onPress={(e) => {
+                  e.stopPropagation();
+                  handleCourseAction(course.id);
+                }}
+                disabled={user?.role !== 'student'}
+              >
+                <View style={styles.enrollButtonSimple}>
+                  <Text style={styles.enrollButtonTextSimple}>Enroll Now</Text>
+                  <MaterialCommunityIcons name="arrow-right" size={16} color={Colors.light.primary} />
+                </View>
+              </TouchableOpacity>
+            )}
           </View>
         </View>
       </View>
@@ -399,6 +405,22 @@ const styles = StyleSheet.create({
   enrollButtonTextSimple: {
     ...Typography.bodySmall,
     color: Colors.light.primary,
+    fontWeight: '700',
+  },
+  enrolledBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    backgroundColor: '#ecfdf5',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 20,
+    borderWidth: 1,
+    borderColor: '#a7f3d0',
+  },
+  enrolledBadgeText: {
+    ...Typography.bodySmall,
+    color: '#059669',
     fontWeight: '700',
   },
   emptyState: {

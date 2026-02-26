@@ -13,6 +13,7 @@ import BrowseLiveClassesScreen from './screens/student/BrowseLiveClassesScreen';
 import StudentHomeScreen from './screens/student/StudentHomeScreen';
 import StudentProgressScreen from './screens/student/StudentProgressScreen';
 import StudentVideoLecturesScreen from './screens/student/StudentVideoLecturesScreen';
+import StudentLiveClassRoomScreen from './screens/student/StudentLiveClassRoomScreen';
 import AllQuizzesScreen from './screens/student/AllQuizzesScreen';
 import CourseLessonsScreen from './screens/shared/CourseLessonsScreen';
 
@@ -65,6 +66,7 @@ function StudentStack() {
       <Stack.Screen name="StudentVideoLectures" component={StudentVideoLecturesScreen} />
       <Stack.Screen name="AllQuizzes" component={AllQuizzesScreen} />
       <Stack.Screen name="CourseLessons" component={CourseLessonsScreen} />
+      <Stack.Screen name="Announcements" component={AnnouncementsScreen} />
     </Stack.Navigator>
   );
 }
@@ -146,6 +148,20 @@ function StudentProgressStack() {
   );
 }
 
+// Student Live Classes Stack
+function StudentLiveClassesStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="BrowseLiveClassesMain" component={BrowseLiveClassesScreen} />
+      <Stack.Screen name="StudentLiveClassRoom" component={StudentLiveClassRoomScreen} />
+    </Stack.Navigator>
+  );
+}
+
 // Student Tab Navigator
 function StudentTabs() {
   return (
@@ -179,7 +195,7 @@ function StudentTabs() {
       />
       <Tab.Screen
         name="LiveClassesTab"
-        component={BrowseLiveClassesScreen}
+        component={StudentLiveClassesStack}
         options={{
           tabBarLabel: 'Live',
           tabBarIcon: ({ color, size }) => (
