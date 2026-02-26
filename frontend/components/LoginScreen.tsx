@@ -5,7 +5,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
-  Dimensions,
   Image,
   KeyboardAvoidingView,
   Platform,
@@ -16,8 +15,6 @@ import {
 } from 'react-native';
 import { ActivityIndicator, Text, TextInput } from 'react-native-paper';
 import { Colors, Typography, AppShadows, BorderRadius, Spacing } from '@/constants/theme';
-
-const { width } = Dimensions.get('window');
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
@@ -126,9 +123,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
     try {
       await login(email, password, role);
       // If login successful, save credentials if biometrics is intended to be used
-      await AsyncStorage.setItem('last_user_email', email);
-      await AsyncStorage.setItem('last_user_pass', password);
-      await AsyncStorage.setItem('last_user_role', role);
+      await Promise.all([
+        AsyncStorage.setItem('last_user_email', email),
+        AsyncStorage.setItem('last_user_pass', password),
+        AsyncStorage.setItem('last_user_role', role),
+      ]);
 
       onLoginSuccess();
     } catch (error) {

@@ -9,9 +9,9 @@ import {
   RefreshControl,
   ScrollView,
   StyleSheet,
+  useWindowDimensions,
   TouchableOpacity,
   View,
-  Dimensions,
   ImageBackground
 } from 'react-native';
 import { ActivityIndicator, Text, Surface, Card } from 'react-native-paper';
@@ -26,7 +26,6 @@ interface TeacherDashboardProps {
   onMyCoursesPress?: () => void;
 }
 
-const { width } = Dimensions.get('window');
 
 const StatCard = ({ icon, value, label, color, subValue, onPress }: { icon: string, value: string | number, label: string, color: string, subValue?: string, onPress?: () => void }) => {
   const content = (
@@ -68,6 +67,7 @@ const ActionButton = ({ icon, label, onPress, gradient }: { icon: string, label:
 );
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
+  const { width } = useWindowDimensions();
   onCoursePress,
   onCreateCoursePress,
   onCreateAnnouncementPress,
@@ -268,7 +268,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
         ) : (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.horizontalAnnScroll}>
             {recentReviews.map((review) => (
-              <View key={review.id} style={styles.reviewCard}>
+              <View key={review.id} style={[styles.reviewCard, { width: width * 0.75 }]}>
                 <Surface style={styles.reviewInner}>
                   <View style={styles.reviewHeader}>
                     <View style={styles.studentInfo}>
@@ -320,7 +320,7 @@ const styles = StyleSheet.create({
     borderBottomRightRadius: 40,
     overflow: 'hidden',
     position: 'relative',
-    elevation: 10,
+    boxShadow: '0 10px 20px rgba(49, 46, 129, 0.3)',
     shadowColor: '#312e81',
     shadowOffset: { width: 0, height: 10 },
     shadowOpacity: 0.3,
@@ -377,7 +377,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     padding: 16,
     marginRight: 12,
-    elevation: 4,
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.14)',
     borderLeftWidth: 4,
     justifyContent: 'space-between',
   },
@@ -441,7 +441,7 @@ const styles = StyleSheet.create({
     width: (width - 48 - 12) / 2, // 2 columns
     borderRadius: 16,
     overflow: 'hidden',
-    elevation: 3,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
@@ -464,7 +464,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 8,
-    elevation: 2,
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12000000000000001)',
   },
   courseRow: {
     flexDirection: 'row',
@@ -541,7 +541,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     marginVertical: 4,
     marginRight: 16,
-    elevation: 4,
+    boxShadow: '0 4px 10px rgba(236, 72, 153, 0.1)',
     shadowColor: '#ec4899',
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.1,
@@ -566,15 +566,13 @@ const styles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: 6,
   },
-  reviewCard: {
-    width: width * 0.75,
-    marginRight: 16,
+  reviewCard: {    marginRight: 16,
   },
   reviewInner: {
     padding: 16,
     borderRadius: 20,
     backgroundColor: '#fff',
-    elevation: 2,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,

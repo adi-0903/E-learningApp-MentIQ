@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     View, StyleSheet, ScrollView, TouchableOpacity, Alert,
     Image, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard,
-    Dimensions, StatusBar, TextInput as RNTextInput
+    StatusBar, TextInput as RNTextInput
+  useWindowDimensions,
 } from 'react-native';
 import { Text, TextInput, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -31,8 +32,6 @@ import Animated, {
     withTiming,
 } from 'react-native-reanimated';
 
-const { width } = Dimensions.get('window');
-
 type TabType = 'chat' | 'flashcards' | 'planner';
 
 interface Message {
@@ -44,6 +43,7 @@ interface Message {
 }
 
 export default function AICenterScreen() {
+  const { width } = useWindowDimensions();
     const [activeTab, setActiveTab] = useState<TabType>('chat');
     const [query, setQuery] = useState('');
     const [messages, setMessages] = useState<Message[]>([]);

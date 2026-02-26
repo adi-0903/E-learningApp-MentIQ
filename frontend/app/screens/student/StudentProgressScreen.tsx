@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, ScrollView, FlatList, TouchableOpacity, Dimensions } from 'react-native';
+import { View, StyleSheet, ScrollView, FlatList, TouchableOpacity } from 'react-native';
 import { Card, Text, ProgressBar, ActivityIndicator, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/authStore';
@@ -7,8 +7,6 @@ import { useProgressStore } from '@/store/progressStore';
 import { useCourseStore } from '@/store/courseStore';
 import { Colors, Typography, Spacing, AppShadows, BorderRadius } from '@/constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width } = Dimensions.get('window');
 
 function StudentProgressScreen({ navigation }: any) {
   const { user } = useAuthStore();

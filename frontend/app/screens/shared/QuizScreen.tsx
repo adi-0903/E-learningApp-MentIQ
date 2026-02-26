@@ -8,15 +8,12 @@ import {
   TouchableOpacity,
   View,
   StatusBar,
-  Dimensions,
   Platform,
 } from 'react-native';
 import { ActivityIndicator, Button, Text, Card } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Spacing, AppShadows } from '@/constants/theme';
-
-const { width } = Dimensions.get('window');
 
 function QuizScreen({ route, navigation }: any) {
   const { quizId, courseId } = route?.params || {};
@@ -238,7 +235,7 @@ function QuizScreen({ route, navigation }: any) {
             const isSelected = answers[currentQuestion.id] === option.value;
             return (
               <TouchableOpacity
-                key={idx}
+                key={option.value}
                 activeOpacity={0.7}
                 onPress={() => setAnswers(prev => ({ ...prev, [currentQuestion.id]: option.value }))}
                 style={[
@@ -322,11 +319,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
-    elevation: 8,
-    shadowColor: '#78350f',
-    shadowOpacity: 0.2,
-    shadowRadius: 10,
-    shadowOffset: { width: 0, height: 4 },
+    boxShadow: '0 4px 10px rgba(120, 53, 15, 0.2)',
   },
   headerTop: {
     flexDirection: 'row',

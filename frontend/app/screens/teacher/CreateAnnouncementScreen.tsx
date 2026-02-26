@@ -15,13 +15,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  Dimensions,
   ActivityIndicator
 } from 'react-native';
 import { Button, Chip, Text, TextInput, Surface } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width } = Dimensions.get('window');
 
 function CreateAnnouncementScreen({ navigation, route }: any) {
   const { user } = useAuthStore();
@@ -31,15 +28,6 @@ function CreateAnnouncementScreen({ navigation, route }: any) {
   const mode = route.params?.mode || 'create';
   const announcementId = route.params?.announcementId;
   const initialData = route.params?.initialData;
-
-  // Check if user is authenticated
-  if (!user?.id) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text>Please log in to create announcements</Text>
-      </View>
-    );
-  }
 
   const [title, setTitle] = useState(initialData?.title || '');
   const [content, setContent] = useState(initialData?.content || '');
@@ -53,7 +41,6 @@ function CreateAnnouncementScreen({ navigation, route }: any) {
   const [previewUri, setPreviewUri] = useState<string | null>(null);
   const [previewType, setPreviewType] = useState<'image' | 'pdf' | null>(null);
 
-  // Load teacher's courses on component mount
   useEffect(() => {
     if (user?.id) {
       fetchTeacherCourses(user.id).catch(error => {
@@ -63,12 +50,19 @@ function CreateAnnouncementScreen({ navigation, route }: any) {
     }
   }, [user?.id]);
 
-  // Update selected course when courses change
   useEffect(() => {
     if (courses.length > 0 && !selectedCourseId) {
       setSelectedCourseId(courses[0].id);
     }
   }, [courses, selectedCourseId]);
+
+  if (!user?.id) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text>Please log in to create announcements</Text>
+      </View>
+    );
+  }
 
   const addLink = () => {
     if (!newLink.trim()) {
@@ -128,7 +122,6 @@ function CreateAnnouncementScreen({ navigation, route }: any) {
       Alert.alert('Error', 'Unable to open PDF. Make sure you have a PDF viewer installed.');
     }
   };
-
 
   const pickImageFile = async () => {
     try {
@@ -446,7 +439,7 @@ function CreateAnnouncementScreen({ navigation, route }: any) {
                 <View style={styles.chipContainer}>
                   {links.map((link, index) => (
                     <Chip
-                      key={`link-${index}`}
+                      key={link}
                       icon="link"
                       onClose={() => removeLink(index)}
                       style={styles.attachmentChip}
@@ -459,7 +452,7 @@ function CreateAnnouncementScreen({ navigation, route }: any) {
                     const shortName = pdf.name.length > 20 ? pdf.name.substring(0, 17) + '...' : pdf.name;
                     return (
                       <Chip
-                        key={`pdf-${index}`}
+                        key={pdf.name}
                         icon="file-pdf-box"
                         onClose={() => removePdfLink(index)}
                         style={styles.attachmentChip}
@@ -493,7 +486,7 @@ function CreateAnnouncementScreen({ navigation, route }: any) {
                     const shortName = image.name.length > 20 ? image.name.substring(0, 17) + '...' : image.name;
                     return (
                       <TouchableOpacity
-                        key={index}
+                        key={image.name}
                         onPress={() => handlePreviewImage(image.uri)}
                         style={[styles.attachmentChip, styles.imageChip]}
                       >
@@ -606,11 +599,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
     overflow: 'hidden',
-    elevation: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.3,
-    shadowRadius: 24,
+    boxShadow: '0 12px 24px rgba(0, 0, 0, 0.3)',
   },
   headerGradient: {
     paddingTop: 70,
@@ -702,11 +691,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.6)',
-    elevation: 4,
-    shadowColor: '#1e293b',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 16,
+    boxShadow: '0 8px 16px rgba(30, 41, 59, 0.08)',
     position: 'relative',
     overflow: 'hidden',
   },
@@ -825,7 +810,7 @@ const styles = StyleSheet.create({
     borderRadius: 12,
     borderLeftWidth: 4,
     borderLeftColor: '#667eea',
-    elevation: 2,
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12000000000000001)',
     marginBottom: 24,
   },
   infoCardContent: {
@@ -861,22 +846,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    elevation: 2,
-    shadowColor: '#64748b',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    boxShadow: '0 4px 8px rgba(100, 116, 139, 0.05)',
   },
   submitButtonContainer: {
     flex: 2.8,
     height: 64,
     borderRadius: 20,
     overflow: 'hidden',
-    elevation: 16,
-    shadowColor: '#4f46e5',
-    shadowOffset: { width: 0, height: 12 },
-    shadowOpacity: 0.6,
-    shadowRadius: 24,
+    boxShadow: '0 12px 24px rgba(79, 70, 229, 0.6)',
   },
   submitButtonGradient: {
     flex: 1,
@@ -967,10 +944,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 10,
-    elevation: 4,
-    shadowColor: '#6366f1',
-    shadowOpacity: 0.12,
-    shadowRadius: 8,
+    boxShadow: '0 2px 8px rgba(99, 102, 241, 0.12)',
   },
   pdfChip: {
     backgroundColor: '#fffbeb',
@@ -1076,11 +1050,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     overflow: 'hidden',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
     zIndex: 999,
   },
   previewCardHeader: {

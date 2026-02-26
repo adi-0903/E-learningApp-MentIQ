@@ -7,15 +7,6 @@ import { ActivityIndicator, Text } from 'react-native-paper';
 
 function ManageQuizzesScreen({ route, navigation }: any) {
   const { courseId } = route?.params || {};
-
-  if (!courseId) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text>Invalid course ID</Text>
-      </View>
-    );
-  }
-
   const { quizzes, isLoading, fetchCourseQuizzes, deleteQuiz } = useQuizStore();
 
   useEffect(() => {
@@ -25,6 +16,14 @@ function ManageQuizzesScreen({ route, navigation }: any) {
       });
     }
   }, [courseId]);
+
+  if (!courseId) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text>Invalid course ID</Text>
+      </View>
+    );
+  }
 
   const handleDeleteQuiz = (quizId: string, quizTitle: string) => {
     Alert.alert(
@@ -175,11 +174,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
     overflow: 'hidden',
-    elevation: 8,
-    shadowColor: '#b45309',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
+    boxShadow: '0 8px 16px rgba(180, 83, 9, 0.3)',
     marginBottom: 8,
   },
   headerDecoration: {
@@ -240,11 +235,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#a8a29e',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    boxShadow: '0 2px 4px rgba(168, 162, 158, 0.05)',
     borderWidth: 1,
     borderColor: '#fed7aa', // Light orange border
   },
@@ -337,11 +328,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 24,
     bottom: 32,
-    elevation: 6,
-    shadowColor: '#d97706',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+    boxShadow: '0 8px 12px rgba(217, 119, 6, 0.4)',
   },
   fabGradient: {
     width: 56,

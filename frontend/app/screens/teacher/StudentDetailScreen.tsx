@@ -8,7 +8,6 @@ import {
     TouchableOpacity,
     View,
     StatusBar,
-    Dimensions,
 } from 'react-native';
 import {
     ActivityIndicator,
@@ -19,8 +18,6 @@ import {
     Divider,
 } from 'react-native-paper';
 import { Colors } from '@/constants/theme';
-
-const { width } = Dimensions.get('window');
 
 interface StudentDetailData {
     student: {
@@ -316,7 +313,7 @@ const styles = StyleSheet.create({
     },
     avatar: {
         backgroundColor: '#fff',
-        elevation: 4,
+        boxShadow: '0 2px 6px rgba(0, 0, 0, 0.14)',
     },
     avatarLabel: {
         color: '#312e81',
@@ -367,10 +364,7 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff',
         borderRadius: 20,
         marginRight: 10,
-        elevation: 3,
-        shadowColor: '#000',
-        shadowOpacity: 0.1,
-        shadowRadius: 5,
+        boxShadow: '0 2px 5px rgba(0, 0, 0, 0.1)',
     },
     coursePillActive: {
         backgroundColor: '#4338ca',
@@ -391,7 +385,7 @@ const styles = StyleSheet.create({
     progressCard: {
         borderRadius: 24,
         backgroundColor: '#fff',
-        elevation: 2,
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12000000000000001)',
         marginTop: 10,
         marginBottom: 20,
     },
@@ -462,7 +456,7 @@ const styles = StyleSheet.create({
     },
     activeTab: {
         backgroundColor: '#fff',
-        elevation: 2,
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12000000000000001)',
     },
     tabText: {
         fontSize: 14,

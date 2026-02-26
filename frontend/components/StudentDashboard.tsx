@@ -17,7 +17,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  Dimensions,
   Image,
   Animated,
   Platform
@@ -30,8 +29,6 @@ interface StudentDashboardProps {
   onBrowseCoursesPress: () => void;
   onNotificationPress?: () => void;
 }
-
-const { width } = Dimensions.get('window');
 
 // Premium Component: Course Progress Card
 const CourseProgressCard = ({ course, progress, onPress }: { course: Course, progress: number, onPress: () => void }) => {
@@ -90,7 +87,7 @@ const QuickActions = () => {
     <View style={styles.quickActionsContainer}>
       {actions.map((action, index) => (
         <TouchableOpacity
-          key={index}
+          key={action.route}
           style={styles.actionItem}
           onPress={() => navigation.navigate(action.route)}
           activeOpacity={0.7}
@@ -179,7 +176,6 @@ export const StudentDashboard: React.FC<StudentDashboardProps> = ({
   };
   // ... rest of the logic ...
   // (I will use multi_replace if I need to change far apart blocks, but let's see)
-
 
   const getProgressPercentage = (courseId: string) => {
     const enrollment = enrollments.find(e => e.courseId === courseId);
@@ -444,7 +440,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     zIndex: 1,
-    elevation: 4,
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.14)',
     backgroundColor: 'transparent',
   },
   headerGradient: {
@@ -605,11 +601,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     overflow: 'hidden',
     backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
-    elevation: 5,
+    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.8)',
     marginVertical: 4,
@@ -680,11 +672,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#0f766e',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#0f766e',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
+    boxShadow: '0 2px 4px rgba(15, 118, 110, 0.3)',
   },
   continueButtonText: {
     fontSize: 12,
@@ -728,11 +716,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
-    shadowColor: '#0f766e',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
+    boxShadow: '0 4px 8px rgba(15, 118, 110, 0.2)',
   },
   browseButtonText: {
     color: '#fff',
@@ -746,17 +730,12 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   categoryCard: {
-    width: (width - 60) / 2,
     backgroundColor: '#fff',
     padding: 16,
     borderRadius: 16,
     alignItems: 'center',
     gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
   },
   categoryIcon: {
     width: 48,
@@ -791,11 +770,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     backgroundColor: '#fff',
     marginVertical: 4,
-    elevation: 4,
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 10,
+    boxShadow: '0 4px 10px rgba(99, 102, 241, 0.1)',
     borderWidth: 1,
     borderColor: 'rgba(255, 255, 255, 0.8)',
     overflow: 'hidden',
@@ -846,11 +821,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     padding: 16,
     borderRadius: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
-    elevation: 2,
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
   },
   actionItem: {
     alignItems: 'center',
@@ -872,11 +843,7 @@ const styles = StyleSheet.create({
   motivationContainer: {
     marginBottom: 24,
     borderRadius: 24,
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 6,
+    boxShadow: '0 8px 16px rgba(99, 102, 241, 0.2)',
   },
   motivationGradient: {
     borderRadius: 24,

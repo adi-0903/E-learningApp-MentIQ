@@ -312,7 +312,7 @@ const styles = StyleSheet.create({
         borderRadius: BorderRadius.m,
         height: 50,
         backgroundColor: '#fff',
-        elevation: 0,
+        boxShadow: 'none',
         borderWidth: 1,
         borderColor: '#e2e8f0',
     },

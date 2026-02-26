@@ -1,9 +1,9 @@
 import React, { useRef, useState } from 'react';
 import {
     StyleSheet,
+  useWindowDimensions,
     View,
     FlatList,
-    Dimensions,
     TouchableOpacity,
     NativeSyntheticEvent,
     NativeScrollEvent,
@@ -15,8 +15,6 @@ import { Text } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Colors, Typography, Spacing } from '@/constants/theme';
-
-const { width, height } = Dimensions.get('screen');
 
 interface OnboardingScreenProps {
     onFinish: () => void;
@@ -53,10 +51,78 @@ const SLIDES = [
     },
 ];
 
+interface PaginationProps {
+    slides: typeof SLIDES;
+    scrollX: Animated.Value;
+    currentIndex: number;
+    width: number;
+    onNext: () => void;
+    onSkip: () => void;
+    onFinish: () => void;
+}
+
+function Pagination({ slides, scrollX, currentIndex, width, onNext, onSkip, onFinish }: PaginationProps) {
+    return (
+        <View style={styles.paginationContainer}>
+            <View style={styles.dotsContainer}>
+                {slides.map((_, index) => {
+                    const inputRange = [
+                        (index - 1) * width,
+                        index * width,
+                        (index + 1) * width,
+                    ];
+
+                    const dotWidth = scrollX.interpolate({
+                        inputRange,
+                        outputRange: [10, 20, 10],
+                        extrapolate: 'clamp',
+                    });
+
+                    const opacity = scrollX.interpolate({
+                        inputRange,
+                        outputRange: [0.5, 1, 0.5],
+                        extrapolate: 'clamp',
+                    });
+
+                    return (
+                        <Animated.View
+                            key={`dot-${index}`}
+                            style={[
+                                styles.dot,
+                                { width: dotWidth, opacity },
+                                currentIndex === index && styles.activeDot,
+                            ]}
+                        />
+                    );
+                })}
+            </View>
+
+            <View style={styles.buttonContainer}>
+                {currentIndex < slides.length - 1 ? (
+                    <View style={styles.navigationButtons}>
+                        <TouchableOpacity onPress={onSkip}>
+                            <Text style={styles.skipText}>Skip</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity onPress={onNext} style={styles.nextButton}>
+                            <MaterialCommunityIcons name="arrow-right" size={24} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                ) : (
+                    <TouchableOpacity onPress={onFinish} style={styles.startButton}>
+                        <Text style={styles.startButtonText}>Get Started</Text>
+                        <MaterialCommunityIcons name="rocket-launch-outline" size={20} color="#fff" />
+                    </TouchableOpacity>
+                )}
+            </View>
+        </View>
+    );
+}
+
 export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) => {
     const [currentIndex, setCurrentIndex] = useState(0);
     const flatListRef = useRef<FlatList>(null);
     const scrollX = useRef(new Animated.Value(0)).current;
+    const { width, height } = useWindowDimensions();
 
     const handleScroll = Animated.event(
         [{ nativeEvent: { contentOffset: { x: scrollX } } }],
@@ -82,7 +148,7 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
 
     const renderItem = ({ item, index }: { item: typeof SLIDES[0]; index: number }) => {
         return (
-            <View style={styles.slide}>
+            <View style={[styles.slide, { width, height }]}>
                 <LinearGradient
                     colors={item.colors as [string, string, ...string[]]}
                     start={{ x: 0, y: 0 }}
@@ -108,63 +174,6 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
         );
     };
 
-    const renderPagination = () => {
-        return (
-            <View style={styles.paginationContainer}>
-                <View style={styles.dotsContainer}>
-                    {SLIDES.map((_, index) => {
-                        const inputRange = [
-                            (index - 1) * width,
-                            index * width,
-                            (index + 1) * width,
-                        ];
-
-                        const dotWidth = scrollX.interpolate({
-                            inputRange,
-                            outputRange: [10, 20, 10],
-                            extrapolate: 'clamp',
-                        });
-
-                        const opacity = scrollX.interpolate({
-                            inputRange,
-                            outputRange: [0.5, 1, 0.5],
-                            extrapolate: 'clamp',
-                        });
-
-                        return (
-                            <Animated.View
-                                key={index}
-                                style={[
-                                    styles.dot,
-                                    { width: dotWidth, opacity },
-                                    currentIndex === index && styles.activeDot,
-                                ]}
-                            />
-                        );
-                    })}
-                </View>
-
-                <View style={styles.buttonContainer}>
-                    {currentIndex < SLIDES.length - 1 ? (
-                        <View style={styles.navigationButtons}>
-                            <TouchableOpacity onPress={handleSkip}>
-                                <Text style={styles.skipText}>Skip</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity onPress={handleNext} style={styles.nextButton}>
-                                <MaterialCommunityIcons name="arrow-right" size={24} color="#fff" />
-                            </TouchableOpacity>
-                        </View>
-                    ) : (
-                        <TouchableOpacity onPress={onFinish} style={styles.startButton}>
-                            <Text style={styles.startButtonText}>Get Started</Text>
-                            <MaterialCommunityIcons name="rocket-launch-outline" size={20} color="#fff" />
-                        </TouchableOpacity>
-                    )}
-                </View>
-            </View>
-        );
-    };
-
     return (
         <View style={styles.container}>
             <Animated.FlatList
@@ -180,7 +189,15 @@ export const OnboardingScreen: React.FC<OnboardingScreenProps> = ({ onFinish }) 
                 scrollEventThrottle={16}
                 bounces={false}
             />
-            {renderPagination()}
+            <Pagination
+                slides={SLIDES}
+                scrollX={scrollX}
+                currentIndex={currentIndex}
+                width={width}
+                onNext={handleNext}
+                onSkip={handleSkip}
+                onFinish={onFinish}
+            />
         </View>
     );
 };
@@ -190,10 +207,7 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: '#0f172a',
     },
-    slide: {
-        width,
-        height,
-    },
+    slide: {    },
     slideGradient: {
         flex: 1,
         justifyContent: 'center',
@@ -286,11 +300,7 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         gap: 12,
         width: '100%',
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 8,
-        elevation: 5,
+        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.3)',
     },
     startButtonText: {
         fontSize: 18,

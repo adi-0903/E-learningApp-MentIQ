@@ -2,10 +2,10 @@ import { useAuthStore } from '@/store/authStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, Dimensions, StyleSheet, View, Image } from 'react-native';
+import { Animated, StyleSheet,
+  useWindowDimensions, View, Image } from 'react-native';
 import { Text } from 'react-native-paper';
 
-const { width, height } = Dimensions.get('window');
 
 interface SplashScreenProps {
   onFinish: () => void;
@@ -128,7 +128,7 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
           {/* Floating particles background */}
           <View style={styles.particlesContainer}>
             {[...Array(20)].map((_, index) => (
-              <FloatingParticle key={index} delay={index * 200} />
+              <FloatingParticle key={`particle-${index}`} delay={index * 200} />
             ))}
           </View>
 
@@ -211,6 +211,7 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
 
 // Floating particle component refined
 function FloatingParticle({ delay }: { delay: number }) {
+  const { height } = useWindowDimensions();
   const animValue = useRef(new Animated.Value(0)).current;
   const opacityValue = useRef(new Animated.Value(0)).current;
 
@@ -292,9 +293,7 @@ const styles = StyleSheet.create({
   bgDecoration: {
     opacity: 0.1,
     position: 'absolute',
-    right: -100,
-    top: height * 0.1,
-  },
+    right: -100,  },
   particlesContainer: {
     ...StyleSheet.absoluteFillObject,
   },

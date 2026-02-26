@@ -13,7 +13,6 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  Dimensions
 } from 'react-native';
 import {
   Button,
@@ -23,20 +22,10 @@ import {
   TextInput
 } from 'react-native-paper';
 
-const { width } = Dimensions.get('window');
-
 export default function CreateLiveClassScreen({ navigation }: any) {
   const { user } = useAuthStore();
   const { courses, fetchTeacherCourses } = useCourseStore();
   const { createLiveClass, isLoading } = useLiveClassStore();
-
-  if (!user?.id) {
-    return (
-      <View style={styles.loadingContainer}>
-        <Text>Please log in to create live classes</Text>
-      </View>
-    );
-  }
 
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
@@ -54,6 +43,14 @@ export default function CreateLiveClassScreen({ navigation }: any) {
   useEffect(() => {
     loadTeacherCourses();
   }, [user?.id]);
+
+  if (!user?.id) {
+    return (
+      <View style={styles.loadingContainer}>
+        <Text>Please log in to create live classes</Text>
+      </View>
+    );
+  }
 
   const loadTeacherCourses = async () => {
     if (user?.id) {
@@ -450,11 +447,7 @@ const styles = StyleSheet.create({
     borderRadius: 32,
     marginHorizontal: 16,
     padding: 24,
-    elevation: 8,
-    shadowColor: '#64748b',
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    shadowOffset: { width: 0, height: 8 },
+    boxShadow: '0 8px 16px rgba(100, 116, 139, 0.15)',
   },
   inputSection: {
     marginBottom: 24,
@@ -509,7 +502,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     padding: 8,
-    elevation: 4,
+    boxShadow: '0 2px 6px rgba(0, 0, 0, 0.14)',
     borderWidth: 1,
     borderColor: '#f1f5f9',
   },
@@ -555,10 +548,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    elevation: 2,
-    shadowColor: '#64748b',
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    boxShadow: '0 1px 4px rgba(100, 116, 139, 0.05)',
   },
   timeCardIcon: {
     width: 36,
@@ -585,11 +575,7 @@ const styles = StyleSheet.create({
     paddingVertical: 18,
     borderRadius: 16,
     gap: 8,
-    elevation: 4,
-    shadowColor: '#4338ca',
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
+    boxShadow: '0 4px 8px rgba(67, 56, 202, 0.25)',
   },
   submitButtonText: {
     color: '#fff',

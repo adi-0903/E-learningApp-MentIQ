@@ -2,14 +2,12 @@ import { useAuthStore } from '@/store/authStore';
 import { Course, useCourseStore } from '@/store/courseStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState, useRef } from 'react';
-import { Alert, ScrollView, StyleSheet, TouchableOpacity, View, StatusBar, Dimensions } from 'react-native';
+import { Alert, ScrollView, StyleSheet, TouchableOpacity, View, StatusBar } from 'react-native';
 import { ActivityIndicator, Card, Text, Button, TextInput } from 'react-native-paper';
 import { Colors, Spacing, AppShadows, BorderRadius } from '@/constants/theme';
 import { useQuizStore } from '@/store/quizStore';
 import { courseApi } from '@/services/api';
 import { LinearGradient } from 'expo-linear-gradient';
-
-const { width } = Dimensions.get('window');
 
 function CourseDetailScreen({ route, navigation }: any) {
   const { courseId, courseTitle } = route.params;

@@ -134,8 +134,6 @@ function ProfileScreen({ navigation }: any) {
     ]);
   };
 
-
-
   const handleRequestOTP = async () => {
     if (!phone.trim()) {
       Alert.alert('Error', 'Please enter a valid phone number');
@@ -175,7 +173,6 @@ function ProfileScreen({ navigation }: any) {
     }
   };
 
-
   // Show loading state while user is being loaded
   if (!user) {
     return (
@@ -191,7 +188,6 @@ function ProfileScreen({ navigation }: any) {
       </View>
     );
   }
-
 
   const headerColors = user.role === 'student'
     ? ['#06201f', '#064e3b', '#065f46'] as readonly [string, string, ...string[]]
@@ -559,7 +555,7 @@ function ProfileScreen({ navigation }: any) {
             <View style={styles.avatarGrid}>
               {AVATARS.map((avatarUrl, index) => (
                 <TouchableOpacity
-                  key={index}
+                  key={avatarUrl}
                   style={[
                     styles.avatarSlot,
                     (profileAvatar === avatarUrl) && { borderColor: accentColor, borderWidth: 3 }
@@ -692,10 +688,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     justifyContent: 'center',
     alignItems: 'center',
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 10,
+    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.15)',
   },
   avatarLargeText: {
     fontSize: 40,
@@ -752,10 +745,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     marginTop: 16,
     gap: 6,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',
   },
   editBadgeText: {
     fontSize: 12,
@@ -905,11 +895,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     borderRadius: 18,
     backgroundColor: '#4f46e5',
-    elevation: 8,
-    shadowColor: '#4f46e5',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
+    boxShadow: '0 4px 8px rgba(79, 70, 229, 0.3)',
   },
   premiumSaveBtnContent: {
     height: 56,
@@ -1005,11 +991,7 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     borderColor: '#f1f5f9',
     overflow: 'visible', // Allow checkmark to pop
-    elevation: 4,
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
+    boxShadow: '0 4px 8px rgba(99, 102, 241, 0.1)',
   },
   avatarChoice: {
     width: 80,
@@ -1027,10 +1009,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#fff',
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
+    boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)',
   },
   infoRow: {
     flexDirection: 'row',
@@ -1075,10 +1054,7 @@ const styles = StyleSheet.create({
     borderRadius: 24,
     borderWidth: 1,
     borderColor: '#f1f5f9',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 10,
+    boxShadow: '0 1px 10px rgba(0, 0, 0, 0.05)',
   },
   settingRow: {
     flexDirection: 'row',

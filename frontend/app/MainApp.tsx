@@ -174,7 +174,7 @@ function StudentTabs() {
         tabBarStyle: {
           borderTopColor: Colors.light.divider,
           backgroundColor: Colors.light.surface,
-          elevation: 8,
+          boxShadow: '0 -2px 4px rgba(0, 0, 0, 0.1)',
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,
@@ -303,7 +303,7 @@ function TeacherTabs() {
         tabBarStyle: {
           borderTopColor: Colors.light.divider,
           backgroundColor: Colors.light.surface,
-          elevation: 8,
+          boxShadow: '0 -2px 4px rgba(0, 0, 0, 0.1)',
           shadowColor: '#000',
           shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.1,

@@ -23,7 +23,7 @@ function LessonDetailScreen({ route, navigation }: any) {
   const [lesson, setLesson] = useState<any>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-  const [startTime] = useState(Date.now());
+  const [startTime] = useState(() => Date.now());
 
   useEffect(() => {
     loadLesson();

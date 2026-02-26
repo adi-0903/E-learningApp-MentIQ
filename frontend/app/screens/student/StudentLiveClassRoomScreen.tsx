@@ -80,6 +80,20 @@ export default function StudentLiveClassRoomScreen({ route, navigation }: any) {
     }
   };
 
+  const renderChatMessage = useCallback(({ item }: { item: any }) => (
+    <View style={[
+      styles.chatBubble,
+      item.isSystemMessage && styles.systemBubble,
+    ]}>
+      {!item.isSystemMessage && (
+        <Text style={styles.chatSender}>{item.senderName}</Text>
+      )}
+      <Text style={item.isSystemMessage ? styles.systemText : styles.chatText}>
+        {item.message}
+      </Text>
+    </View>
+  ), []);
+
   if (!meetingUrl) {
     return (
       <View style={styles.errorContainer}>
@@ -172,19 +186,7 @@ export default function StudentLiveClassRoomScreen({ route, navigation }: any) {
               keyExtractor={(item) => String(item.id)}
               style={styles.chatList}
               contentContainerStyle={styles.chatListContent}
-              renderItem={({ item }) => (
-                <View style={[
-                  styles.chatBubble,
-                  item.isSystemMessage && styles.systemBubble,
-                ]}>
-                  {!item.isSystemMessage && (
-                    <Text style={styles.chatSender}>{item.senderName}</Text>
-                  )}
-                  <Text style={item.isSystemMessage ? styles.systemText : styles.chatText}>
-                    {item.message}
-                  </Text>
-                </View>
-              )}
+              renderItem={renderChatMessage}
               onContentSizeChange={() => chatListRef.current?.scrollToEnd({ animated: true })}
             />
 

@@ -16,15 +16,12 @@ import {
   TouchableOpacity,
   View,
   StatusBar,
-  Dimensions
 } from 'react-native';
 import {
   ActivityIndicator,
   Text,
 } from 'react-native-paper';
 import { WebView } from 'react-native-webview';
-
-const { width } = Dimensions.get('window');
 
 export default function LiveClassRoomScreen({ route, navigation }: any) {
   // Handle both Expo Router and React Navigation params
@@ -100,6 +97,27 @@ export default function LiveClassRoomScreen({ route, navigation }: any) {
   const toggleControls = () => {
     setControlsVisible(!controlsVisible);
   };
+
+  const renderChatItem = useCallback(({ item }: { item: any }) => {
+    const isMe = String(item.senderId) === String(user?.id);
+    return (
+      <View style={[
+        styles.chatBubble,
+        item.isSystemMessage ? styles.systemBubble : (isMe ? styles.myBubble : styles.theirBubble),
+      ]}>
+        {!item.isSystemMessage && !isMe && (
+          <Text style={styles.senderName}>{item.senderName}</Text>
+        )}
+        <Text style={[
+          styles.chatText,
+          item.isSystemMessage && styles.systemText,
+          isMe && styles.myChatText
+        ]}>
+          {item.message}
+        </Text>
+      </View>
+    );
+  }, [user?.id]);
 
   if (isLoading) {
     return (
@@ -217,26 +235,7 @@ export default function LiveClassRoomScreen({ route, navigation }: any) {
               keyExtractor={(item) => String(item.id)}
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 10 }}
-              renderItem={({ item }) => {
-                const isMe = String(item.senderId) === String(user?.id);
-                return (
-                  <View style={[
-                    styles.chatBubble,
-                    item.isSystemMessage ? styles.systemBubble : (isMe ? styles.myBubble : styles.theirBubble),
-                  ]}>
-                    {!item.isSystemMessage && !isMe && (
-                      <Text style={styles.senderName}>{item.senderName}</Text>
-                    )}
-                    <Text style={[
-                      styles.chatText,
-                      item.isSystemMessage && styles.systemText,
-                      isMe && styles.myChatText
-                    ]}>
-                      {item.message}
-                    </Text>
-                  </View>
-                );
-              }}
+              renderItem={renderChatItem}
             />
 
             <View style={styles.inputArea}>
@@ -346,10 +345,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 8,
-    elevation: 6,
-    shadowColor: '#ef4444',
-    shadowOpacity: 0.4,
-    shadowRadius: 10,
+    boxShadow: '0 3px 10px rgba(239, 68, 68, 0.4)',
   },
   controlLabel: {
     color: '#fff',

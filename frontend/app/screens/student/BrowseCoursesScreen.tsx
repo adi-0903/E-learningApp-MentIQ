@@ -2,7 +2,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Course, useCourseStore } from '@/store/courseStore';
 import { useProgressStore, Enrollment } from '@/store/progressStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { FlatList, RefreshControl, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
 import { ActivityIndicator, Card, Searchbar, Text } from 'react-native-paper';
 import { Colors, Spacing, AppShadows, BorderRadius, Typography } from '@/constants/theme';
@@ -150,6 +150,8 @@ function BrowseCoursesScreen({ navigation }: any) {
     </TouchableOpacity>
   );
 
+  const renderCourseCardItem = useCallback(({ item }: { item: any }) => renderCourseCard(item), []);
+
   if (isLoading && courses.length === 0) {
     return (
       <View style={styles.centerContainer}>
@@ -214,7 +216,7 @@ function BrowseCoursesScreen({ navigation }: any) {
 
       <FlatList
         data={filteredCourses}
-        renderItem={({ item }) => renderCourseCard(item)}
+        renderItem={renderCourseCardItem}
         keyExtractor={(item) => item.id}
         contentContainerStyle={styles.listContent}
         refreshControl={

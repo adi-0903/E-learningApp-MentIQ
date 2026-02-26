@@ -3,7 +3,7 @@ import { useCourseStore } from '@/store/courseStore';
 import { useProgressStore } from '@/store/progressStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   FlatList,
   ScrollView,
@@ -260,6 +260,8 @@ function TeacherProgressScreen({ navigation, route }: any) {
     </View>
   );
 
+  const renderProgressItem = useCallback(({ item }: { item: any }) => viewMode === 'overview' ? renderOverviewCard(item) : renderDetailedCard(item), [viewMode]);
+
   if (!user?.id) {
     return (
       <View style={styles.centerContainer}>
@@ -346,9 +348,7 @@ function TeacherProgressScreen({ navigation, route }: any) {
       ) : (
         <FlatList
           data={filteredProgress}
-          renderItem={({ item }) =>
-            viewMode === 'overview' ? renderOverviewCard(item) : renderDetailedCard(item)
-          }
+          renderItem={renderProgressItem}
           keyExtractor={(item) => `${item.studentId}-${item.courseId}`}
           contentContainerStyle={styles.listContainer}
           onRefresh={onRefresh}
@@ -375,10 +375,7 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: 40,
     borderBottomRightRadius: 80,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.3,
-    shadowRadius: 10,
+    boxShadow: '0 4px 10px rgba(0, 0, 0, 0.3)',
   },
   headerTop: {
     flexDirection: 'row',
@@ -414,7 +411,7 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     borderRadius: 20,
-    elevation: 0,
+    boxShadow: 'none',
     backgroundColor: '#fff',
     height: 54,
   },
@@ -440,10 +437,7 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderWidth: 1,
     borderColor: '#e2e8f0',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.05,
-    shadowRadius: 5,
+    boxShadow: '0 1px 5px rgba(0, 0, 0, 0.05)',
   },
   activeChip: {
     backgroundColor: '#4338ca',
@@ -464,7 +458,7 @@ const styles = StyleSheet.create({
     padding: 4,
     borderWidth: 1,
     borderColor: '#f1f5f9',
-    elevation: 2,
+    boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12000000000000001)',
   },
   modeBtn: {
     width: 40,
@@ -489,11 +483,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     borderWidth: 1,
     borderColor: '#f1f5f9',
-    elevation: 4,
-    shadowColor: '#6366f1',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 12,
+    boxShadow: '0 4px 12px rgba(99, 102, 241, 0.1)',
   },
   cardContent: {
     padding: 16,
@@ -645,10 +635,7 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     borderWidth: 1,
     borderColor: '#f1f5f9',
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOpacity: 0.04,
-    shadowRadius: 8,
+    boxShadow: '0 1px 8px rgba(0, 0, 0, 0.04)',
   },
   compactLeft: {
     flexDirection: 'row',

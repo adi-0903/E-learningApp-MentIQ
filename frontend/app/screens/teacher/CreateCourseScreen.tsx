@@ -20,6 +20,53 @@ const LEVEL_OPTIONS = [
   { label: 'All Levels', value: 'all_levels' },
 ];
 
+interface PickerModalProps {
+  visible: boolean;
+  onClose: () => void;
+  options: { label: string; value: string }[];
+  selectedValue: string;
+  onSelect: (value: string) => void;
+  title: string;
+}
+
+function PickerModal({ visible, onClose, options, selectedValue, onSelect, title }: PickerModalProps) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose}>
+        <View style={styles.modalContent}>
+          <View style={styles.modalHandle} />
+          <Text style={styles.modalTitle}>{title}</Text>
+          {options.map((option) => (
+            <TouchableOpacity
+              key={option.value}
+              style={[
+                styles.modalOption,
+                selectedValue === option.value && styles.modalOptionSelected,
+              ]}
+              onPress={() => {
+                onSelect(option.value);
+                onClose();
+              }}
+            >
+              <Text
+                style={[
+                  styles.modalOptionText,
+                  selectedValue === option.value && styles.modalOptionTextSelected,
+                ]}
+              >
+                {option.label}
+              </Text>
+              {selectedValue === option.value && (
+                <MaterialCommunityIcons name="check-circle" size={22} color="#4338ca" />
+              )}
+            </TouchableOpacity>
+          ))}
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  );
+}
+
 function CreateCourseScreen({ navigation }: any) {
   const { user } = useAuthStore();
   const { createCourse, fetchTeacherCourses } = useCourseStore();
@@ -72,49 +119,6 @@ function CreateCourseScreen({ navigation }: any) {
       setIsLoading(false);
     }
   };
-
-  const renderPickerModal = (
-    visible: boolean,
-    onClose: () => void,
-    options: { label: string; value: string }[],
-    selectedValue: string,
-    onSelect: (value: string) => void,
-    title: string,
-  ) => (
-    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-      <TouchableOpacity style={styles.modalOverlay} activeOpacity={1} onPress={onClose}>
-        <View style={styles.modalContent}>
-          <View style={styles.modalHandle} />
-          <Text style={styles.modalTitle}>{title}</Text>
-          {options.map((option) => (
-            <TouchableOpacity
-              key={option.value}
-              style={[
-                styles.modalOption,
-                selectedValue === option.value && styles.modalOptionSelected,
-              ]}
-              onPress={() => {
-                onSelect(option.value);
-                onClose();
-              }}
-            >
-              <Text
-                style={[
-                  styles.modalOptionText,
-                  selectedValue === option.value && styles.modalOptionTextSelected,
-                ]}
-              >
-                {option.label}
-              </Text>
-              {selectedValue === option.value && (
-                <MaterialCommunityIcons name="check-circle" size={22} color="#4338ca" />
-              )}
-            </TouchableOpacity>
-          ))}
-        </View>
-      </TouchableOpacity>
-    </Modal>
-  );
 
   return (
     <View style={styles.container}>
@@ -275,24 +279,24 @@ function CreateCourseScreen({ navigation }: any) {
       </ScrollView>
 
       {/* Category Picker Modal */}
-      {renderPickerModal(
-        showCategoryPicker,
-        () => setShowCategoryPicker(false),
-        CATEGORY_OPTIONS,
-        category,
-        setCategory,
-        'Select Category',
-      )}
+      <PickerModal
+        visible={showCategoryPicker}
+        onClose={() => setShowCategoryPicker(false)}
+        options={CATEGORY_OPTIONS}
+        selectedValue={category}
+        onSelect={setCategory}
+        title="Select Category"
+      />
 
       {/* Level Picker Modal */}
-      {renderPickerModal(
-        showLevelPicker,
-        () => setShowLevelPicker(false),
-        LEVEL_OPTIONS,
-        level,
-        setLevel,
-        'Select Level',
-      )}
+      <PickerModal
+        visible={showLevelPicker}
+        onClose={() => setShowLevelPicker(false)}
+        options={LEVEL_OPTIONS}
+        selectedValue={level}
+        onSelect={setLevel}
+        title="Select Level"
+      />
     </View>
   );
 }
@@ -308,11 +312,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 24,
     borderBottomLeftRadius: 40,
     borderBottomRightRadius: 40,
-    elevation: 8,
-    shadowColor: '#1e3a8a',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.25,
-    shadowRadius: 16,
+    boxShadow: '0 8px 16px rgba(30, 58, 138, 0.25)',
     overflow: 'hidden',
     position: 'relative',
   },
@@ -373,11 +373,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 24,
     padding: 24,
-    elevation: 2,
-    shadowColor: '#64748b',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
+    boxShadow: '0 2px 8px rgba(100, 116, 139, 0.05)',
     marginBottom: 24,
   },
   sectionHeader: {
@@ -433,11 +429,7 @@ const styles = StyleSheet.create({
   submitButtonContainer: {
     borderRadius: 16,
     overflow: 'hidden',
-    elevation: 6,
-    shadowColor: '#4338ca',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+    boxShadow: '0 8px 12px rgba(67, 56, 202, 0.4)',
   },
   createButtonGradient: {
     flexDirection: 'row',

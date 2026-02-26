@@ -5,7 +5,6 @@ import React, { useEffect, useRef, useState } from 'react';
 import {
   Alert,
   Animated,
-  Dimensions,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -16,8 +15,6 @@ import {
 } from 'react-native';
 import { ActivityIndicator, Text, TextInput } from 'react-native-paper';
 import { Colors, Typography, AppShadows, BorderRadius, Spacing } from '@/constants/theme';
-
-const { width } = Dimensions.get('window');
 
 interface SignupScreenProps {
   onSignupSuccess: () => void;

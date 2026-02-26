@@ -11,13 +11,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  Dimensions,
   StatusBar
 } from 'react-native';
 import { ActivityIndicator, Text, Surface } from 'react-native-paper';
 import { Colors, AppShadows, Spacing } from '@/constants/theme';
-
-const { width } = Dimensions.get('window');
 
 function MyCoursesScreen({ navigation }: any) {
   const { user } = useAuthStore();

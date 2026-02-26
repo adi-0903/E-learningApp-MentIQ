@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import {
     View,
     Text,
@@ -10,8 +10,8 @@ import {
     ActivityIndicator,
     KeyboardAvoidingView,
     Platform,
-    SafeAreaView,
 } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { Colors, Spacing, BorderRadius, Typography, AppShadows } from '../../constants/theme';
 import { aiApi } from '../../services/ai.service';
@@ -88,6 +88,34 @@ export default function QbitChatWindow({ visible, onClose, lessonId, scope = 'gl
         }
     }, [messages, visible]);
 
+    const renderItem = useCallback(({ item }: { item: Message }) => (
+        <View style={[
+            styles.messageBubble,
+            item.isUser ? styles.userBubble : styles.aiBubble
+        ]}>
+            {item.isUser ? (
+                <Text style={[styles.messageText, styles.userText]}>
+                    {item.text}
+                </Text>
+            ) : (
+                <Markdown
+                    style={{
+                        body: { ...styles.messageText, ...styles.aiText },
+                        heading1: { ...Typography.h3, color: Colors.light.primary, marginVertical: 4 },
+                        heading2: { ...Typography.body, fontWeight: '700', marginVertical: 4 },
+                        code_block: { backgroundColor: '#f1f5f9', padding: 8, borderRadius: 4, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+                        fence: { backgroundColor: '#f1f5f9', padding: 8, borderRadius: 4, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
+                    }}
+                >
+                    {item.text}
+                </Markdown>
+            )}
+            <Text style={[styles.timestamp, { color: item.isUser ? Colors.light.primaryLight : Colors.light.textLight }]}>
+                {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </Text>
+        </View>
+    ), []);
+
     return (
         <Modal
             visible={visible}
@@ -96,7 +124,6 @@ export default function QbitChatWindow({ visible, onClose, lessonId, scope = 'gl
             onRequestClose={onClose}
         >
             <SafeAreaView style={styles.container}>
-                {/* Header */}
                 <View style={styles.header}>
                     <View style={styles.headerTitleContainer}>
                         <View style={styles.avatar}>
@@ -112,43 +139,15 @@ export default function QbitChatWindow({ visible, onClose, lessonId, scope = 'gl
                     </TouchableOpacity>
                 </View>
 
-                {/* Chat Area */}
                 <FlatList
                     ref={flatListRef}
                     data={messages}
                     keyExtractor={item => item.id}
                     contentContainerStyle={styles.chatContent}
                     keyboardShouldPersistTaps="handled"
-                    renderItem={({ item }) => (
-                        <View style={[
-                            styles.messageBubble,
-                            item.isUser ? styles.userBubble : styles.aiBubble
-                        ]}>
-                            {item.isUser ? (
-                                <Text style={[styles.messageText, styles.userText]}>
-                                    {item.text}
-                                </Text>
-                            ) : (
-                                <Markdown
-                                    style={{
-                                        body: { ...styles.messageText, ...styles.aiText },
-                                        heading1: { ...Typography.h3, color: Colors.light.primary, marginVertical: 4 },
-                                        heading2: { ...Typography.body, fontWeight: '700', marginVertical: 4 },
-                                        code_block: { backgroundColor: '#f1f5f9', padding: 8, borderRadius: 4, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
-                                        fence: { backgroundColor: '#f1f5f9', padding: 8, borderRadius: 4, fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace' },
-                                    }}
-                                >
-                                    {item.text}
-                                </Markdown>
-                            )}
-                            <Text style={[styles.timestamp, { color: item.isUser ? Colors.light.primaryLight : Colors.light.textLight }]}>
-                                {item.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                            </Text>
-                        </View>
-                    )}
+                    renderItem={renderItem}
                 />
 
-                {/* Input Area */}
                 <KeyboardAvoidingView
                     behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
                     keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}

@@ -2,7 +2,7 @@ import { Lesson, useCourseStore } from '@/store/courseStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { StatusBar } from 'expo-status-bar';
 import { VideoView, useVideoPlayer } from 'expo-video';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Alert,
   FlatList,
@@ -36,16 +36,6 @@ function VideoPlayerView({ source, style }: { source: { uri: string }; style: an
 
 export default function StudentVideoLecturesScreen({ route, navigation }: any) {
   const { courseId, courseTitle } = route?.params || {};
-
-  // Validate route parameters
-  if (!courseId) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text>Invalid course ID</Text>
-      </View>
-    );
-  }
-
   const { lessons, isLoading, fetchLessons } = useCourseStore();
   const [refreshing, setRefreshing] = useState(false);
   const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
@@ -56,6 +46,14 @@ export default function StudentVideoLecturesScreen({ route, navigation }: any) {
       loadLessons();
     }
   }, [courseId]);
+
+  if (!courseId) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text>Invalid course ID</Text>
+      </View>
+    );
+  }
 
   const loadLessons = async () => {
     if (!courseId) {
@@ -93,7 +91,7 @@ export default function StudentVideoLecturesScreen({ route, navigation }: any) {
 
   // Download functionality removed for simplicity
 
-  const renderLessonCard = (lesson: Lesson) => (
+  const renderLessonCard = useCallback(({ item: lesson }: { item: Lesson }) => (
     <Card style={[styles.videoCard, AppShadows.small]} key={lesson.id}>
       <Card.Content style={styles.cardContent}>
         <View style={styles.videoHeader}>
@@ -188,7 +186,7 @@ export default function StudentVideoLecturesScreen({ route, navigation }: any) {
       ) : (
         <FlatList
           data={lessons}
-          renderItem={({ item }) => renderLessonCard(item)}
+          renderItem={renderLessonCard}
           keyExtractor={(item) => item.id}
           contentContainerStyle={styles.videosList}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={Colors.light.primary} />}

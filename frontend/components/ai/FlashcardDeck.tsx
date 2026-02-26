@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Dimensions, Animated, PanResponder, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, useWindowDimensions, TouchableOpacity } from 'react-native';
 import { Colors, AppShadows, Typography, BorderRadius, Spacing } from '@/constants/theme';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 
-const { width } = Dimensions.get('window');
-const CARD_WIDTH = width - 48;
 const CARD_HEIGHT = 400;
 
 interface Flashcard {
@@ -13,6 +11,8 @@ interface Flashcard {
 }
 
 export default function FlashcardDeck({ cards }: { cards: Flashcard[] }) {
+    const { width } = useWindowDimensions();
+    const CARD_WIDTH = width - 48;
     const [currentIndex, setCurrentIndex] = useState(0);
     const [isFlipped, setIsFlipped] = useState(false);
 
@@ -23,14 +23,14 @@ export default function FlashcardDeck({ cards }: { cards: Flashcard[] }) {
     const handleNext = () => {
         if (currentIndex < cards.length - 1) {
             setIsFlipped(false);
-            setCurrentIndex(currentIndex + 1);
+            setCurrentIndex(prev => prev + 1);
         }
     };
 
     const handlePrev = () => {
         if (currentIndex > 0) {
             setIsFlipped(false);
-            setCurrentIndex(currentIndex - 1);
+            setCurrentIndex(prev => prev - 1);
         }
     };
 
@@ -54,7 +54,7 @@ export default function FlashcardDeck({ cards }: { cards: Flashcard[] }) {
             </View>
 
             <TouchableOpacity activeOpacity={0.9} onPress={handleFlip}>
-                <View style={[styles.card, AppShadows.medium]}>
+                <View style={[styles.card, AppShadows.medium, { width: CARD_WIDTH }]}>
                     <View style={styles.cardContent}>
                         <Text style={styles.cardLabel}>{isFlipped ? "ANSWER" : "QUESTION"}</Text>
                         <Text style={styles.cardText}>
@@ -117,7 +117,6 @@ const styles = StyleSheet.create({
         borderRadius: 3,
     },
     card: {
-        width: CARD_WIDTH,
         height: CARD_HEIGHT,
         backgroundColor: Colors.light.white,
         borderRadius: BorderRadius.xl,
@@ -171,6 +170,5 @@ const styles = StyleSheet.create({
     },
     disabledBtn: {
         backgroundColor: '#f8fafc',
-        elevation: 0,
     }
 });

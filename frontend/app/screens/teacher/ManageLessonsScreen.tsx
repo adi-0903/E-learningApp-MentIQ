@@ -7,15 +7,6 @@ import { ActivityIndicator, Text } from 'react-native-paper';
 
 function ManageLessonsScreen({ route, navigation }: any) {
   const { courseId } = route?.params || {};
-
-  if (!courseId) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text>Invalid course ID</Text>
-      </View>
-    );
-  }
-
   const { lessons, isLoading, fetchLessons, deleteLesson } = useCourseStore();
 
   useEffect(() => {
@@ -25,6 +16,14 @@ function ManageLessonsScreen({ route, navigation }: any) {
       });
     }
   }, [courseId]);
+
+  if (!courseId) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text>Invalid course ID</Text>
+      </View>
+    );
+  }
 
   const handleDeleteLesson = (lessonId: string, lessonTitle: string) => {
     Alert.alert(
@@ -175,11 +174,7 @@ const styles = StyleSheet.create({
     borderBottomLeftRadius: 32,
     borderBottomRightRadius: 32,
     overflow: 'hidden',
-    elevation: 8,
-    shadowColor: '#312e81',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
+    boxShadow: '0 8px 16px rgba(49, 46, 129, 0.3)',
     marginBottom: 8,
   },
   headerDecoration: {
@@ -242,11 +237,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 16,
     marginBottom: 12,
-    elevation: 2,
-    shadowColor: '#64748b',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
+    boxShadow: '0 2px 4px rgba(100, 116, 139, 0.05)',
     borderWidth: 1,
     borderColor: '#e2e8f0',
   },
@@ -340,11 +331,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     right: 24,
     bottom: 32,
-    elevation: 6,
-    shadowColor: '#4f46e5',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.4,
-    shadowRadius: 12,
+    boxShadow: '0 8px 12px rgba(79, 70, 229, 0.4)',
   },
   fabGradient: {
     width: 56,

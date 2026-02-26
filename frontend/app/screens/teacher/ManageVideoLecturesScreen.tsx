@@ -12,13 +12,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   View,
-  Dimensions,
   StatusBar
 } from 'react-native';
 import { ActivityIndicator, Button, FAB, Text, TextInput, Surface } from 'react-native-paper';
 import { AppShadows, Colors } from '@/constants/theme';
-
-const { width } = Dimensions.get('window');
 
 const PREMIUM = {
   bg: '#f8fafc',
@@ -33,15 +30,6 @@ const PREMIUM = {
 
 export default function ManageVideoLecturesScreen({ route, navigation }: any) {
   const { courseId, courseTitle } = route?.params || {};
-
-  if (!courseId) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text variant="titleMedium" style={{ color: PREMIUM.textSub }}>Invalid course ID</Text>
-      </View>
-    );
-  }
-
   const { lessons, isLoading, fetchLessons, deleteLesson, createLesson } = useCourseStore();
   const [showForm, setShowForm] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -53,8 +41,18 @@ export default function ManageVideoLecturesScreen({ route, navigation }: any) {
   });
 
   useEffect(() => {
-    fetchLessons(courseId);
+    if (courseId) {
+      fetchLessons(courseId);
+    }
   }, [courseId]);
+
+  if (!courseId) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text variant="titleMedium" style={{ color: PREMIUM.textSub }}>Invalid course ID</Text>
+      </View>
+    );
+  }
 
   const pickVideoFile = async () => {
     try {

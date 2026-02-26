@@ -345,8 +345,7 @@ const styles = StyleSheet.create({
         overflow: 'hidden',
         flexDirection: 'row',
         alignItems: 'center',
-        elevation: 10,
-        shadowColor: '#0f172a',
+        boxShadow: '0 5px 15px rgba(15, 23, 42, 0.2)',
         zIndex: 10,
     },
     bgIcon: {
@@ -485,7 +484,7 @@ const styles = StyleSheet.create({
     actionBtn: {
         marginTop: 8,
         borderRadius: BorderRadius.l,
-        elevation: 6,
+        boxShadow: '0 3px 9px rgba(0, 0, 0, 0.16)',
     },
     actionBtnContent: {
         height: 54,

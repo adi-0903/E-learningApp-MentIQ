@@ -296,7 +296,7 @@ function AnnouncementsScreen({ navigation }: any) {
                   <View style={styles.expandedAttachments}>
                     {attachments.images?.map((img, idx) => (
                       <TouchableOpacity
-                        key={`img-${idx}`}
+                        key={img}
                         style={styles.attachmentRow}
                         onPress={(e) => {
                           e.stopPropagation();
@@ -316,7 +316,7 @@ function AnnouncementsScreen({ navigation }: any) {
 
                     {attachments.pdfs?.map((pdf, idx) => (
                       <TouchableOpacity
-                        key={`pdf-${idx}`}
+                        key={pdf.name || pdf.uri || `pdf-${idx}`}
                         style={styles.attachmentRow}
                         onPress={(e) => {
                           e.stopPropagation();
@@ -336,7 +336,7 @@ function AnnouncementsScreen({ navigation }: any) {
 
                     {attachments.links?.map((link, idx) => (
                       <TouchableOpacity
-                        key={`link-${idx}`}
+                        key={link}
                         style={styles.attachmentRow}
                         onPress={(e) => {
                           e.stopPropagation();
@@ -398,6 +398,8 @@ function AnnouncementsScreen({ navigation }: any) {
   const themeColors = (isStudent
     ? ['#06201f', '#064e3b', '#065f46']
     : ['#0f172a', '#1e1b4b', '#312e81']) as readonly [string, string, ...string[]];
+
+  const renderAnnouncementItemCb = useCallback(({ item, index }: { item: any, index: number }) => renderAnnouncementItem(item, index), []);
 
   if (isLoading && announcements.length === 0) {
     return (
@@ -464,7 +466,7 @@ function AnnouncementsScreen({ navigation }: any) {
 
         <FlatList
           data={filteredAnnouncements}
-          renderItem={({ item, index }) => renderAnnouncementItem(item, index)}
+          renderItem={renderAnnouncementItemCb}
           keyExtractor={(item) => item.id.toString()}
           contentContainerStyle={styles.scrollList}
           showsVerticalScrollIndicator={false}
@@ -591,10 +593,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 20,
     height: 52,
-    elevation: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 15,
+    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
   },
   searchText: {
     fontSize: 14,
@@ -639,11 +638,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(241, 245, 249, 1)',
     overflow: 'hidden',
-    shadowColor: '#64748b',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.08,
-    shadowRadius: 24,
-    elevation: 4,
+    boxShadow: '0 8px 24px rgba(100, 116, 139, 0.08)',
   },
   cardGradientStrip: {
     height: 6,
@@ -752,10 +747,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderWidth: 2,
     borderColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
   },
   avatarText: {
     fontSize: 14,
@@ -832,11 +823,7 @@ const styles = StyleSheet.create({
     height: 48,
     borderRadius: 24,
     overflow: 'hidden',
-    shadowColor: '#4f46e5',
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3,
-    shadowRadius: 16,
-    elevation: 8,
+    boxShadow: '0 8px 16px rgba(79, 70, 229, 0.3)',
   },
   btnGradient: {
     flex: 1,

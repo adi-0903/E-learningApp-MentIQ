@@ -181,7 +181,7 @@ const styles = StyleSheet.create({
     questionCard: {
         marginBottom: 20,
         borderRadius: 16,
-        elevation: 2,
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.12000000000000001)',
         backgroundColor: '#fff',
     },
     questionHeader: {
