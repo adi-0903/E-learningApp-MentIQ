@@ -24,7 +24,6 @@ interface AuthState {
   isLoading: boolean;
   isLoggedIn: boolean;
   login: (email: string, password: string, role: 'teacher' | 'student') => Promise<void>;
-  signup: (email: string, password: string, name: string, role: 'teacher' | 'student') => Promise<void>;
   logout: () => Promise<void>;
   getCurrentUser: () => Promise<User | null>;
   updateProfile: (name: string, bio: string, phoneNumber?: string, profileImageUri?: string, profileAvatar?: string) => Promise<void>;
@@ -81,23 +80,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     }
   },
 
-  signup: async (email: string, password: string, name: string, role: 'teacher' | 'student') => {
-    set({ isLoading: true });
-    try {
-      await authApi.register({
-        email,
-        password,
-        password_confirm: password,
-        name,
-        role,
-      });
-      // Don't auto-login after signup — user must login manually
-    } catch (error: any) {
-      throw error;
-    } finally {
-      set({ isLoading: false });
-    }
-  },
+
 
   logout: async () => {
     try {

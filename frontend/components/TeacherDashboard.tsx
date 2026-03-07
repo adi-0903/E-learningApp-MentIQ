@@ -12,7 +12,8 @@ import {
   useWindowDimensions,
   TouchableOpacity,
   View,
-  ImageBackground
+  ImageBackground,
+  Dimensions
 } from 'react-native';
 import { ActivityIndicator, Text, Surface, Card } from 'react-native-paper';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -67,13 +68,13 @@ const ActionButton = ({ icon, label, onPress, gradient }: { icon: string, label:
 );
 
 export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
-  const { width } = useWindowDimensions();
   onCoursePress,
   onCreateCoursePress,
   onCreateAnnouncementPress,
   onManageLiveClassesPress,
   onMyCoursesPress,
 }) => {
+  const { width } = useWindowDimensions();
   const { user } = useAuthStore();
   const { courses, isLoading: coursesLoading, fetchTeacherCourses, deleteCourse } = useCourseStore();
   const { fetchTeacherStudentProgress } = useProgressStore();
@@ -438,7 +439,7 @@ const styles = StyleSheet.create({
     marginBottom: 32,
   },
   actionBtnContainer: {
-    width: (width - 48 - 12) / 2, // 2 columns
+    width: (Dimensions.get('window').width - 48 - 12) / 2, // 2 columns
     borderRadius: 16,
     overflow: 'hidden',
     boxShadow: '0 2px 4px rgba(0, 0, 0, 0.1)',

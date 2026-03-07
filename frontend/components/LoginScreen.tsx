@@ -18,7 +18,6 @@ import { Colors, Typography, AppShadows, BorderRadius, Spacing } from '@/constan
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
-  onNavigateToSignup: () => void;
 }
 
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -26,7 +25,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
   onLoginSuccess,
-  onNavigateToSignup,
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -290,13 +288,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                 )}
               </View>
 
-              {/* Sign Up Link */}
-              <View style={styles.footer}>
-                <Text style={styles.footerText}>Don't have an account? </Text>
-                <TouchableOpacity onPress={onNavigateToSignup} disabled={isLoading}>
-                  <Text style={styles.signupLink}>Sign Up</Text>
-                </TouchableOpacity>
-              </View>
+
             </View>
 
             {/* Bottom Decoration */}

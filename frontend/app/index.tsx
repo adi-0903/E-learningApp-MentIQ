@@ -1,6 +1,5 @@
 import MainApp from '@/app/MainApp';
 import { LoginScreen } from '@/components/LoginScreen';
-import { SignupScreen } from '@/components/SignupScreen';
 import { OnboardingScreen } from '@/components/OnboardingScreen';
 import { useAuthStore } from '@/store/authStore';
 import { useState } from 'react';
@@ -8,12 +7,11 @@ import { StyleSheet } from 'react-native';
 import { PaperProvider } from 'react-native-paper';
 import SplashScreen from './screens/auth/SplashScreen';
 
-type AuthScreen = 'login' | 'signup';
+
 
 export default function RootApp() {
   const [showSplash, setShowSplash] = useState(true);
   const [showOnboarding, setShowOnboarding] = useState(true);
-  const [authScreen, setAuthScreen] = useState<AuthScreen>('login');
   const isLoggedIn = useAuthStore((s) => s.isLoggedIn);
   const user = useAuthStore((s) => s.user);
 
@@ -39,15 +37,9 @@ export default function RootApp() {
     <PaperProvider>
       {isLoggedIn && user ? (
         <MainApp />
-      ) : authScreen === 'login' ? (
-        <LoginScreen
-          onLoginSuccess={() => setAuthScreen('login')}
-          onNavigateToSignup={() => setAuthScreen('signup')}
-        />
       ) : (
-        <SignupScreen
-          onSignupSuccess={() => setAuthScreen('login')}
-          onNavigateToLogin={() => setAuthScreen('login')}
+        <LoginScreen
+          onLoginSuccess={() => { }}
         />
       )}
     </PaperProvider>

@@ -134,3 +134,19 @@ def send_contact_reply_task(contact_id: int, reply_text: str):
     except Exception as e:
         logger.error(f"Contact reply task error: {e}")
         return {"error": str(e)}
+
+@shared_task(bind=True, max_retries=3, default_retry_delay=60)
+def send_otp_email_task(self, user_id: str, otp_code: str):
+    """Send OTP email to a user for password reset (async)."""
+    try:
+        from django.contrib.auth import get_user_model
+        from .email_utils import send_otp_email
+        User = get_user_model()
+        user = User.objects.get(id=user_id)
+        success = send_otp_email(user, otp_code)
+        if not success:
+            raise Exception(f"Failed to send OTP email to {user.email}")
+        logger.info(f"✅ OTP email sent to {user.email}")
+    except Exception as exc:
+        logger.error(f"OTP email task error: {exc}")
+        raise self.retry(exc=exc)

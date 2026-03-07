@@ -330,3 +330,36 @@ def send_contact_acknowledgement(contact_message) -> bool:
         ),
         email_type='generic',
     )
+
+def otp_email_html(name: str, otp_code: str) -> str:
+    content = f"""
+    <p class="greeting">Password Reset OTP</p>
+    <p class="body-text">
+        Hi {name}, you requested to reset your password. Use the verification code below to proceed:
+    </p>
+    <div style="text-align: center; margin: 30px 0;">
+        <div style="display: inline-block; padding: 20px 40px; background: rgba(99, 102, 241, 0.1); border: 2px dashed #6366f1; border-radius: 12px;">
+            <span style="font-size: 36px; font-weight: 800; color: #ffffff; letter-spacing: 12px; font-family: monospace;">{otp_code}</span>
+        </div>
+        <p style="font-size: 13px; color: #94a3b8; margin-top: 12px;">This code will expire in 10 minutes.</p>
+    </div>
+    <p class="body-text">
+        If you didn't request this, please ignore this email or contact support if you're concerned about your account security.
+    </p>
+    <p class="body-text" style="color:#64748b; font-size:13px;">
+        Stay secure,<br/>
+        <strong style="color:#c4b5fd;">The MentiQ Team</strong>
+    </p>
+    """
+    return _base_template(content, "Verify Your Identity — MentiQ")
+
+
+def send_otp_email(user, otp_code: str) -> bool:
+    """Send aStyled OTP email for password reset or identity verification."""
+    return send_email(
+        to_email=user.email,
+        to_name=getattr(user, 'name', '') or user.email,
+        subject="Password Reset Verification Code - MentiQ",
+        html_content=otp_email_html(getattr(user, 'name', 'there'), otp_code),
+        email_type='generic',
+    )

@@ -2,8 +2,10 @@ import { useAuthStore } from '@/store/authStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useEffect, useRef, useState } from 'react';
-import { Animated, StyleSheet,
-  useWindowDimensions, View, Image } from 'react-native';
+import {
+  Animated, StyleSheet,
+  useWindowDimensions, View, Image
+} from 'react-native';
 import { Text } from 'react-native-paper';
 
 
@@ -211,7 +213,7 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
 
 // Floating particle component refined
 function FloatingParticle({ delay }: { delay: number }) {
-  const { height } = useWindowDimensions();
+  const { height, width } = useWindowDimensions();
   const animValue = useRef(new Animated.Value(0)).current;
   const opacityValue = useRef(new Animated.Value(0)).current;
 
@@ -293,7 +295,8 @@ const styles = StyleSheet.create({
   bgDecoration: {
     opacity: 0.1,
     position: 'absolute',
-    right: -100,  },
+    right: -100,
+  },
   particlesContainer: {
     ...StyleSheet.absoluteFillObject,
   },

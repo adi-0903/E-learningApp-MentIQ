@@ -226,9 +226,7 @@ export function LoginPage({ onBack }) {
                         </button>
                     </form>
 
-                    <div className="login-footer-new">
-                        <p>Don't have an account? <a href="#">Create one now</a></p>
-                    </div>
+
                 </div>
             </div>
         </div>

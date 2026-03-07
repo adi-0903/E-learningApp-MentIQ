@@ -136,7 +136,7 @@ export default function StudentVideoLecturesScreen({ route, navigation }: any) {
         </View>
       </Card.Content>
     </Card>
-  );
+  ), [handlePlayVideo]);
 
   if (isLoading) {
     return (

@@ -2,8 +2,7 @@ import React, { useState, useEffect, useRef, useMemo } from 'react';
 import {
     View, StyleSheet, ScrollView, TouchableOpacity, Alert,
     Image, ActivityIndicator, KeyboardAvoidingView, Platform, Keyboard,
-    StatusBar, TextInput as RNTextInput
-  useWindowDimensions,
+    StatusBar, TextInput as RNTextInput, Dimensions, useWindowDimensions,
 } from 'react-native';
 import { Text, TextInput, Surface } from 'react-native-paper';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -1037,8 +1036,8 @@ export default function AICenterScreen() {
                                             key={idx}
                                             style={[
                                                 styles.calDayCell,
-                                                day && isSelectedDay(day) && styles.calDaySelected,
-                                                day && isToday(day) && !isSelectedDay(day) && styles.calDayToday,
+                                                Boolean(day && isSelectedDay(day)) ? styles.calDaySelected : null,
+                                                Boolean(day && isToday(day) && !isSelectedDay(day)) ? styles.calDayToday : null,
                                             ]}
                                             onPress={() => day && selectDay(day)}
                                             disabled={!day}
@@ -1329,7 +1328,7 @@ const styles = StyleSheet.create({
         top: 4,
         left: 4,
         height: 38,
-        width: (width - 40 - 8) / 3,
+        width: (Dimensions.get('window').width - 40 - 8) / 3,
         backgroundColor: Colors.light.primary,
         borderRadius: 20,
         ...AppShadows.small,

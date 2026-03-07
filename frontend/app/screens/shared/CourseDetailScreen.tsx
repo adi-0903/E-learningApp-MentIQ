@@ -2,7 +2,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Course, useCourseStore } from '@/store/courseStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useEffect, useState, useRef } from 'react';
-import { Alert, ScrollView, StyleSheet, TouchableOpacity, View, StatusBar } from 'react-native';
+import { Alert, ScrollView, StyleSheet, TouchableOpacity, View, StatusBar, Dimensions } from 'react-native';
 import { ActivityIndicator, Card, Text, Button, TextInput } from 'react-native-paper';
 import { Colors, Spacing, AppShadows, BorderRadius } from '@/constants/theme';
 import { useQuizStore } from '@/store/quizStore';
@@ -401,7 +401,7 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   statBox: {
-    width: (width - 60) / 2,
+    width: (Dimensions.get('window').width - 60) / 2,
     backgroundColor: '#fff',
     borderRadius: 20,
     padding: 16,
@@ -466,7 +466,7 @@ const styles = StyleSheet.create({
     gap: 12,
   },
   portalCard: {
-    width: (width - 60) / 2,
+    width: (Dimensions.get('window').width - 60) / 2,
     backgroundColor: '#fff',
     padding: 16,
     borderRadius: 20,
