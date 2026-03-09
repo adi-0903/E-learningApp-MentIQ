@@ -236,6 +236,12 @@ export const authApi = {
 
   verifyPhoneOTP: (otpCode: string, phoneNumber?: string) =>
     api.post('/v1/auth/verify-phone-otp/', { otp_code: otpCode, phone_number: phoneNumber }),
+
+  forgotPasswordRequest: (identifier: string) =>
+    api.post('/v1/auth/forgot-password/request/', { identifier }, { skipAuth: true }),
+
+  forgotPasswordVerify: (data: { identifier: string; otp_code: string; new_password: string }) =>
+    api.post('/v1/auth/forgot-password/verify/', data, { skipAuth: true }),
 };
 
 // ─── Students ────────────────────────────────────────────────────

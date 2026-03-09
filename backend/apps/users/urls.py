@@ -18,4 +18,6 @@ urlpatterns = [
     path('fcm-token/', views.UpdateFCMTokenView.as_view(), name='update-fcm-token'),
     path('request-phone-otp/', views.RequestPhoneOTPView.as_view(), name='request-phone-otp'),
     path('verify-phone-otp/', views.VerifyPhoneOTPView.as_view(), name='verify-phone-otp'),
+    path('forgot-password/request/', views.ForgotPasswordRequestView.as_view(), name='forgot-password-request'),
+    path('forgot-password/verify/', views.ForgotPasswordVerifyView.as_view(), name='forgot-password-verify'),
 ]

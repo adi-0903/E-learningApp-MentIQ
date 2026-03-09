@@ -99,7 +99,12 @@ export function LoginPage({ onBack }) {
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
+    const [msg, setMsg] = useState('');
     const [activeSlide, setActiveSlide] = useState(0);
+    const [forgotStep, setForgotStep] = useState(null); // 'identifier' | 'otp'
+    const [forgotId, setForgotId] = useState('');
+    const [otpCode, setOtpCode] = useState('');
+    const [newPass, setNewPass] = useState('');
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -112,6 +117,7 @@ export function LoginPage({ onBack }) {
         e.preventDefault();
         setLoading(true);
         setErrorMsg('');
+        setMsg('');
         try {
             const response = await api.post('auth/login/', { email, password });
             if (response.data && response.data.user) {
@@ -132,6 +138,49 @@ export function LoginPage({ onBack }) {
             } else {
                 setErrorMsg('Network error. Is the backend running?');
             }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleForgotRequest = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setErrorMsg('');
+        setMsg('');
+        try {
+            const res = await api.post('auth/forgot-password/request/', { identifier: forgotId });
+            if (res.data && res.data.success) {
+                setMsg(res.data.message);
+                setForgotStep('otp');
+            }
+        } catch (error) {
+            setErrorMsg(error.response?.data?.message || 'Failed to send OTP.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleForgotVerify = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setErrorMsg('');
+        setMsg('');
+        try {
+            const res = await api.post('auth/forgot-password/verify/', {
+                identifier: forgotId,
+                otp_code: otpCode,
+                new_password: newPass
+            });
+            if (res.data && res.data.success) {
+                setMsg(res.data.message);
+                setTimeout(() => {
+                    setForgotStep(null);
+                    setMsg('');
+                }, 3000);
+            }
+        } catch (error) {
+            setErrorMsg(error.response?.data?.message || 'Verification failed.');
         } finally {
             setLoading(false);
         }
@@ -191,42 +240,98 @@ export function LoginPage({ onBack }) {
 
                 {/* Right Panel: Form */}
                 <div className="login-right-panel">
-                    <div className="login-header-new">
-                        <h2>Welcome Back</h2>
-                        <p>Sign in to continue your journey</p>
-                    </div>
+                    {!forgotStep ? (
+                        <>
+                            <div className="login-header-new">
+                                <h2>Welcome Back</h2>
+                                <p>Sign in to continue your journey</p>
+                            </div>
 
-                    <form className="login-form-new" onSubmit={handleSubmit}>
-                        {errorMsg && (
-                            <div className="login-error-msg">{errorMsg}</div>
-                        )}
+                            <form className="login-form-new" onSubmit={handleSubmit}>
+                                {errorMsg && <div className="login-error-msg">{errorMsg}</div>}
+                                {msg && <div className="login-success-msg" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#34d399', padding: '1rem', borderRadius: '12px', textAlign: 'center', marginBottom: '1rem' }}>{msg}</div>}
 
-                        <div className="input-wrapper">
-                            <svg className="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path></svg>
-                            <input type="text" placeholder="Email address or ID" required value={email} onChange={(e) => setEmail(e.target.value)} />
-                        </div>
+                                <div className="input-wrapper">
+                                    <svg className="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path></svg>
+                                    <input type="text" placeholder="Email address or ID" required value={email} onChange={(e) => setEmail(e.target.value)} />
+                                </div>
 
-                        <div className="input-wrapper">
-                            <svg className="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                            <input type="password" placeholder="Password" required value={password} onChange={(e) => setPassword(e.target.value)} />
-                        </div>
+                                <div className="input-wrapper">
+                                    <svg className="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                    <input type="password" placeholder="Password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                                </div>
 
-                        <div className="form-actions-row">
-                            <label className="custom-checkbox">
-                                <input type="checkbox" />
-                                <span className="checkmark"></span>
-                                <span className="cb-text">Remember me</span>
-                            </label>
-                            <a href="#" className="forgot-link">Forgot password?</a>
-                        </div>
+                                <div className="form-actions-row">
+                                    <label className="custom-checkbox">
+                                        <input type="checkbox" />
+                                        <span className="checkmark"></span>
+                                        <span className="cb-text">Remember me</span>
+                                    </label>
+                                    <a href="#" className="forgot-link" onClick={() => setForgotStep('identifier')}>Forgot password?</a>
+                                </div>
 
-                        <button type="submit" className="premium-submit-btn" disabled={loading}>
-                            <span>{loading ? 'Signing in...' : 'Sign In'}</span>
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
-                        </button>
-                    </form>
+                                <button type="submit" className="premium-submit-btn" disabled={loading}>
+                                    <span>{loading ? 'Signing in...' : 'Sign In'}</span>
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </button>
+                            </form>
+                        </>
+                    ) : forgotStep === 'identifier' ? (
+                        <>
+                            <div className="login-header-new">
+                                <h2>Reset Password</h2>
+                                <p>Enter your email, phone, or ID to receive a 4-digit code.</p>
+                            </div>
 
+                            <form className="login-form-new" onSubmit={handleForgotRequest}>
+                                {errorMsg && <div className="login-error-msg">{errorMsg}</div>}
+                                <div className="input-wrapper">
+                                    <svg className="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207"></path></svg>
+                                    <input type="text" placeholder="Email, Phone, or ID" required value={forgotId} onChange={(e) => setForgotId(e.target.value)} />
+                                </div>
 
+                                <button type="submit" className="premium-submit-btn" disabled={loading}>
+                                    <span>{loading ? 'Sending...' : 'Send Code'}</span>
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </button>
+
+                                <div className="login-footer-new">
+                                    <p><a href="#" onClick={() => setForgotStep(null)}>Back to Login</a></p>
+                                </div>
+                            </form>
+                        </>
+                    ) : (
+                        <>
+                            <div className="login-header-new">
+                                <h2>Verify Code</h2>
+                                <p>Enter the 4-digit code sent to you and choose a new password.</p>
+                            </div>
+
+                            <form className="login-form-new" onSubmit={handleForgotVerify}>
+                                {errorMsg && <div className="login-error-msg">{errorMsg}</div>}
+                                {msg && <div className="login-success-msg" style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#34d399', padding: '1rem', borderRadius: '12px', textAlign: 'center', marginBottom: '1rem' }}>{msg}</div>}
+
+                                <div className="input-wrapper">
+                                    <svg className="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    <input type="text" placeholder="4-digit Code" required maxLength={4} value={otpCode} onChange={(e) => setOtpCode(e.target.value)} />
+                                </div>
+
+                                <div className="input-wrapper">
+                                    <svg className="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
+                                    <input type="password" placeholder="New Password" required value={newPass} onChange={(e) => setNewPass(e.target.value)} />
+                                </div>
+
+                                <button type="submit" className="premium-submit-btn" disabled={loading}>
+                                    <span>{loading ? 'Verifying...' : 'Reset Password'}</span>
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                </button>
+
+                                <div className="login-footer-new">
+                                    <p><a href="#" onClick={() => setForgotStep('identifier')}>Change Identifier</a></p>
+                                </div>
+                            </form>
+                        </>
+                    )}
                 </div>
             </div>
         </div>
