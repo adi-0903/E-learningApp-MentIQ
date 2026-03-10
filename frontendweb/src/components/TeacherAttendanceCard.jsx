@@ -55,10 +55,10 @@ export function TeacherAttendanceCard({ onMarkAttendance }) {
                             </div>
                             <div className="course-info">
                                 <span className="course-name">{course.title}</span>
-                                <span className="student-count">{course.student_count || 0} Students Enrolled</span>
+                                <span className="student-count">{course.total_students || 0} Students Enrolled</span>
                             </div>
-                            <button className="action-btn">
-                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <button className="ta-action-btn">
+                                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4" />
                                 </svg>
                             </button>

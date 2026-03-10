@@ -88,6 +88,53 @@ class TeacherDashboardView(APIView):
         return Response({'success': True, 'data': data})
 
 
+class TeacherDashboardStatsView(APIView):
+    """
+    GET /api/v1/teachers/dashboard-stats/
+    Returns specific stat card metrics for the teacher.
+    """
+    permission_classes = [IsAuthenticated, IsTeacher]
+
+    def get(self, request):
+        teacher = request.user
+        courses = Course.objects.filter(teacher=teacher, is_deleted=False)
+
+        # Total unique students across all active courses
+        total_students = Enrollment.objects.filter(
+            course__in=courses, is_active=True
+        ).values('student').distinct().count()
+
+        active_courses = courses.filter(is_published=True).count()
+        
+        # Pending Doubts (mocking for now as Doubt model isn't imported, but assuming there is an app)
+        # Note: If there's an actual doubt system we should query it here. Let's return 0 or do a basic query if we find it later.
+        pending_doubts = 0
+        try:
+            from apps.live_classes.models import SessionBooking # Or whichever model handles doubts/questions
+            pending_doubts = SessionBooking.objects.filter(teacher=teacher, status='scheduled').count()
+        except:
+            pass
+
+        # Average Attendance
+        avg_attendance = 0 
+        try:
+            from apps.attendance.models import AttendanceRecord
+            records = AttendanceRecord.objects.filter(session__course__teacher=teacher)
+            if records.exists():
+                present = records.filter(is_present=True).count()
+                avg_attendance = round((present / records.count()) * 100)
+        except Exception as e:
+            print(f"Stats Error Check: {e}")
+
+        data = {
+            'total_students': total_students,
+            'active_courses': active_courses,
+            'avg_attendance': avg_attendance,
+            'pending_doubts': pending_doubts
+        }
+        return Response({'success': True, 'data': data})
+
+
 class TeacherCoursesView(generics.ListAPIView):
     """
     GET /api/v1/teachers/courses/

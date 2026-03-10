@@ -11,6 +11,14 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AlterUniqueTogether(
+            name="momentumscore",
+            unique_together=None,
+        ),
+        migrations.AlterUniqueTogether(
+            name="studentgenome",
+            unique_together=None,
+        ),
         migrations.RemoveField(
             model_name="concept",
             name="parent",
@@ -19,17 +27,9 @@ class Migration(migrations.Migration):
             model_name="studentgenome",
             name="concept",
         ),
-        migrations.AlterUniqueTogether(
-            name="momentumscore",
-            unique_together=None,
-        ),
         migrations.RemoveField(
             model_name="momentumscore",
             name="student",
-        ),
-        migrations.AlterUniqueTogether(
-            name="studentgenome",
-            unique_together=None,
         ),
         migrations.RemoveField(
             model_name="studentgenome",

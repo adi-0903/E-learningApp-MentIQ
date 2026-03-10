@@ -314,6 +314,9 @@ function App() {
                             setSelectedCourseTitle(title);
                             setCurrentPage('attendance');
                         }}
+                        onOpenCourses={() => setCurrentPage('courses')}
+                        onOpenClassroom={() => setCurrentPage('classroom')}
+                        onOpenDoubts={() => setCurrentPage('doubts')}
                     />
                 ) : (
                     <StudentDashboard

@@ -5,6 +5,7 @@ app_name = 'teachers'
 
 urlpatterns = [
     path('dashboard/', views.TeacherDashboardView.as_view(), name='dashboard'),
+    path('dashboard-stats/', views.TeacherDashboardStatsView.as_view(), name='dashboard-stats'),
     path('courses/', views.TeacherCoursesView.as_view(), name='courses'),
     path('students/', views.TeacherStudentsView.as_view(), name='students'),
     path('students/<uuid:student_id>/', views.TeacherStudentDetailView.as_view(), name='student-detail'),

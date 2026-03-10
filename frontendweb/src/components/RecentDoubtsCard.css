@@ -1,0 +1,112 @@
+.recent-doubts-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    background: rgba(30, 41, 59, 0.5);
+}
+
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.view-all-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: var(--primary-color);
+    border: none;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.view-all-btn:hover {
+    color: var(--primary-light);
+}
+
+.doubts-list-mini {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.doubt-item-mini {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+}
+
+.doubt-item-mini:hover {
+    background: rgba(15, 23, 42, 0.7);
+    border-color: rgba(99, 102, 241, 0.3);
+    transform: translateX(4px);
+}
+
+.doubt-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+.doubt-info {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+    overflow: hidden;
+}
+
+.student-name {
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.course-tag {
+    font-size: 0.65rem;
+    padding: 2px 6px;
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border-radius: 4px;
+    text-transform: uppercase;
+    font-weight: 700;
+}
+
+.doubt-question {
+    color: #94a3b8;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 2rem;
+    color: #94a3b8;
+    text-align: center;
+}

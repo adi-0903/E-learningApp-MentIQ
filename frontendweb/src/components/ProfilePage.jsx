@@ -80,7 +80,7 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
     const handleAvatarSelect = async (avatarUrl) => {
         setUploadingImage(true);
         try {
-            const res = await api.put('auth/profile/', {
+            const res = await api.patch('auth/profile/', {
                 profile_avatar: avatarUrl
             });
 
@@ -106,7 +106,7 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
             };
             if (profileAvatar) payload.profile_avatar = profileAvatar;
 
-            const res = await api.put('auth/profile/', payload);
+            const res = await api.patch('auth/profile/', payload);
 
             if (res.data && res.data.success) {
                 onUpdateProfile(res.data.data);
