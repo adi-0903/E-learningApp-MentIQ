@@ -34,7 +34,7 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/PostgreSQL-316192?style=for-the-badge&logo=postgresql&logoColor=white" />
+  <img src="https://img.shields.io/badge/Neon_Postgres-00E599?style=for-the-badge&logo=postgresql&logoColor=black" />
   <img src="https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white" />
   <img src="https://img.shields.io/badge/Celery-37814A?style=for-the-badge&logo=celery&logoColor=white" />
   <img src="https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black" />
@@ -654,6 +654,18 @@ npx expo start --clear
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
 
 ## <img src="https://media.giphy.com/media/mGcNjsfWAjY5AEZNw6/giphy.gif" width="30" /> &nbsp; Verification & QA Runbook
+
+<br/>
+
+### 🔑 Pre-Configured Live Demo Accounts
+
+Ready-to-use verified accounts injected directly into the active database for immediate platform testing. All system accounts use the master password `password123`.
+
+| Role | Email Identity | Access Level & Modules |
+| :--- | :--- | :--- |
+| 👑 **Global Admin** | `admin@mentiq.com` | Absolute platform control, React Admin suite, User overrides |
+| 👨‍🏫 **Instructor** | `teacher@mentiq.com` | Course authoring, Live room broadcasting, Dynamic Dashboard metrics |
+| 🎓 **Student** | `student@mentiq.com` | Active learning dashboard, Course playback, AI QBit Assistant access |
 
 <br/>
 
