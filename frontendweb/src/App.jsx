@@ -36,6 +36,8 @@ import { AdminProfile } from './admin/AdminProfile';
 import { AdminAnnouncements } from './admin/AdminAnnouncements';
 import { AdminPremium } from './admin/AdminPremium';
 import { AdminAttendance } from './admin/AdminAttendance';
+import { AdminParents } from './admin/AdminParents';
+import { TeacherParents } from './components/TeacherParents';
 
 import api from './api';
 
@@ -174,8 +176,10 @@ function App() {
                 onOpenAdminAnnouncements={() => setCurrentPage('admin_announcements')}
                 onOpenAdminPremium={() => setCurrentPage('admin_premium')}
                 onOpenAdminAttendance={() => setCurrentPage('admin_attendance')}
+                onOpenAdminParents={() => setCurrentPage('admin_parents')}
                 onOpenBadges={() => setCurrentPage('badges')}
                 onOpenLeaderboard={() => setCurrentPage('leaderboard')}
+                onOpenParents={() => setCurrentPage('parents')}
             />
             <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''}`}>
                 {!shouldHideHeader && (
@@ -237,6 +241,10 @@ function App() {
                     <AdminPremium />
                 ) : currentPage === 'admin_attendance' ? (
                     <AdminAttendance onBack={() => setCurrentPage('dashboard')} />
+                ) : currentPage === 'admin_parents' ? (
+                    <AdminParents onBack={() => setCurrentPage('dashboard')} />
+                ) : currentPage === 'parents' ? (
+                    <TeacherParents onBack={() => setCurrentPage('dashboard')} />
 
                     /* ══════════ EXISTING PAGES ══════════ */
                 ) : currentPage === 'profile' ? (
@@ -329,6 +337,7 @@ function App() {
                         onOpenCourses={() => setCurrentPage('courses')}
                         onOpenClassroom={() => setCurrentPage('classroom')}
                         onOpenDoubts={() => setCurrentPage('doubts')}
+                        onOpenParents={() => setCurrentPage('parents')}
                     />
                 ) : (
                     <StudentDashboard

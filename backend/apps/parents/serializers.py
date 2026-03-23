@@ -28,11 +28,13 @@ class ParentProfileSerializer(serializers.ModelSerializer):
 class StudentLinkRequestSerializer(serializers.ModelSerializer):
     """Serializer for requesting a link to a student."""
     student_id = serializers.CharField(write_only=True)
+    display_student_id = serializers.CharField(source='student.student_id', read_only=True)
+    student_name = serializers.CharField(source='student.name', read_only=True)
 
     class Meta:
         model = StudentLinkRequest
-        fields = ['id', 'student_id', 'status', 'created_at']
-        read_only_fields = ['id', 'status', 'created_at']
+        fields = ['id', 'student_id', 'display_student_id', 'student_name', 'status', 'created_at']
+        read_only_fields = ['id', 'status', 'created_at', 'display_student_id', 'student_name']
 
     def validate_student_id(self, value):
         if not User.objects.filter(student_id=value, role=User.RoleChoices.STUDENT).exists():
@@ -48,14 +50,17 @@ class StudentLinkRequestSerializer(serializers.ModelSerializer):
         if parent.children.filter(id=student.id).exists():
             raise serializers.ValidationError("This student is already linked to your account.")
             
+        # Instantly approve and link
+        parent.children.add(student)
+        
         link_request, created = StudentLinkRequest.objects.get_or_create(
             parent=parent,
             student=student,
-            defaults={'status': StudentLinkRequest.Status.PENDING}
+            defaults={'status': StudentLinkRequest.Status.APPROVED}
         )
         
-        if not created and link_request.status == StudentLinkRequest.Status.REJECTED:
-            link_request.status = StudentLinkRequest.Status.PENDING
+        if not created and link_request.status != StudentLinkRequest.Status.APPROVED:
+            link_request.status = StudentLinkRequest.Status.APPROVED
             link_request.save()
             
         return link_request

@@ -2,7 +2,7 @@ import React from 'react';
 import { Crown } from 'lucide-react';
 import './Sidebar.css';
 
-export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroom, onOpenDoubts, onLogout, currentPage, userRole, onOpenAdminTeachers, onOpenAdminStudents, onOpenAdminCourses, onOpenAdminAnnouncements, onOpenAdminPremium, onOpenAdminAttendance, onOpenBadges, onOpenLeaderboard }) {
+export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroom, onOpenDoubts, onLogout, currentPage, userRole, onOpenAdminTeachers, onOpenAdminStudents, onOpenAdminCourses, onOpenAdminAnnouncements, onOpenAdminPremium, onOpenAdminAttendance, onOpenAdminParents, onOpenBadges, onOpenLeaderboard, onOpenParents }) {
     const isTeacher = userRole === 'teacher';
     const isAdmin = userRole === 'admin';
 
@@ -39,6 +39,12 @@ export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroo
                                 <path d="M6 12v5c0 2 4 3 6 3s6-1 6-3v-5"></path>
                             </svg>
                             <span className="nav-label">Students</span>
+                        </div>
+                        <div className={`nav-item ${currentPage === 'admin_parents' ? 'active' : ''}`} onClick={onOpenAdminParents} title="Parents">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M17 21v-2a4 4 0 00-3-3.87M9 21v-2a4 4 0 014-4M12 7a4 4 0 110-8 4 4 0 010 8zM12 11a6 6 0 00-6 6v4h12v-4a6 6 0 00-6-6z" />
+                            </svg>
+                            <span className="nav-label">Parents</span>
                         </div>
 
                         <div className="nav-divider" />
@@ -111,6 +117,13 @@ export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroo
                                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z"></path>
                             </svg>
                         </div>
+                        {isTeacher && (
+                            <div className={`nav-item ${currentPage === 'parents' ? 'active' : ''}`} onClick={onOpenParents} title="Parent Contacts">
+                                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M17 21v-2a4 4 0 00-3-3.87M9 21v-2a4 4 0 014-4M12 7a4 4 0 110-8 4 4 0 010 8zM12 11a6 6 0 00-6 6v4h12v-4a6 6 0 00-6-6z" />
+                                </svg>
+                            </div>
+                        )}
                         {/* Gamification Navigation - Students Only */}
                         {!isTeacher && (
                             <>

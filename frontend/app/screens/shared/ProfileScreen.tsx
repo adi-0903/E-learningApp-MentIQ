@@ -3,6 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Course, useCourseStore } from '@/store/courseStore';
 import { useNotificationStore } from '@/store/notificationStore';
 import { Enrollment, useProgressStore } from '@/store/progressStore';
+import { useParentStore } from '@/store/parentStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Alert, Image, ScrollView, StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -13,6 +14,7 @@ function ProfileScreen({ navigation }: any) {
   const { unreadCount, loadSettings, resetUnreadCount } = useNotificationStore();
   const { courses, fetchEnrolledCourses } = useCourseStore();
   const { enrollments, fetchStudentEnrollments } = useProgressStore();
+  const { children, fetchChildren } = useParentStore();
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(user?.name || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -79,6 +81,8 @@ function ProfileScreen({ navigation }: any) {
       } else if (user.role === 'teacher') {
         const { fetchTeacherCourses } = useCourseStore.getState();
         fetchTeacherCourses().catch(console.error);
+      } else if (user.role === 'parent') {
+        fetchChildren().catch(console.error);
       }
     }
   }, [user?.id]);
@@ -189,12 +193,12 @@ function ProfileScreen({ navigation }: any) {
     );
   }
 
-  const headerColors = user.role === 'student'
+  const headerColors = (user.role === 'student' || user.role === 'parent')
     ? ['#06201f', '#064e3b', '#065f46'] as readonly [string, string, ...string[]]
     : ['#0f172a', '#1e1b4b', '#312e81'] as readonly [string, string, ...string[]];
 
-  const accentColor = user.role === 'student' ? '#10b981' : '#4f46e5';
-  const darkerAccent = user.role === 'student' ? '#065f46' : '#4338ca';
+  const accentColor = (user.role === 'student' || user.role === 'parent') ? '#10b981' : '#4f46e5';
+  const darkerAccent = (user.role === 'student' || user.role === 'parent') ? '#065f46' : '#4338ca';
 
   return (
     <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
@@ -254,8 +258,8 @@ function ProfileScreen({ navigation }: any) {
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{courses.length}</Text>
-            <Text style={styles.statLabel}>Courses</Text>
+            <Text style={styles.statValue}>{user.role === 'parent' ? children.length : courses.length}</Text>
+            <Text style={styles.statLabel}>{user.role === 'parent' ? 'Children' : 'Courses'}</Text>
           </View>
           <View style={styles.statDivider} />
           {user.role === 'student' ? (
@@ -274,6 +278,11 @@ function ProfileScreen({ navigation }: any) {
                 <Text style={styles.statLabel}>Avg %</Text>
               </View>
             </>
+          ) : user.role === 'parent' ? (
+            <View style={styles.statCard}>
+              <Text style={styles.statValue}>Parent</Text>
+              <Text style={styles.statLabel}>Role</Text>
+            </View>
           ) : (
             <View style={styles.statCard}>
               <Text style={styles.statValue}>Instructor</Text>
@@ -458,6 +467,24 @@ function ProfileScreen({ navigation }: any) {
                         <View style={[styles.verifyStatus, { backgroundColor: '#ecfdf5' }]}>
                           <MaterialCommunityIcons name="check-decagram" size={12} color="#10b981" />
                           <Text style={[styles.verifyText, { color: '#10b981' }]}>Active</Text>
+                        </View>
+                      </View>
+                    </View>
+                  </View>
+                )}
+
+                {user?.role === 'parent' && user?.parentId && (
+                  <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
+                    <View style={styles.infoIconWrapper}>
+                      <MaterialCommunityIcons name="card-account-details-outline" size={18} color={accentColor} />
+                    </View>
+                    <View style={styles.infoContent}>
+                      <Text style={styles.infoLabel}>P-UID</Text>
+                      <View style={styles.phoneValueRow}>
+                        <Text style={[styles.infoValue, { fontWeight: '900', color: accentColor }]}>{user.parentId}</Text>
+                        <View style={[styles.verifyStatus, { backgroundColor: '#e0f2fe' }]}>
+                          <MaterialCommunityIcons name="check-decagram" size={12} color={accentColor} />
+                          <Text style={[styles.verifyText, { color: accentColor }]}>Active</Text>
                         </View>
                       </View>
                     </View>

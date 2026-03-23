@@ -61,4 +61,7 @@ urlpatterns = [
     path('premium/init/', views.AdminPremiumPlanInitView.as_view(), name='premium-init'),
     path('premium/<uuid:id>/', views.AdminPremiumPlanDetailView.as_view(), name='premium-detail'),
     path('premium/<uuid:id>/subscribe/', views.AdminPremiumPlanSubscribeView.as_view(), name='premium-subscribe'),
+
+    # ── Parent Management ─────────────────────────────────────
+    path('parents/', views.AdminParentListView.as_view(), name='parent-list'),
 ]

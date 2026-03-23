@@ -18,6 +18,7 @@ import { Colors, Typography, AppShadows, BorderRadius, Spacing } from '@/constan
 
 interface LoginScreenProps {
   onLoginSuccess: () => void;
+  onNavigateToParentLogin?: () => void;
 }
 
 import * as LocalAuthentication from 'expo-local-authentication';
@@ -25,11 +26,12 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({
   onLoginSuccess,
+  onNavigateToParentLogin,
 }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<'teacher' | 'student' | 'parent'>('student');
+  const [role, setRole] = useState<'teacher' | 'student'>('student');
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [forgotStep, setForgotStep] = useState<'identifier' | 'otp' | null>(null);
   const [forgotId, setForgotId] = useState('');
@@ -64,7 +66,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       if (result.success) {
         const savedEmail = await AsyncStorage.getItem('last_user_email');
         const savedPass = await AsyncStorage.getItem('last_user_pass');
-        const savedRole = (await AsyncStorage.getItem('last_user_role')) as 'teacher' | 'student' | 'parent';
+        const savedRole = (await AsyncStorage.getItem('last_user_role')) as 'teacher' | 'student';
 
         if (savedEmail && savedPass) {
           setEmail(savedEmail);
@@ -184,9 +186,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         colors={
           role === 'student'
             ? [Colors.light.primaryDark, Colors.light.primary, Colors.light.secondaryLight]
-            : role === 'teacher'
-            ? ['#1e1b4b', '#4338ca', '#818cf8']
-            : ['#0f172a', '#334155', '#64748b'] // Slate/Dark gradient for Parent
+            : ['#1e1b4b', '#4338ca', '#818cf8']
         }
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -247,22 +247,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                           </Text>
                         </TouchableOpacity>
                       </Animated.View>
-                      <Animated.View style={{ flex: 1 }}>
-                        <TouchableOpacity
-                          style={[styles.roleButton, role === 'parent' && styles.roleButtonActiveParent]}
-                          onPress={() => setRole('parent')}
-                          disabled={isLoading}
-                        >
-                          <MaterialCommunityIcons
-                            name="account-child-circle"
-                            size={20}
-                            color={role === 'parent' ? '#0f172a' : Colors.light.textLight}
-                          />
-                          <Text style={[styles.roleButtonText, { fontSize: 11 }, role === 'parent' && styles.roleButtonTextActiveParent]}>
-                            Parent
-                          </Text>
-                        </TouchableOpacity>
-                      </Animated.View>
                     </View>
                   </View>
 
@@ -273,9 +257,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                       placeholder={
                         role === 'teacher'
                           ? "Email Address or 5-digit ID"
-                          : role === 'student'
-                            ? "Email Address or 8-digit ID"
-                            : "Email Address or 6-digit ID"
+                          : "Email Address or 8-digit ID"
                       }
                       value={email}
                       onChangeText={setEmail}
@@ -339,9 +321,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                         colors={
                           role === 'student'
                             ? [Colors.light.primary, Colors.light.primaryDark]
-                            : role === 'teacher'
-                              ? ['#4338ca', '#1e1b4b']
-                              : ['#334155', '#0f172a']
+                            : ['#4338ca', '#1e1b4b']
                         }
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
@@ -372,6 +352,18 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                       </TouchableOpacity>
                     )}
                   </View>
+
+                  {onNavigateToParentLogin && (
+                    <TouchableOpacity
+                      style={{ alignItems: 'center', marginTop: Spacing.xl }}
+                      onPress={onNavigateToParentLogin}
+                      disabled={isLoading}
+                    >
+                      <Text style={{ ...Typography.bodySmall, color: Colors.light.textSecondary }}>
+                        Are you a parent? <Text style={{ color: Colors.light.primary, fontWeight: 'bold' }}>Sign in as parent</Text>
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </>
               ) : forgotStep === 'identifier' ? (
                 <>
@@ -557,10 +549,6 @@ const styles = StyleSheet.create({
     borderColor: '#4338ca',
     backgroundColor: '#eef2ff',
   },
-  roleButtonActiveParent: {
-    borderColor: '#0f172a',
-    backgroundColor: '#f1f5f9',
-  },
   roleButtonText: {
     ...Typography.bodySmall,
     fontSize: 12,
@@ -572,9 +560,6 @@ const styles = StyleSheet.create({
   },
   roleButtonTextActiveTeacher: {
     color: '#4338ca',
-  },
-  roleButtonTextActiveParent: {
-    color: '#0f172a',
   },
   inputContainer: {
     flexDirection: 'row',

@@ -12,4 +12,6 @@ urlpatterns = [
     path('courses/<uuid:course_id>/students/', views.TeacherCourseStudentsView.as_view(), name='course-students'),
     path('bookings/', views.TeacherSessionBookingListView.as_view(), name='bookings-list'),
     path('bookings/<int:pk>/', views.TeacherSessionBookingUpdateView.as_view(), name='bookings-update'),
+    path('parents/', views.TeacherParentListView.as_view(), name='parents-list'),
+    path('parents/contact/', views.TeacherParentContactView.as_view(), name='parents-contact'),
 ]

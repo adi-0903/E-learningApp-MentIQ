@@ -92,6 +92,7 @@ export function AdminAnnouncements({ onBack }) {
             all: 'Everyone',
             students: 'Students Only',
             teachers: 'Teachers Only',
+            parents: 'Parents Only',
         };
         return map[a] || a;
     };
@@ -99,6 +100,7 @@ export function AdminAnnouncements({ onBack }) {
     const getAudienceIcon = (a) => {
         if (a === 'students') return <GraduationCap size={13} />;
         if (a === 'teachers') return <BookOpen size={13} />;
+        if (a === 'parents') return <Users size={13} />;
         return <Users size={13} />;
     };
 
@@ -139,6 +141,7 @@ export function AdminAnnouncements({ onBack }) {
                         <option value="all">All Audiences</option>
                         <option value="students">Students Only</option>
                         <option value="teachers">Teachers Only</option>
+                        <option value="parents">Parents Only</option>
                     </select>
                 </div>
             </div>
@@ -170,6 +173,15 @@ export function AdminAnnouncements({ onBack }) {
                     <div className="admin-stat-info">
                         <h3>{announcements.filter(a => a.target_audience === 'teachers' || a.target_audience === 'all').length}</h3>
                         <span>To Teachers</span>
+                    </div>
+                </div>
+                <div className="admin-stat-card">
+                    <div className="admin-stat-icon" style={{ background: 'linear-gradient(135deg, #10b981, #059669)' }}>
+                        <Users size={18} />
+                    </div>
+                    <div className="admin-stat-info">
+                        <h3>{announcements.filter(a => a.target_audience === 'parents' || a.target_audience === 'all').length}</h3>
+                        <span>To Parents</span>
                     </div>
                 </div>
                 <div className="admin-stat-card">
@@ -274,6 +286,7 @@ export function AdminAnnouncements({ onBack }) {
                                         <option value="all">Everyone</option>
                                         <option value="students">Students Only</option>
                                         <option value="teachers">Teachers Only</option>
+                                        <option value="parents">Parents Only</option>
                                     </select>
                                 </div>
                                 <div className="admin-form-group">
@@ -309,9 +322,10 @@ export function AdminAnnouncements({ onBack }) {
                                 <div className="admin-audience-preview-text">
                                     <strong>Sending to: {getAudienceLabel(targetAudience)}</strong>
                                     <span>
-                                        {targetAudience === 'students' && 'Only students will see this announcement. Teachers will NOT see it.'}
-                                        {targetAudience === 'teachers' && 'Only teachers will see this announcement. Students will NOT see it.'}
-                                        {targetAudience === 'all' && 'Both students and teachers will see this announcement.'}
+                                    {targetAudience === 'students' && 'Only students will see this announcement. Teachers/Parents will NOT see it.'}
+                                        {targetAudience === 'teachers' && 'Only teachers will see this announcement. Students/Parents will NOT see it.'}
+                                        {targetAudience === 'parents' && 'Only parents will see this announcement. Teachers/Students will NOT see it.'}
+                                        {targetAudience === 'all' && 'All students, teachers, and parents will see this announcement.'}
                                     </span>
                                 </div>
                             </div>

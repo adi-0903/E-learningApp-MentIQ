@@ -1,13 +1,13 @@
-import React from 'react';
-import { PlusCircle, Video, BookOpen, GraduationCap } from 'lucide-react';
+import { PlusCircle, Video, BookOpen, GraduationCap, Users } from 'lucide-react';
 import './QuickActionsCard.css';
 
-export function QuickActionsCard({ onOpenCourses, onOpenClassroom, onOpenDoubts }) {
+export function QuickActionsCard({ onOpenCourses, onOpenClassroom, onOpenDoubts, onOpenParents }) {
     const actions = [
         { label: "Create Course", icon: <PlusCircle size={24} />, onClick: onOpenCourses, color: "blue" },
         { label: "Live Classroom", icon: <Video size={24} />, onClick: onOpenClassroom, color: "red" },
         { label: "Answer Doubts", icon: <BookOpen size={24} />, onClick: onOpenDoubts, color: "purple" },
         { label: "Curriculum", icon: <GraduationCap size={24} />, onClick: onOpenCourses, color: "emerald" },
+        { label: "Parent Contacts", icon: <Users size={24} />, onClick: onOpenParents, color: "orange" },
     ];
 
     return (

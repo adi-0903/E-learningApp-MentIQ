@@ -57,6 +57,15 @@ class AnnouncementListCreateView(generics.ListCreateAPIView):
             return Announcement.objects.filter(
                 general | personal
             ).select_related('teacher', 'course').distinct()
+        elif user.role == 'parent':
+            # Parents see: institutional announcements where audience is 'all' or 'parents'
+            # PLUS personal announcements targeted directly at this parent
+            audience_filter = Q(target_audience='all') | Q(target_audience='parents')
+            general = audience_filter & Q(course__isnull=True) & Q(target_student__isnull=True)
+            personal = Q(target_student=user)
+            return Announcement.objects.filter(
+                general | personal
+            ).select_related('teacher', 'course').distinct()
         else:
             # Admin sees all
             return Announcement.objects.all().select_related('teacher', 'course')
@@ -80,20 +89,34 @@ class AnnouncementListCreateView(generics.ListCreateAPIView):
                 ).distinct()
                 type_val = Notification.TypeChoices.ANNOUNCEMENT
                 data = {'course_id': str(announcement.course.id), 'announcement_id': str(announcement.id)}
+                for student in students:
+                    create_notification(
+                        user=student,
+                        title=title,
+                        body=body,
+                        notification_type=type_val,
+                        data=data
+                    )
             else:
-                # Institutional update: Notify ALL students
-                students = User.objects.filter(role='student')
+                # Institutional update: Notify ALL recipients based on audience
                 type_val = Notification.TypeChoices.ANNOUNCEMENT
                 data = {'announcement_id': str(announcement.id)}
+                
+                target = announcement.target_audience
+                if target == 'students' or target == 'all':
+                    students = User.objects.filter(role='student', is_active=True)
+                    for s in students:
+                        create_notification(user=s, title=title, body=body, notification_type=type_val, data=data)
+                
+                if target == 'teachers' or target == 'all':
+                    teachers = User.objects.filter(role='teacher', is_active=True)
+                    for t in teachers:
+                        create_notification(user=t, title=title, body=body, notification_type=type_val, data=data)
 
-            for student in students:
-                create_notification(
-                    user=student,
-                    title=title,
-                    body=body,
-                    notification_type=type_val,
-                    data=data
-                )
+                if target == 'parents' or target == 'all':
+                    parents = User.objects.filter(role='parent', is_active=True)
+                    for p in parents:
+                        create_notification(user=p, title=title, body=body, notification_type=type_val, data=data)
         except Exception as e:
             print(f"Announcement Notification Failure: {e}")
 

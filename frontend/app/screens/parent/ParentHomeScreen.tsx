@@ -83,14 +83,29 @@ const ParentHomeScreen = ({ navigation }: any) => {
         </View>
 
         <Surface style={styles.summaryCard} elevation={1}>
-          <View style={styles.summaryItem}>
+          <TouchableOpacity 
+            style={styles.summaryItem}
+            onPress={fetchChildren}
+          >
             <Text style={styles.summaryValue}>{children.length}</Text>
             <Text style={styles.summaryLabel}>Children Linked</Text>
-          </View>
+          </TouchableOpacity>
+          
           <View style={styles.summaryDivider} />
+          
+          <TouchableOpacity 
+            style={styles.summaryItem}
+            onPress={() => navigation.navigate('AnnouncementsTab')}
+          >
+            <MaterialCommunityIcons name="bell-badge-outline" size={24} color={Colors.light.primary} />
+            <Text style={styles.summaryLabel}>School Updates</Text>
+          </TouchableOpacity>
+
+          <View style={styles.summaryDivider} />
+          
           <View style={styles.summaryItem}>
             <MaterialCommunityIcons name="calendar-check" size={24} color={Colors.light.primary} />
-            <Text style={styles.summaryLabel}>Next Report: Monday</Text>
+            <Text style={styles.summaryLabel}>Next Report: Mon</Text>
           </View>
         </Surface>
       </LinearGradient>

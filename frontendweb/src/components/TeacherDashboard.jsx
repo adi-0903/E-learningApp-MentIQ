@@ -13,7 +13,8 @@ export function TeacherDashboard({
     onMarkAttendance,
     onOpenCourses,
     onOpenClassroom,
-    onOpenDoubts
+    onOpenDoubts,
+    onOpenParents
 }) {
     return (
         <div className="teacher-dashboard-container" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
@@ -25,6 +26,7 @@ export function TeacherDashboard({
                     onOpenCourses={onOpenCourses}
                     onOpenClassroom={onOpenClassroom}
                     onOpenDoubts={onOpenDoubts}
+                    onOpenParents={onOpenParents}
                 />
                 <RecentDoubtsCard onOpenDoubts={onOpenDoubts} />
                 <AIAssistantCard userRole={userRole} />

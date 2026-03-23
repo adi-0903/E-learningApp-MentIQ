@@ -50,20 +50,31 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
     React.useEffect(() => {
         const fetchStats = async () => {
             try {
-                const res = await api.get('students/dashboard/');
-                if (res.data && res.data.success) {
-                    const data = res.data.data;
-                    setStats({
-                        courses: data.total_enrolled_courses || 0,
-                        completed: data.completed_courses || 0,
-                        avg_score: data.average_quiz_score || 0
-                    });
+                if (userData?.role === 'parent') {
+                    const res = await api.get('parents/my-children/');
+                    if (res.data) {
+                        setStats({
+                            courses: res.data.length || 0,
+                            completed: 0, // Not applicable for parents directly
+                            avg_score: 0
+                        });
+                    }
+                } else {
+                    const res = await api.get('students/dashboard/');
+                    if (res.data && res.data.success) {
+                        const data = res.data.data;
+                        setStats({
+                            courses: data.total_enrolled_courses || 0,
+                            completed: data.completed_courses || 0,
+                            avg_score: data.average_quiz_score || 0
+                        });
+                    }
                 }
             } catch (err) {
                 console.error("Failed to fetch profile stats", err);
             }
         };
-        if (userData?.role === 'student' || !userData?.role) {
+        if (userData?.role) {
             fetchStats();
         }
     }, [userData]);
@@ -120,9 +131,11 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
     };
 
     const isStudent = userData?.role === 'student' || !userData?.role;
+    const isParent = userData?.role === 'parent';
+    const isTeacher = userData?.role === 'teacher';
 
     // Deterministic Avatar Hash like GreetingCard
-    const firstName = userData?.name ? userData.name.split(' ')[0] : 'Student';
+    const firstName = userData?.name ? userData.name.split(' ')[0] : (isParent ? 'Parent' : 'Student');
     const isFemale = firstName.length % 2 !== 0;
     const defaultAvatarUrl = isFemale ? "/premium_student_portrait_female.png" : "/premium_student_portrait.png";
     const currentAvatar = profileAvatar || defaultAvatarUrl;
@@ -151,7 +164,7 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
                             <div className="status-badge" title="Online"></div>
                         </div>
                         <h3 className="identity-name">{userData?.name || 'Unknown User'}</h3>
-                        <p className="identity-role">{isStudent ? 'Enrolled Student' : 'Instructor'}</p>
+                        <p className="identity-role">{isParent ? 'Parent Account' : isStudent ? 'Enrolled Student' : 'Instructor'}</p>
 
                         <div className="identity-details">
                             <div className="detail-item">
@@ -168,10 +181,10 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
                                     </span>
                                 )}
                             </div>
-                            {((isStudent && userData?.student_id) || (!isStudent && userData?.teacher_id)) && (
+                             {((isStudent && userData?.student_id) || (isTeacher && userData?.teacher_id) || (isParent && userData?.parent_id)) && (
                                 <div className="detail-item uid-item">
                                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
-                                    <span className="uid-text">{isStudent ? userData.student_id : userData.teacher_id}</span>
+                                    <span className="uid-text">{isStudent ? userData.student_id : isTeacher ? userData.teacher_id : userData.parent_id}</span>
                                     <span className="status-badge-inline active">Active</span>
                                 </div>
                             )}
@@ -179,19 +192,29 @@ export function ProfilePage({ userData, onBackToDashboard, onLogout, onUpdatePro
                     </div>
 
                     {/* Quick Stats Card */}
-                    <div className="card quick-stats-card">
+                     <div className="card quick-stats-card">
                         <div className="stat-box">
                             <h4>{stats.courses}</h4>
-                            <span>Courses</span>
+                            <span>{isParent ? 'Children' : 'Courses'}</span>
                         </div>
-                        <div className="stat-box">
-                            <h4>{stats.completed}</h4>
-                            <span>Completed</span>
-                        </div>
-                        <div className="stat-box">
-                            <h4>{stats.avg_score}%</h4>
-                            <span>Avg %</span>
-                        </div>
+                        {!isParent && (
+                            <>
+                                <div className="stat-box">
+                                    <h4>{stats.completed}</h4>
+                                    <span>Completed</span>
+                                </div>
+                                <div className="stat-box">
+                                    <h4>{stats.avg_score}%</h4>
+                                    <span>Avg %</span>
+                                </div>
+                            </>
+                        )}
+                        {isParent && (
+                            <div className="stat-box">
+                                <h4>Parent</h4>
+                                <span>Account Identity</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

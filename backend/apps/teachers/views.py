@@ -430,3 +430,98 @@ class TeacherSessionBookingUpdateView(generics.UpdateAPIView):
             )
         except Exception as e:
             print(f"Booking Update Notification Failure: {e}")
+
+
+# ═══════════════════════════════════════════════════════════════
+# PARENT INTERACTION
+# ═══════════════════════════════════════════════════════════════
+
+class TeacherParentListView(APIView):
+    """
+    GET /api/v1/teachers/parents/
+    Lists parents of students enrolled in the teacher's courses.
+    """
+    permission_classes = [IsAuthenticated, IsTeacher]
+
+    def get(self, request):
+        teacher = request.user
+        from apps.parents.models import ParentAccount
+        
+        # Get all students enrolled in teacher's courses
+        enrolled_student_ids = Enrollment.objects.filter(
+            course__teacher=teacher, is_active=True
+        ).values_list('student_id', flat=True).distinct()
+        
+        # Find parents of these students
+        parents = ParentAccount.objects.filter(
+            children__id__in=enrolled_student_ids
+        ).select_related('user').prefetch_related('children').distinct()
+        
+        data = []
+        for parent in parents:
+            base_user = parent.user
+            # Only include children of this parent who are enrolled in teacher's courses
+            relevant_children = parent.children.filter(id__in=enrolled_student_ids)
+            
+            data.append({
+                'id': str(base_user.id),
+                'name': base_user.name,
+                'email': base_user.email,
+                'phone_number': base_user.phone_number,
+                'parent_id': base_user.parent_id,
+                'children': [{
+                    'id': str(c.id),
+                    'name': c.name,
+                    'student_id': c.student_id
+                } for c in relevant_children]
+            })
+            
+        return Response({'success': True, 'data': data})
+
+
+class TeacherParentContactView(APIView):
+    """
+    POST /api/v1/teachers/parents/contact/
+    Sends a personal notification to a parent from a teacher.
+    Body: { parent_id, message, title? }
+    """
+    permission_classes = [IsAuthenticated, IsTeacher]
+
+    def post(self, request):
+        parent_user_id = request.data.get('parent_id')
+        message = request.data.get('message')
+        title = request.data.get('title', f"Message from Teacher {request.user.name}")
+
+        if not parent_user_id or not message:
+            return Response(
+                {'success': False, 'error': {'message': 'parent_id and message are required.'}},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            parent_user = User.objects.get(id=parent_user_id, role='parent')
+        except User.DoesNotExist:
+            return Response(
+                {'success': False, 'error': {'message': 'Parent not found.'}},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Create notification
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            
+            create_notification(
+                user=parent_user,
+                title=title,
+                body=message,
+                notification_type=Notification.TypeChoices.ANNOUNCEMENT,
+                data={'from_teacher': str(request.user.id), 'from_name': request.user.name}
+            )
+            return Response({'success': True, 'message': 'Notification sent to parent.'})
+        except Exception as e:
+            return Response(
+                {'success': False, 'error': {'message': f'Failed to send notification: {str(e)}'}},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+

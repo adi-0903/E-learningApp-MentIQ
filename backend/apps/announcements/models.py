@@ -19,6 +19,7 @@ class Announcement(TimeStampedModel):
         ALL = 'all', 'Everyone'
         STUDENTS = 'students', 'Students Only'
         TEACHERS = 'teachers', 'Teachers Only'
+        PARENTS = 'parents', 'Parents Only'
 
     teacher = models.ForeignKey(
         settings.AUTH_USER_MODEL,

@@ -3,19 +3,29 @@ import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
 
+const isExpoGo = Constants.executionEnvironment === 'storeClient' || Constants.appOwnership === 'expo';
+const isAndroid = Platform.OS === 'android';
+
 // Handle notification behavior when app is in foreground
-Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
-});
+if (!(isExpoGo && isAndroid)) {
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: true,
+      shouldShowBanner: true,
+      shouldShowList: true,
+    }),
+  });
+}
 
 export async function registerForPushNotificationsAsync() {
   let token;
+
+  if (isExpoGo && isAndroid) {
+    console.log('Push notifications are disabled in Expo Go on Android.');
+    return null;
+  }
 
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('default', {
@@ -69,19 +79,29 @@ export const setupNotificationListeners = (
   onNotificationResponse?: (response: Notifications.NotificationResponse) => void
 ) => {
   // Notification received while app is running
-  const subscription = Notifications.addNotificationReceivedListener(notification => {
-    console.log('Notification Received:', notification);
-    if (onNotificationReceived) onNotificationReceived(notification);
-  });
+  let subscription: Notifications.Subscription | null = null;
+  try {
+    subscription = Notifications.addNotificationReceivedListener(notification => {
+      console.log('Notification Received:', notification);
+      if (onNotificationReceived) onNotificationReceived(notification);
+    });
+  } catch (e) {
+    console.warn('Could not add notification received listener:', e);
+  }
 
   // Notification tapped/interacted with
-  const responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
-    console.log('Notification Tapped:', response);
-    if (onNotificationResponse) onNotificationResponse(response);
-  });
+  let responseSubscription: Notifications.Subscription | null = null;
+  try {
+    responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
+      console.log('Notification Tapped:', response);
+      if (onNotificationResponse) onNotificationResponse(response);
+    });
+  } catch (e) {
+    console.warn('Could not add notification response listener:', e);
+  }
 
   return () => {
-    subscription.remove();
-    responseSubscription.remove();
+    if (subscription) subscription.remove();
+    if (responseSubscription) responseSubscription.remove();
   };
 };

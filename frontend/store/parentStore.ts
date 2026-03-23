@@ -107,6 +107,7 @@ export const useParentStore = create<ParentState>((set, get) => ({
     try {
       await parentApi.requestLink(studentId);
       await get().fetchLinkRequests();
+      await get().fetchChildren();
       set({ isLoading: false });
       return true;
     } catch (err: any) {

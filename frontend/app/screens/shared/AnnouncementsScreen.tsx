@@ -395,9 +395,13 @@ function AnnouncementsScreen({ navigation }: any) {
   };
 
   const isStudent = user?.role === 'student';
-  const themeColors = (isStudent
-    ? ['#06201f', '#064e3b', '#065f46']
-    : ['#0f172a', '#1e1b4b', '#312e81']) as readonly [string, string, ...string[]];
+  const isParent = user?.role === 'parent';
+  
+  const themeColors = (() => {
+    if (isStudent) return ['#06201f', '#064e3b', '#065f46'];
+    if (isParent) return ['#2e1065', '#4c1d95', '#5b21b6']; // Deep Purple for Parents
+    return ['#0f172a', '#1e1b4b', '#312e81']; // Default/Teacher theme
+  })() as readonly [string, string, ...string[]];
 
   const renderAnnouncementItemCb = useCallback(({ item, index }: { item: any, index: number }) => renderAnnouncementItem(item, index), []);
 

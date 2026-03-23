@@ -3,11 +3,12 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Colors } from '@/constants/theme';
-import { TouchableOpacity, View } from 'react-native';
+import { TouchableOpacity, View, Platform } from 'react-native';
 import StudentAIStackNavigator from './navigation/StudentAIStackNavigator';
 import { useEffect } from 'react';
 import { registerForPushNotificationsAsync, setupNotificationListeners } from '@/services/notificationService';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
 
 // Screens - using absolute imports
 // Student screens
@@ -403,6 +404,19 @@ function ParentStack() {
   );
 }
 
+// Parent Announcements Stack
+function ParentAnnouncementsStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="AnnouncementsMain" component={AnnouncementsScreen} />
+    </Stack.Navigator>
+  );
+}
+
 // Parent Tab Navigator
 function ParentTabs() {
   return (
@@ -442,6 +456,16 @@ function ParentTabs() {
           ),
         }}
       />
+      <Tab.Screen
+        name="AnnouncementsTab"
+        component={ParentAnnouncementsStack}
+        options={{
+          tabBarLabel: 'Updates',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="bell-ring-outline" color={color} size={size} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 }
@@ -455,7 +479,10 @@ function MainApp() {
     let isMounted = true;
 
     async function setupNotifications() {
-      if (user && isMounted) {
+      const isExpoGo = Constants.appOwnership === 'expo';
+      const isAndroid = Platform.OS === 'android';
+      
+      if (user && isMounted && !(isExpoGo && isAndroid)) {
         // 1. Register for push notifications and get token
         const token = await registerForPushNotificationsAsync();
         if (token) {
@@ -479,6 +506,8 @@ function MainApp() {
         );
 
         return cleanupListeners;
+      } else if (isExpoGo && isAndroid) {
+        console.warn('Push notifications are disabled in Expo Go on Android. Use a development build for full functionality.');
       }
     }
 

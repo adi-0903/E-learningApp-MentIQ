@@ -22,7 +22,7 @@ const ParentLinkChildScreen = ({ navigation }: any) => {
 
     const success = await requestLink(studentId);
     if (success) {
-      Alert.alert('Success', 'Link request sent! Your child will need to approve it from their profile.');
+      Alert.alert('Success', 'Child linked successfully! They will now appear on your dashboard.');
       setStudentId('');
     } else {
       Alert.alert('Error', 'Could not find that student. Please check the ID and try again.');
@@ -50,8 +50,8 @@ const ParentLinkChildScreen = ({ navigation }: any) => {
   const renderRequestItem = ({ item }: { item: any }) => (
     <Surface style={[styles.requestCard, AppShadows.small]}>
       <View style={styles.requestInfo}>
-        <Text style={styles.requestTitle}>Student ID: {item.student_id || 'N/A'}</Text>
-        <Text style={styles.requestDate}>Sent on: {new Date(item.created_at).toLocaleDateString()}</Text>
+        <Text style={styles.requestTitle}>Student ID: {item.display_student_id || 'N/A'}</Text>
+        <Text style={styles.requestDate}>Name: {item.student_name || '...'} • Sent on: {new Date(item.created_at).toLocaleDateString()}</Text>
       </View>
       <View style={[styles.statusBadge, { backgroundColor: getStatusColor(item.status) + '15' }]}>
         <MaterialCommunityIcons name={getStatusIcon(item.status)} size={14} color={getStatusColor(item.status)} />
@@ -77,7 +77,7 @@ const ParentLinkChildScreen = ({ navigation }: any) => {
       <View style={styles.content}>
         <Surface style={styles.inputCard} elevation={2}>
           <Text style={styles.inputLabel}>Enter Child's Student ID</Text>
-          <Text style={styles.inputSub}>Ask your child for their 8-digit unique ID shown on their profile.</Text>
+          <Text style={styles.inputSub}>Ask your child for their 8-digit unique ID shown on their profile to link instantly.</Text>
           <View style={styles.inputWrapper}>
             <MaterialCommunityIcons name="account-search-outline" size={24} color="#94A3B8" />
             <TextInput
@@ -97,13 +97,13 @@ const ParentLinkChildScreen = ({ navigation }: any) => {
             {isLoading ? (
               <ActivityIndicator color="#fff" />
             ) : (
-              <Text style={styles.linkButtonText}>Send Request</Text>
+              <Text style={styles.linkButtonText}>Link Instantly</Text>
             )}
           </TouchableOpacity>
         </Surface>
 
         <View style={styles.requestsSection}>
-          <Text style={styles.sectionTitle}>Recent Requests</Text>
+          <Text style={styles.sectionTitle}>Recently Linked</Text>
           {linkRequests.length === 0 ? (
             <View style={styles.emptyRequests}>
               <MaterialCommunityIcons name="history" size={48} color="#E2E8F0" />

@@ -903,6 +903,13 @@ class AdminAnnouncementCreateView(APIView):
                         user=t, title=title, body=body,
                         notification_type=type_val, data=data
                     )
+            if target == 'parents' or target == 'all':
+                parents = User.objects.filter(role='parent', is_active=True)
+                for p in parents:
+                    create_notification(
+                        user=p, title=title, body=body,
+                        notification_type=type_val, data=data
+                    )
         except Exception as e:
             print(f'Admin Announcement Notification Error: {e}')
 
@@ -1136,4 +1143,44 @@ class AdminPremiumPlanDetailView(APIView):
             'message': f'{plan.name} updated successfully.',
             'data': AdminPremiumPlanSerializer(plan).data,
         })
+
+
+# ═══════════════════════════════════════════════════════════════
+# PARENT MANAGEMENT
+# ═══════════════════════════════════════════════════════════════
+
+class AdminParentListView(APIView):
+    """
+    GET /api/v1/admin/parents/
+    Lists all parents and their linked children.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        from apps.parents.models import ParentAccount
+        parents = ParentAccount.objects.select_related('user').prefetch_related('children').all()
+        data = []
+        for p in parents:
+            base_user = p.user
+            data.append({
+                'id': str(base_user.id),
+                'parent_id': base_user.parent_id,
+                'name': base_user.name,
+                'email': base_user.email,
+                'phone_number': base_user.phone_number,
+                'is_active': base_user.is_active,
+                'created_at': base_user.created_at,
+                'children': [{
+                    'id': str(c.id),
+                    'name': c.name,
+                    'student_id': c.student_id,
+                    'email': c.email
+                } for c in p.children.all()]
+            })
+        return Response({
+            'success': True,
+            'count': len(data),
+            'data': data
+        })
+
 
