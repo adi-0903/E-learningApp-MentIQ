@@ -96,3 +96,4 @@ ios/build/
 # Firebase service account credentials
 *firebase-adminsdk*.json
 *service-account*.json
+backend/config/firebase-credentials.json
