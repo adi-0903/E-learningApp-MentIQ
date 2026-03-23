@@ -342,25 +342,23 @@ graph TD
     W["💻 Web Portal"]:::client
     API["🔀 DRF Gateway"]:::gateway
     FB["🔥 Firebase OTP"]:::gateway
-        L["🎥 Live Room"]:::core
-        AI["🤖 AI Tutor"]:::core
-        N["🔔 Alerts"]:::core
-        P["💳 Payments"]:::core
-    end
-
-    subgraph ASYNC["⚡ Background"]
-        CW["🔄 Celery"]:::async
-        RD["⚡ Redis"]:::async
-    end
-
-    subgraph DATA["🗄️ Database"]
-        PG[("🛢️ Postgres")]:::data
-        ES[("🔍 Search")]:::data
-    end
+    
+    U["👤 Users"]:::core
+    C["📚 Courses"]:::core
+    Q["📝 Quizzes"]:::core
+    L["🎥 Live Room"]:::core
+    AI["🤖 AI Tutor"]:::core
+    N["🔔 Alerts"]:::core
+    P["💳 Payments"]:::core
+    
+    CW["🔄 Celery Tasks"]:::async
+    RD["⚡ Redis Cache"]:::async
+    PG[("🛢️ Postgres DB")]:::data
+    ES[("🔍 Search Index")]:::data
 
     M --> API
     W --> API
-    API <--> FB
+    API --- FB
     
     API --> U
     API --> C
@@ -370,7 +368,14 @@ graph TD
     API --> N
     API --> P
 
-    CORE --> PG
+    U --> PG
+    C --> PG
+    Q --> PG
+    L --> PG
+    AI --> PG
+    N --> PG
+    P --> PG
+
     N --> CW
     CW --> RD
     Q --> ES
