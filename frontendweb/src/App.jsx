@@ -17,10 +17,21 @@ import { CurriculumManagementPage } from './components/CurriculumManagementPage'
 import { AttendanceMarkingPage } from './components/AttendanceMarkingPage';
 import { CourseCatalogPage } from './components/CourseCatalogPage';
 import { AnnouncementPopup } from './components/AnnouncementPopup';
+<<<<<<< HEAD
+=======
+import { ParentDashboard } from './components/ParentDashboard';
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 import { QuizResultPage } from './components/QuizResultPage';
 import { ClassroomPage } from './components/ClassroomPage';
 
+<<<<<<< HEAD
+=======
+// Badge System
+import BadgeGallery from './components/BadgeGallery';
+import LeaderboardPage from './components/LeaderboardPage';
+
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 // Admin Pages
 import { AdminDashboard } from './admin/AdminDashboard';
 import { AdminTeachers } from './admin/AdminTeachers';
@@ -149,7 +160,11 @@ function App() {
     const isAdminPage = currentPage.startsWith('admin');
 
     // Determine which pages should hide the header
+<<<<<<< HEAD
     const hideHeaderPages = ['profile', 'notifications', 'contact', 'classroom', 'courses', 'doubts', 'curriculum_management', 'attendance', 'course_catalog', 'admin_attendance'];
+=======
+    const hideHeaderPages = ['profile', 'notifications', 'contact', 'classroom', 'courses', 'doubts', 'curriculum_management', 'attendance', 'course_catalog', 'badges', 'leaderboard'];
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     const shouldHideHeader = hideHeaderPages.includes(currentPage) || isAdminPage;
 
     return (
@@ -170,6 +185,11 @@ function App() {
                 onOpenAdminAnnouncements={() => setCurrentPage('admin_announcements')}
                 onOpenAdminPremium={() => setCurrentPage('admin_premium')}
                 onOpenAdminAttendance={() => setCurrentPage('admin_attendance')}
+<<<<<<< HEAD
+=======
+                onOpenBadges={() => setCurrentPage('badges')}
+                onOpenLeaderboard={() => setCurrentPage('leaderboard')}
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
             />
             <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''}`}>
                 {!shouldHideHeader && (
@@ -305,6 +325,15 @@ function App() {
                             setCurrentPage('course_detail');
                         }}
                     />
+<<<<<<< HEAD
+=======
+                ) : currentPage === 'badges' && userRole === 'student' ? (
+                    <BadgeGallery />
+                ) : currentPage === 'leaderboard' && userRole === 'student' ? (
+                    <LeaderboardPage />
+                ) : userRole === 'parent' ? (
+                    <ParentDashboard userData={userData} />
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
                 ) : userRole === 'teacher' ? (
                     <TeacherDashboard
                         userData={userData}
@@ -326,6 +355,10 @@ function App() {
                         onContinueCourse={(id) => { setSelectedCourseId(id); setCurrentPage('course_detail'); }}
                     />
                 )}
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
             </div>
 
             {/* Priority Announcement Popup — only for student/teacher on dashboard */}

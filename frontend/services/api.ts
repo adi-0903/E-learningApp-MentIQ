@@ -656,6 +656,74 @@ export const emailApi = {
     api.post(`/v1/emails/admin/contacts/${id}/reply/`, { reply_text }),
 };
 
+<<<<<<< HEAD
+=======
+// ─── Offline Mode ────────────────────────────────────────────────
+export const offlineApi = {
+  getAvailableMicroLessons: (courseId?: string | number) => {
+    const query = courseId ? `?course_id=${courseId}` : '';
+    return api.get(`/v1/offline/micro-lessons/${query}`);
+  },
+
+  getMicroLesson: (id: string | number) =>
+    api.get(`/v1/offline/micro-lessons/${id}/`),
+
+  initiateDownload: (microLessonId: string | number, deviceInfo: string = '') =>
+    api.post('/v1/offline/download/', { micro_lesson_id: microLessonId, device_info: deviceInfo }),
+
+  confirmDownload: (id: string | number) =>
+    api.post(`/v1/offline/download/${id}/confirm/`),
+
+  deleteDownload: (id: string | number) =>
+    api.delete(`/v1/offline/download/${id}/`),
+
+  getMyDownloads: () =>
+    api.get('/v1/offline/my-downloads/'),
+
+  syncProgress: (data: {
+    download_id: string;
+    progress_percentage: number;
+    last_position_seconds: number;
+    is_lesson_completed?: boolean;
+    completed_at_offline?: string;
+  }) => api.post('/v1/offline/sync/', data),
+
+  bulkSync: (items: any[]) =>
+    api.post('/v1/offline/sync/bulk/', { items }),
+
+  getStorageSummary: () =>
+    api.get('/v1/offline/storage/'),
+};
+
+// ─── Parent Dashboard ────────────────────────────────────────────
+export const parentApi = {
+  getProfile: () =>
+    api.get('/v1/parents/profile/'),
+
+  updateProfile: (data: Partial<{ receive_weekly_reports: boolean; receive_immediate_alerts: boolean }>) =>
+    api.patch('/v1/parents/profile/', data),
+
+  getChildren: () =>
+    api.get('/v1/parents/children/'),
+
+  getChildReports: (studentId: string | number) =>
+    api.get(`/v1/parents/children/${studentId}/reports/`),
+
+  requestLink: (studentId: string) =>
+    api.post('/v1/parents/link/', { student_id: studentId }),
+
+  getLinkRequests: () =>
+    api.get('/v1/parents/link/status/'),
+
+  // Student side of linking
+  getPendingParentRequests: () =>
+    api.get('/v1/parents/student/requests/'),
+
+  respondToParentRequest: (requestId: number, action: 'approve' | 'reject') =>
+    api.post(`/v1/parents/student/requests/${requestId}/approve/`, { action }),
+};
+
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 // ─── Exported utilities ──────────────────────────────────────────
 export { setTokens, clearTokens, getTokens, API_BASE_URL };
 export default api;

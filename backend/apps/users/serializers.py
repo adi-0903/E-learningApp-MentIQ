@@ -36,6 +36,18 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     attrs[User.USERNAME_FIELD] = user.email
                 except User.DoesNotExist:
                     pass # Let standard validation fail naturally
+<<<<<<< HEAD
+=======
+            
+            # Check if username_value is a 6-digit Parent ID
+            elif cleaned_username.isdigit() and len(cleaned_username) == 6:
+                try:
+                    # If a user with this parent_id exists, switch to email auth
+                    user = User.objects.get(parent_id=cleaned_username)
+                    attrs[User.USERNAME_FIELD] = user.email
+                except User.DoesNotExist:
+                    pass # Let standard validation fail naturally
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
         data = super().validate(attrs)
         user = self.user
@@ -53,6 +65,10 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'is_phone_verified': user.is_phone_verified,
             'teacher_id': user.teacher_id,
             'student_id': user.student_id,
+<<<<<<< HEAD
+=======
+            'parent_id': user.parent_id,
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
             'profile_avatar': user.profile_avatar,
         }
         return data
@@ -67,6 +83,11 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             token['teacher_id'] = user.teacher_id
         if user.student_id:
             token['student_id'] = user.student_id
+<<<<<<< HEAD
+=======
+        if user.parent_id:
+            token['parent_id'] = user.parent_id
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         return token
 
 
@@ -93,8 +114,13 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError({'password_confirm': 'Passwords do not match.'})
+<<<<<<< HEAD
         if attrs.get('role') not in ['student', 'teacher']:
             raise serializers.ValidationError({'role': 'Role must be either student or teacher.'})
+=======
+        if attrs.get('role') not in ['student', 'teacher', 'parent']:
+            raise serializers.ValidationError({'role': 'Role must be either student, teacher or parent.'})
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         return attrs
 
     def create(self, validated_data):
@@ -111,10 +137,17 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'name', 'role', 'bio', 'phone_number',
+<<<<<<< HEAD
             'profile_image', 'profile_image_url', 'teacher_id', 'student_id', 'profile_avatar',
             'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at',
         ]
         read_only_fields = ['id', 'email', 'role', 'teacher_id', 'student_id', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
+=======
+            'profile_image', 'profile_image_url', 'teacher_id', 'student_id', 'parent_id', 'profile_avatar',
+            'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at',
+        ]
+        read_only_fields = ['id', 'email', 'role', 'teacher_id', 'student_id', 'parent_id', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

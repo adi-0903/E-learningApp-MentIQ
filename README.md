@@ -56,11 +56,19 @@
 <p align="center">
   <img src="https://img.shields.io/badge/🔥_Status-Active_Development-00C853?style=flat-square" />
   <img src="https://img.shields.io/badge/🏗️_Build-Passing-brightgreen?style=flat-square" />
+<<<<<<< HEAD
   <img src="https://img.shields.io/badge/📦_Version-1.5.0--stable-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/📜_License-MIT-green?style=flat-square" />
   <img src="https://img.shields.io/badge/🧠_AI_Model-Llama_3-F39C12?style=flat-square" />
   <img src="https://img.shields.io/badge/📱_Screens-33+-purple?style=flat-square" />
   <img src="https://img.shields.io/badge/🔌_API_Routes-17_Groups-red?style=flat-square" />
+=======
+  <img src="https://img.shields.io/badge/📦_Version-1.8.0--stable-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/📜_License-MIT-green?style=flat-square" />
+  <img src="https://img.shields.io/badge/🧠_AI_Model-Llama_3-F39C12?style=flat-square" />
+  <img src="https://img.shields.io/badge/📱_Screens-42+-purple?style=flat-square" />
+  <img src="https://img.shields.io/badge/🔌_API_Routes-21_Groups-red?style=flat-square" />
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 </p>
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
@@ -169,9 +177,15 @@
 | Feature | Description | Tech |
 |:---|:---|:---|
 | 🧠 **Advanced Quizzes** | MCQ, True/False, Multi-Select with time-boxing | `QuizScreen.tsx` |
+<<<<<<< HEAD
 | ⚖️ **Anti-Cheat System** | Server-enforced **3-attempt daily limit** per quiz | `Backend Validation` |
 | 📊 **Micro-Level Analysis** | Per-question breakdown: submitted vs. correct answer comparison | `QuizAnalysisScreen.tsx` |
 | 🏆 **Result Dashboard** | Beautiful grade cards with score percentages and attempt history | `QuizResultScreen.tsx` |
+=======
+| 🎮 **Gamified Badges** | Achievement system with rarity tiers (Common to Mythic) | `AchievementBadge` · `PostgreSQL` |
+| 🛡️ **Anti-Cheat System** | Server-enforced **3-attempt daily limit** per quiz | `Backend Validation` |
+| 🏆 **Global Leaderboard** | Real-time platform rankings based on quiz accuracy & badges | `LeaderboardView` · `DRF` |
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 | 📈 **Platform Analytics** | Celery-generated daily snapshots of engagement, revenue, and scores | `django-celery-beat` |
 | 🔍 **Elasticsearch Index** | Full-text search across courses, lessons, and users | `elasticsearch-dsl` |
 
@@ -188,9 +202,15 @@
 | 📩 **Auto Welcome Emails** | Triggered on registration via async Celery workers | `Gmail SMTP` · `Celery` |
 | 📣 **Campaign System** | Admin-targeted mass emailing to student cohorts | `Campaign Model` |
 | 📥 **IMAP Inbox Sync** | Pulls support emails directly into the admin dashboard | `IMAP` · `Gmail` |
+<<<<<<< HEAD
 | 🔔 **Push Notifications** | Firebase Cloud Messaging for quiz alerts, class reminders | `fcm-django` · `firebase-admin` |
 | 📞 **SMS Integration** | Twilio-powered SMS alerts for critical notifications | `twilio` |
 | ✉️ **EmailJS Frontend** | Client-side contact forms with direct email dispatch | `@emailjs/browser` |
+=======
+| 🔔 **Notification Triggers** | Automated alerts for live classes, new content, and payments | `django-signals` · `FCM` |
+| 👥 **Parent Handshake** | Secure linking system for parents to monitor student progress | `ParentAccount` · `Invitation System` |
+| 📞 **SMS Integration** | Twilio-powered SMS alerts for critical notifications | `twilio` |
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 </details>
 
@@ -204,7 +224,11 @@
 |:---|:---|:---|
 | 🎓 **Course Engine** | Full CRUD with enrollment tracking, pricing, and progress binding | `Django ORM` |
 | 📖 **Lesson Builder** | Rich content creation with media attachments | `Cloudinary` · `expo-document-picker` |
+<<<<<<< HEAD
 | 📢 **Announcements** | Broadcast system with premium card UI and push integration | `Premium UI Cards` |
+=======
+| 📶 **Offline Mode** | Micro-lesson downloads for rural learning without data | `OfflineManager` · `FileSystem` |
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 | 💳 **Stripe Payments** | Secure course purchases and subscription management | `stripe` · `Webhooks` |
 | 👨‍🎓 **Student Progress** | Circular SVG progress tracking with milestone gamification | `Custom SVG` |
 | 🏫 **Curriculum Manager** | Drag-and-arrange lesson ordering with bulk operations | `CurriculumManagementPage.jsx` |
@@ -249,8 +273,14 @@
 - `BrowseCoursesScreen` — Course catalog
 - `BrowseLiveClassesScreen` — Live class finder
 - `StudentProgressScreen` — Progress tracker
+<<<<<<< HEAD
 - `AllQuizzesScreen` — Quiz library
 - `StudentVideoLecturesScreen` — Video player
+=======
+- `MyBadgesScreen` — Earned achievements
+- `LeaderboardScreen` — Global rankings
+- `DownloadsScreen` — Offline micro-lessons
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 - `StudentLiveClassRoomScreen` — Live room
 - `AI Center (Index)` — 70K char AI hub
 
@@ -261,6 +291,7 @@
 - `CreateCourseScreen` — Course builder
 - `CreateLessonScreen` — Lesson creator
 - `CreateQuizScreen` — Quiz designer
+<<<<<<< HEAD
 - `CreateLiveClassScreen` — Class scheduler
 - `CreateAnnouncementScreen` — Broadcaster
 - `ManageLessonsScreen` — Lesson organizer
@@ -270,6 +301,11 @@
 - `LiveClassRoomScreen` — Teaching room
 - `StudentDetailScreen` — Student profiles
 - `TeacherProgressScreen` — Analytics view
+=======
+- `StudentDetailScreen` — Detailed profiles
+- `TeacherProgressScreen` — Analytics view
+- `ManageLessons` · `ManageQuizzes`
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 </td>
 <td valign="top">
@@ -280,6 +316,7 @@
 - `SecurityScreen` — Password & OTP
 - `CourseDetailScreen` — Course deep-dive
 - `CourseLessonsScreen` — Lesson browser
+<<<<<<< HEAD
 - `LessonDetailScreen` — Content viewer
 - `QuizScreen` — Quiz engine
 - `QuizResultScreen` — Result analysis
@@ -290,22 +327,39 @@
 - `AboutScreen` — Platform info
 
 **🔐 Auth Screens**
+=======
+- `QuizScreen` · `QuizResultScreen`
+- `Announcements` · `ContactUs`
+
+**🔐 Auth & Identity**
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 - `LoginScreen` — Multi-mode login
 - `SignupScreen` — Registration flow
 - `OnboardingScreen` — First-time UX
+<<<<<<< HEAD
 
 **🧩 Components (18)**
 
 - `StudentDashboard` · `TeacherDashboard`
 - `QbitChatWindow` · `QbitFloatingButton`
 - `FlashcardDeck` · `UsageTracker`
+=======
+- `ParentLinkScreen` — Parental association
+
+**🧩 Components (22)**
+
+- `BadgeCard` · `BadgeGallery`
+- `QbitChatWindow` · `UsageTracker`
+- `OfflineDownloadButton` · `SyncStatus`
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 </td>
 <td valign="top">
 
 **📊 Dashboard Cards**
 
+<<<<<<< HEAD
 - `GreetingCard` — Personalized welcome
 - `ProgressCard` — SVG progress rings
 - `StatsCard` — Key metrics display
@@ -328,12 +382,32 @@
 - `QuizTakingPage` · `QuizResultPage`
 
 **👑 Admin Suite (14 files)**
+=======
+- `GreetingCard` · `ProgressCard`
+- `StatsCard` · `AttendanceCard`
+- `KnowledgeGraphCard` · `AIAssistantCard`
+
+**📄 Full Pages**
+
+- `ClassroomPage` · `MyCoursesPage`
+- `ProfilePage` · `DoubtsPage`
+- `ParentDashboard` — Real-time tracking
+- `BadgeGallery` — Achievement portal
+- `LeaderboardPage` — Platform rankings
+- `CurriculumManagementPage`
+
+**👑 Admin Suite (16 files)**
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 - `AdminDashboard` · `AdminProfile`
 - `AdminStudents` · `AdminTeachers`
 - `AdminCourses` · `AdminEnrollments`
 - `AdminAnnouncements` · `AdminPremium`
 - `AdminUserDetail` · `AdminUsers`
+<<<<<<< HEAD
+=======
+- `AdminAttendance` — Global marking views
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 </td>
 </tr>
@@ -353,6 +427,7 @@ graph TD
     classDef gateway fill:#6366F1,stroke:#4F46E5,stroke-width:2px,color:#fff
     classDef core fill:#059669,stroke:#047857,stroke-width:2px,color:#fff
     classDef data fill:#7C3AED,stroke:#6D28D9,stroke-width:2px,color:#fff
+<<<<<<< HEAD
     classDef cloud fill:#F59E0B,stroke:#D97706,stroke-width:2px,color:#fff
     classDef async fill:#EC4899,stroke:#DB2777,stroke-width:2px,color:#fff
 
@@ -417,6 +492,50 @@ graph TD
     P --> ST
     N --> GM
     AD --> SN
+=======
+    classDef async fill:#EC4899,stroke:#DB2777,stroke-width:2px,color:#fff
+
+    M["📱 Mobile App"]:::client
+    W["💻 Web Portal"]:::client
+    API["🔀 DRF Gateway"]:::gateway
+    FB["🔥 Firebase OTP"]:::gateway
+    
+    U["👤 Users"]:::core
+    C["📚 Courses"]:::core
+    Q["📝 Quizzes"]:::core
+    L["🎥 Live Room"]:::core
+    AI["🤖 AI Tutor"]:::core
+    N["🔔 Alerts"]:::core
+    P["💳 Payments"]:::core
+    
+    CW["🔄 Celery Tasks"]:::async
+    RD["⚡ Redis Cache"]:::async
+    PG[("🛢️ Postgres DB")]:::data
+    ES[("🔍 Search Index")]:::data
+
+    M --> API
+    W --> API
+    API --- FB
+    
+    API --> U
+    API --> C
+    API --> Q
+    API --> L
+    API --> AI
+    API --> N
+    API --> P
+
+    U --> PG
+    C --> PG
+    Q --> PG
+    L --> PG
+    AI --> PG
+    N --> PG
+    P --> PG
+
+    N --> CW
+    CW --> RD
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     Q --> ES
 ```
 
@@ -445,10 +564,19 @@ graph TD
 | 15 | `/api/v1/ai/` | 🤖 AI Tutor | Chat, Flashcards, Study Plans, Knowledge Graph |
 | 16 | `/api/v1/emails/` | 📧 Emails | Campaigns, IMAP Sync, Contact Form, Logs |
 | 17 | `/api/v1/attendance/` | 📍 Attendance | Mark, History, Reports, Session Tracking |
+<<<<<<< HEAD
 | — | `/api/v1/admin/` | 👑 Admin Panel | Platform Management, User Control, Analytics |
 | — | `/api/health/` | ❤️ Health Check | System status verification |
 | — | `/api/docs/` | 📜 Swagger UI | Auto-generated API documentation |
 | — | `/api/redoc/` | 📘 ReDoc | Alternative API documentation |
+=======
+| 18 | `/api/v1/parents/` | 👥 Parents | Linking, Student Reports, Progress Monitoring |
+| 19 | `/api/v1/offline/` | 📶 Offline | Micro-lessons, Download Management, Sync |
+| 20 | `/api/v1/progress/badges/`| 🎮 Badges | Available, Earned, Leaderboard, Awards |
+| 21 | `/api/v1/admin/` | 👑 Admin Panel | Platform Management, User Control, Analytics |
+| — | `/api/health/` | ❤️ Health Check | System status verification |
+| — | `/api/docs/` | 📜 Swagger UI | Auto-generated API documentation |
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
 
@@ -465,27 +593,50 @@ graph TD
 │   │   ├── asgi.py · wsgi.py                # Server adapters
 │   │   └── __init__.py                      # Celery app loader
 │   │
+<<<<<<< HEAD
 │   ├── apps/                                # 🧩 21 Domain Microservices
 │   │   ├── users/           (14 files)      # 🔐 Auth, JWT, Registration
 │   │   ├── students/        (7 files)       # 🎓 Student profiles & data
 │   │   ├── teachers/        (7 files)       # 👨‍🏫 Teacher profiles & data
+=======
+│   ├── apps/                                # 🧩 22 Domain Microservices
+│   │   ├── users/           (14 files)      # 🔐 Auth, JWT, Registration
+│   │   ├── students/        (7 files)       # 🎓 Student profiles & data
+│   │   ├── teachers/        (7 files)       # 👨‍🏫 Teacher profiles & data
+│   │   ├── parents/         (12 files)      # 👥 Parental monitoring & linking
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 │   │   ├── courses/         (11 files)      # 📚 Course CRUD & catalog
 │   │   ├── lessons/         (9 files)       # 📖 Lesson management
 │   │   ├── quizzes/         (12 files)      # 📝 Quiz engine & grading
 │   │   ├── enrollments/     (9 files)       # 🎫 Enrollment tracking
+<<<<<<< HEAD
 │   │   ├── progress/        (9 files)       # 📊 Progress computation
 │   │   ├── live_classes/    (13 files)      # 🎥 Jitsi room management
 │   │   ├── attendance/      (10 files)      # 📍 Attendance sync engine
 │   │   ├── announcements/   (10 files)      # 📢 Broadcast system
 │   │   ├── notifications/   (13 files)      # 🔔 FCM + in-app alerts
+=======
+│   │   ├── progress/        (12 files)      # 📊 Progress & Badge system
+│   │   ├── live_classes/    (13 files)      # 🎥 Jitsi room management
+│   │   ├── attendance/      (10 files)      # 📍 Attendance sync engine
+│   │   ├── announcements/   (10 files)      # 📢 Broadcast system
+│   │   ├── notifications/   (13 files)      # 🔔 FCM + auto-triggers
+│   │   ├── offline/         (11 files)      # 📶 Micro-lessons & sync
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 │   │   ├── payments/        (9 files)       # 💳 Stripe integration
 │   │   ├── analytics/       (11 files)      # 📈 Celery snapshots
 │   │   ├── ai_tutor/        (9 files)       # 🤖 QBit AI engine
 │   │   ├── intelligence/    (9 files)       # 🧠 Advanced AI logic
 │   │   ├── emails/          (12 files)      # 📧 SMTP + IMAP + Campaigns
+<<<<<<< HEAD
 │   │   ├── media/           (—)             # 🖼️ Upload handling
 │   │   ├── admin_panel/     (10 files)      # 👑 Admin endpoints
 │   │   └── core/            (8 files)       # ⚙️ Shared utils & health
+=======
+│   │   ├── media/           (5 files)       # 🖼️ Media processing & Cloudinary
+│   │   ├── core/            (8 files)       # ⚙️ Shared utils & health
+│   │   └── admin_panel/     (10 files)      # 👑 Admin endpoints
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 │   │
 │   ├── requirements.txt                     # 105 lines / 40+ packages
 │   ├── .env / .env.example                  # Environment configuration
@@ -508,6 +659,7 @@ graph TD
 │   │   ├── StudentDashboard.tsx  (26KB)     # 📊 Rich student dashboard
 │   │   └── TeacherDashboard.tsx  (17KB)     # 📊 Rich teacher dashboard
 │   │
+<<<<<<< HEAD
 │   ├── store/               (9 stores)      # 🏪 Zustand Global State
 │   │   ├── authStore · courseStore           # Core data stores
 │   │   ├── quizStore · progressStore        # Learning stores
@@ -524,6 +676,23 @@ graph TD
 │   │   └── videoStreamingService.ts         # 📹 Video infrastructure
 │   │
 │   └── package.json                         # 50+ dependencies
+=======
+│   ├── store/               (12 stores)     # Store Layer
+│   │   ├── authStore · courseStore           # Core identity & content
+│   │   ├── badgeStore · parentStore         # Achievements & Parental link
+│   │   ├── quizStore · progressStore        # Learning & Metrics
+│   │   ├── offlineStore · notificationStore # Local storage & Alerts
+│   │   └── liveClassStore · videoStreamStore# Media streaming
+│   │
+│   ├── services/            (8 services)    # Integration Layer
+│   │   ├── api.ts · ai.service.ts           # REST Clients
+│   │   ├── offline.service.ts               # Download & Sync engine
+│   │   ├── notificationService.ts           # FCM Handlers
+│   │   ├── emailService · mediaUpload.ts    # Cloud / External APIs
+│   │   └── videoStreamingService.ts         # Media infrastructure
+│   │
+│   └── package.json                         # 55+ dependencies
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 │
 ├── 💻 frontendweb/                          # Vite + React 19 Web Portal
 │   ├── src/
@@ -678,10 +847,20 @@ Ready-to-use verified accounts injected directly into the active database for im
 - [ ] **📝 Quiz Fair-Play** — Take a quiz 4 times; 4th attempt **must** be blocked by the server
 - [ ] **📊 Quiz Analysis** — After submission, verify per-question correct/incorrect breakdown renders
 - [ ] **📍 Attendance Sync** — Teacher marks attendance on web → Student mobile dashboard updates instantly
+<<<<<<< HEAD
 - [ ] **🤖 AI Test** — Send `POST /api/v1/ai/ask/` and verify Groq Llama 3 response
 - [ ] **📅 Study Plan** — Generate a plan via DataList input → export as Premium PDF
 - [ ] **📧 IMAP Sync** — Send email to support address → verify it appears in admin dashboard
 - [ ] **🔔 Push Test** — Create a quiz → verify enrolled students receive Firebase push notification
+=======
+- [ ] **🤖 AI Test** — Send `POST /api/v1/ai/ask/` and verify Llama 3 response
+- [ ] **🎮 Badge Earn** — Complete a course and verify badge appears in `MyBadgesScreen`
+- [ ] **👥 Parent Link** — Generate link on Parent app → Approve on Student app → Verify visibility
+- [ ] **📶 Offline Sync** — Download a micro-lesson → mark as complete → sync when online
+- [ ] **📅 Study Plan** — Generate a plan via DataList input → export as Premium PDF
+- [ ] **📧 IMAP Sync** — Send email to support address → verify it appears in admin dashboard
+- [ ] **🔔 Push Test** — Verify notifications for Live Classes and New Quizzes
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 - [ ] **💳 Payment Flow** — Initiate Stripe checkout → verify webhook confirmation
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
@@ -695,6 +874,7 @@ Ready-to-use verified accounts injected directly into the active database for im
 </p>
 
 ```mermaid
+<<<<<<< HEAD
 timeline
     title MentiQ Evolution Timeline
     V1 - Core Foundations : Courses & Lessons
@@ -717,6 +897,24 @@ timeline
     V6 - Global Scale     : Multi-Lingual AI
                           : ML Retention Predictors
                           : Content Personalization
+=======
+graph LR
+    V1((V1)) --> V2((V2)) --> V3((V3)) --> V4((V4)) --> V5((V5)) --> V6((V6))
+    
+    V1 --- C1[Core Foundations]
+    V2 --- C2[Real-Time Era]
+    V3 --- C3[AI Integration]
+    V4 --- C4[Security Armor]
+    V5 --- C5[Automation Wave]
+    V6 --- C6[Global Scale]
+    
+    style V1 fill:#10B981,stroke:#fff
+    style V2 fill:#10B981,stroke:#fff
+    style V3 fill:#10B981,stroke:#fff
+    style V4 fill:#10B981,stroke:#fff
+    style V5 fill:#10B981,stroke:#fff
+    style V6 fill:#F59E0B,stroke:#fff
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 ```
 
 <br/>
@@ -727,8 +925,13 @@ timeline
 | **V2: Real-Time Epoch** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | Live Classes, Jitsi Video Grid, Auto-Attendance Sync |
 | **V3: Artificial Mind** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | QBit Chat, Spaced Flashcards, Premium Plan Generator |
 | **V4: Security Armor** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | Firebase OTP, 3-Attempt Limits, Dynamic IP, Biometrics |
+<<<<<<< HEAD
 | **V5: Automation Wave** | <img src="https://img.shields.io/badge/🟡-Active-F59E0B?style=flat-square" /> | Campaign Emails, IMAP Sync, Premium UI, Admin Suite |
 | **V6: Global Scale** | <img src="https://img.shields.io/badge/⚪-Planned-6B7280?style=flat-square" /> | Multi-Lingual AI, ML Retention Predictors |
+=======
+| **V5: Automation Wave** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | Parent Dashboard, Offline Mode, Badge System, Admin Suite |
+| **V6: Global Scale** | <img src="https://img.shields.io/badge/🟡-Active-F59E0B?style=flat-square" /> | Multi-Lingual AI, ML Retention Predictors, Battle Leagues |
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
 

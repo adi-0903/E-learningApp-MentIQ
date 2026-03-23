@@ -51,3 +51,65 @@ api.interceptors.response.use(
 );
 
 export default api;
+<<<<<<< HEAD
+=======
+
+// Badge System API endpoints
+export const badgeAPI = {
+    // Get all available badges
+    getAvailableBadges: async () => {
+        const response = await api.get('progress/badges/');
+        return response.data;
+    },
+
+    // Get user's earned badges
+    getMyBadges: async () => {
+        const response = await api.get('progress/my-badges/');
+        return response.data;
+    },
+
+    // Get leaderboard
+    getLeaderboard: async (scope = 'global', timeframe = 'all_time') => {
+        const response = await api.get(`progress/leaderboard/?scope=${scope}&timeframe=${timeframe}`);
+        return response.data;
+    },
+
+    // Award badge to student
+    awardBadge: async (criteriaType, contextData = {}) => {
+        const response = await api.post('progress/badges/earn/', {
+            criteria_type: criteriaType,
+            context_data: contextData
+        });
+        return response.data;
+    },
+};
+
+// Parent Dashboard API
+export const parentAPI = {
+    getProfile: async () => {
+        const response = await api.get('parents/profile/');
+        return response.data;
+    },
+    updateProfile: async (data) => {
+        const response = await api.patch('parents/profile/', data);
+        return response.data;
+    },
+    getChildren: async () => {
+        const response = await api.get('parents/children/');
+        return response.data;
+    },
+    getChildReports: async (studentId) => {
+        const response = await api.get(`parents/children/${studentId}/reports/`);
+        return response.data;
+    },
+    requestLink: async (studentId) => {
+        const response = await api.post('parents/link/', { student_id: studentId });
+        return response.data;
+    },
+    getLinkRequests: async () => {
+        const response = await api.get('parents/link/status/');
+        return response.data;
+    }
+};
+
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe

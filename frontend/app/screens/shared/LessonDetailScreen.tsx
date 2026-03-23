@@ -12,6 +12,11 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/authStore';
 import { useCourseStore } from '@/store/courseStore';
 import { useProgressStore } from '@/store/progressStore';
+<<<<<<< HEAD
+=======
+import { useOfflineStore } from '@/store/offlineStore';
+import { downloadMicroLesson, getOfflineUri } from '@/services/offline.service';
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 import { Colors, Typography, Spacing, AppShadows, BorderRadius } from '@/constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -23,10 +28,21 @@ function LessonDetailScreen({ route, navigation }: any) {
   const [lesson, setLesson] = useState<any>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+<<<<<<< HEAD
   const [startTime] = useState(() => Date.now());
 
   useEffect(() => {
     loadLesson();
+=======
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [offlineUri, setOfflineUri] = useState<string | null>(null);
+  const [startTime] = useState(() => Date.now());
+  const { availableMicroLessons, fetchAvailable } = useOfflineStore();
+
+  useEffect(() => {
+    loadLesson();
+    checkOfflineStatus();
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     return () => {
       if (user?.role === 'student' && user.id) {
         const timeSpent = Math.floor((Date.now() - startTime) / 1000);
@@ -35,6 +51,17 @@ function LessonDetailScreen({ route, navigation }: any) {
     };
   }, [lessonId]);
 
+<<<<<<< HEAD
+=======
+  const checkOfflineStatus = async () => {
+    const uri = await getOfflineUri(lessonId);
+    setOfflineUri(uri);
+    if (!uri && user?.role === 'student') {
+      fetchAvailable(courseId);
+    }
+  };
+
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
   const loadLesson = async () => {
     try {
       const lessonData = await getLessonById(lessonId);
@@ -73,6 +100,20 @@ function LessonDetailScreen({ route, navigation }: any) {
   };
 
   const handleOpenVideo = async () => {
+<<<<<<< HEAD
+=======
+    if (offlineUri) {
+      // If we have an offline version, we should ideally use a video player component
+      // but for now we'll just open the local file URL
+      try {
+        await Linking.openURL(offlineUri);
+      } catch (error) {
+        Alert.alert('Error', 'Could not play offline video');
+      }
+      return;
+    }
+
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     if (lesson?.videoUrl) {
       if (!isValidUrl(lesson.videoUrl)) {
         Alert.alert('Error', 'Invalid video URL');
@@ -86,6 +127,29 @@ function LessonDetailScreen({ route, navigation }: any) {
     }
   };
 
+<<<<<<< HEAD
+=======
+  const handleDownload = async () => {
+    const microLesson = availableMicroLessons.find(ml => ml.lesson_id === lessonId);
+    if (!microLesson) {
+      Alert.alert('Not Available', 'This lesson is not yet optimized for offline download.');
+      return;
+    }
+
+    setIsDownloading(true);
+    const success = await downloadMicroLesson(microLesson);
+    setIsDownloading(false);
+
+    if (success) {
+      const uri = await getOfflineUri(lessonId);
+      setOfflineUri(uri);
+      Alert.alert('Success', 'Lesson downloaded for offline use!');
+    } else {
+      Alert.alert('Error', 'Failed to download lesson. Check your connection.');
+    }
+  };
+
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
@@ -144,14 +208,58 @@ function LessonDetailScreen({ route, navigation }: any) {
                 style={styles.videoGradient}
               >
                 <View style={styles.videoIconContainer}>
+<<<<<<< HEAD
                   <MaterialCommunityIcons name="play-circle" size={56} color={Colors.light.white} />
                 </View>
                 <Text style={styles.videoText}>Watch Lesson Video</Text>
                 <Text style={styles.videoSubtext}>Tap to start playing</Text>
+=======
+                  <MaterialCommunityIcons name={offlineUri ? "play-circle" : "play-circle-outline"} size={56} color={Colors.light.white} />
+                </View>
+                <Text style={styles.videoText}>{offlineUri ? 'Watch Offline' : 'Watch Lesson Video'}</Text>
+                <Text style={styles.videoSubtext}>{offlineUri ? 'Playing from local storage' : 'Tap to start streaming'}</Text>
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
               </LinearGradient>
             </TouchableOpacity>
           )}
 
+<<<<<<< HEAD
+=======
+          {/* Download for Offline (Student only) */}
+          {user?.role === 'student' && lesson.videoUrl && !offlineUri && (
+            <TouchableOpacity
+              style={[styles.downloadRow, AppShadows.small]}
+              onPress={handleDownload}
+              disabled={isDownloading}
+            >
+              <View style={styles.downloadIconWrapper}>
+                <MaterialCommunityIcons 
+                  name={isDownloading ? "loading" : "download-circle-outline"} 
+                  size={24} 
+                  color={Colors.light.primary} 
+                />
+              </View>
+              <View style={styles.downloadInfoText}>
+                <Text style={styles.downloadTitle}>
+                  {isDownloading ? 'Downloading...' : 'Save for Offline'}
+                </Text>
+                <Text style={styles.downloadSubtitle}>
+                  Watch anytime without data
+                </Text>
+              </View>
+              {isDownloading && <ActivityIndicator size="small" color={Colors.light.primary} />}
+            </TouchableOpacity>
+          )}
+
+          {/* Offline Ready Indicator */}
+          {offlineUri && (
+            <View style={styles.offlineReadyBadge}>
+              <MaterialCommunityIcons name="check-circle" size={16} color={Colors.light.success} />
+              <Text style={styles.offlineReadyText}>Available Offline</Text>
+            </View>
+          )}
+
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
           {/* Description Section */}
           {lesson.description && (
             <View style={styles.section}>
@@ -404,6 +512,56 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.light.white,
   },
+<<<<<<< HEAD
+=======
+  downloadRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: BorderRadius.l,
+    padding: Spacing.m,
+    marginBottom: Spacing.l,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+  },
+  downloadIconWrapper: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#F0F7FF',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: Spacing.m,
+  },
+  downloadInfoText: {
+    flex: 1,
+  },
+  downloadTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#1A1A1A',
+  },
+  downloadSubtitle: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+  offlineReadyBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#F0FDF4',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 12,
+    alignSelf: 'flex-start',
+    marginBottom: Spacing.l,
+    gap: 4,
+  },
+  offlineReadyText: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#15803D',
+  },
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 });
 
 export default LessonDetailScreen;

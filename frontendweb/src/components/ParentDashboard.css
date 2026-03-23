@@ -1,0 +1,365 @@
+.parent-dashboard {
+    padding: 24px;
+    background-color: #f8fafc;
+    min-height: 100vh;
+}
+
+.parent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 32px;
+}
+
+.welcome-section h1 {
+    font-size: 28px;
+    color: #1e293b;
+    margin-bottom: 4px;
+}
+
+.welcome-section p {
+    color: #64748b;
+    font-size: 16px;
+}
+
+.h-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
+    padding: 12px 24px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+}
+
+.stat-num {
+    font-size: 24px;
+    font-weight: 700;
+    color: #4f46e5;
+}
+
+.stat-label {
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.parent-grid {
+    display: grid;
+    grid-template-columns: 350px 1fr;
+    gap: 32px;
+}
+
+.children-list-section {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.section-header h2 {
+    font-size: 20px;
+    color: #1e293b;
+}
+
+.refresh-btn {
+    background: none;
+    border: none;
+    color: #4f46e5;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.children-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.child-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+.child-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.child-card.active {
+    border-color: #4f46e5;
+    background-color: #f5f3ff;
+}
+
+.child-main {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+}
+
+.child-avatar {
+    width: 48px;
+    height: 48px;
+    background-color: #e0e7ff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4f46e5;
+    font-weight: 700;
+    font-size: 20px;
+    overflow: hidden;
+}
+
+.child-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.child-info h3 {
+    font-size: 16px;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+
+.student-id {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.child-quick-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+    background-color: #f8fafc;
+    border-radius: 12px;
+}
+
+.q-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.q-val {
+    font-size: 14px;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.q-lab {
+    font-size: 10px;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.link-new-section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1);
+}
+
+.link-new-section h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+.link-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+
+.link-form input {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+    outline: none;
+}
+
+.link-form button {
+    background: #1e293b;
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+}
+
+.link-form button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.pending-requests h4 {
+    font-size: 12px;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+}
+
+.request-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.req-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    padding: 8px 12px;
+    background: #f1f5f9;
+    border-radius: 6px;
+}
+
+.req-status {
+    font-weight: 600;
+}
+
+.reports-detail-section {
+    background-color: #fff;
+    border-radius: 20px;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+    min-height: 500px;
+}
+
+.select-child-placeholder {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.detail-header {
+    padding: 24px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.close-detail {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #94a3b8;
+}
+
+.reports-list {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.report-card {
+    background: #f8fafc;
+    border-radius: 16px;
+    padding: 24px;
+    border: 1px solid #f1f5f9;
+}
+
+.report-card-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.report-period {
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.report-type {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.report-ai {
+    background: #fff;
+    padding: 16px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    font-style: italic;
+    color: #475569;
+    line-height: 1.6;
+    border-left: 4px solid #4f46e5;
+}
+
+.stat-box {
+    margin-bottom: 16px;
+}
+
+.stat-box label {
+    display: block;
+    font-size: 12px;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    margin-bottom: 4px;
+}
+
+.progress-fill {
+    height: 100%;
+    background-color: #4f46e5;
+    border-radius: 4px;
+}
+
+.stat-boxes-row {
+    display: flex;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.mini-box {
+    flex: 1;
+    background: #fff;
+    padding: 12px;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.mini-box strong {
+    font-size: 18px;
+    color: #1e293b;
+}
+
+.mini-box span {
+    font-size: 10px;
+    color: #94a3b8;
+    text-transform: uppercase;
+}

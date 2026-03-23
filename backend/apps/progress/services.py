@@ -1,8 +1,20 @@
+<<<<<<< HEAD
 """
 Badge System Services - Logic for awarding badges automatically.
 """
 from django.utils import timezone
 from django.db.models import Count, Q
+=======
+"""Badge System Services - Logic for awarding badges automatically and certificate generation."""
+import cloudinary
+import cloudinary.uploader
+from django.conf import settings
+from django.utils import timezone
+from django.db.models import Count, Q, F
+from PIL import Image, ImageDraw, ImageFont
+import io
+import os
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 from .models import AchievementBadge, StudentBadge
 
 
@@ -134,6 +146,16 @@ def award_if_criteria_met(student_badge, badge, current_progress, criteria_met):
         badge.total_awarded += 1
         badge.save()
         
+<<<<<<< HEAD
+=======
+        # Generate certificate in background (optional)
+        from .services import generate_certificate
+        try:
+            cert_data = generate_certificate(student_badge)
+        except Exception:
+            pass  # Continue even if certificate generation fails
+        
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         return {
             'awarded': True,
             'badge_name': badge.name,
@@ -141,7 +163,12 @@ def award_if_criteria_met(student_badge, badge, current_progress, criteria_met):
             'rarity': badge.rarity,
             'message': f'🏆 Congratulations! You earned the {badge.name} badge!',
             'progress': current_progress,
+<<<<<<< HEAD
             'threshold': badge.criteria_threshold
+=======
+            'threshold': badge.criteria_threshold,
+            'certificate_url': getattr(student_badge, 'certificate_url', None)
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         }
     elif criteria_met and student_badge.is_claimed:
         return {
@@ -242,3 +269,187 @@ def get_initial_badges():
             created_badges.append(badge)
     
     return created_badges
+<<<<<<< HEAD
+=======
+
+
+def generate_certificate(student_badge):
+    """
+    Generate a certificate for an earned badge using Cloudinary.
+    
+    Args:
+        student_badge: StudentBadge instance
+    
+    Returns:
+        dict: {'certificate_url': str, 'animated_url': str}
+    """
+    try:
+        badge = student_badge.badge
+        student = student_badge.student
+        
+        # Get certificate template or use default based on rarity
+        if badge.certificate_template:
+            template_path = badge.certificate_template.path
+        else:
+            # Use default templates based on rarity
+            template_map = {
+                'COMMON': 'certificates/templates/common_cert.png',
+                'RARE': 'certificates/templates/rare_cert.png',
+                'EPIC': 'certificates/templates/epic_cert.png',
+                'LEGENDARY': 'certificates/templates/legendary_cert.png',
+                'MYTHIC': 'certificates/templates/mythic_cert.png',
+            }
+            template_path = template_map.get(badge.rarity, template_map['COMMON'])
+        
+        # Check if template exists locally, otherwise use default
+        if not os.path.exists(template_path):
+            # Create a simple certificate on the fly
+            certificate_image = create_simple_certificate(badge, student)
+        else:
+            # Load template and add text overlay
+            certificate_image = add_text_to_certificate(template_path, badge, student)
+        
+        # Upload to Cloudinary
+        certificate_buffer = io.BytesIO()
+        certificate_image.save(certificate_buffer, format='PNG')
+        certificate_buffer.seek(0)
+        
+        # Upload certificate
+        cert_upload = cloudinary.uploader.upload(
+            certificate_buffer,
+            folder=f'certificates/{student.id}',
+            public_id=f'{badge.id}_certificate',
+            resource_type='image'
+        )
+        
+        # Also upload badge icon if available
+        animated_url = None
+        if badge.animated_icon_url:
+            try:
+                animated_upload = cloudinary.uploader.upload(
+                    badge.animated_icon_url,
+                    folder=f'badges/animated',
+                    public_id=f'{badge.id}_animated',
+                    resource_type='auto'
+                )
+                animated_url = animated_upload['secure_url']
+            except Exception:
+                animated_url = badge.animated_icon_url
+        
+        # Update student badge with certificate URL
+        student_badge.certificate_url = cert_upload['secure_url']
+        student_badge.animated_icon_url = animated_url
+        student_badge.save(update_fields=['certificate_url', 'animated_icon_url'])
+        
+        return {
+            'certificate_url': cert_upload['secure_url'],
+            'animated_url': animated_url
+        }
+        
+    except Exception as e:
+        # Fallback: just return badge URLs
+        return {
+            'certificate_url': badge.icon_url,
+            'animated_url': badge.animated_icon_url,
+            'error': str(e)
+        }
+
+
+def create_simple_certificate(badge, student):
+    """
+    Create a simple certificate image when no template is available.
+    """
+    # Create image (800x600)
+    width, height = 800, 600
+    
+    # Background color based on rarity
+    rarity_colors = {
+        'COMMON': '#CD7F32',  # Bronze
+        'RARE': '#C0C0C0',    # Silver
+        'EPIC': '#FFD700',    # Gold
+        'LEGENDARY': '#B9F2FF',  # Diamond
+        'MYTHIC': '#E5EEC1',  # Platinum
+    }
+    
+    bg_color = rarity_colors.get(badge.rarity, '#CD7F32')
+    
+    # Create image
+    img = Image.new('RGB', (width, height), color=bg_color)
+    draw = ImageDraw.Draw(img)
+    
+    # Add border
+    border_color = '#FFFFFF' if badge.rarity in ['EPIC', 'LEGENDARY', 'MYTHIC'] else '#000000'
+    draw.rectangle([10, 10, width-10, height-10], outline=border_color, width=5)
+    
+    # Try to load font (use default if not available)
+    try:
+        title_font = ImageFont.truetype("arial.ttf", 48)
+        subtitle_font = ImageFont.truetype("arial.ttf", 32)
+        text_font = ImageFont.truetype("arial.ttf", 28)
+    except:
+        title_font = ImageFont.load_default()
+        subtitle_font = ImageFont.load_default()
+        text_font = ImageFont.load_default()
+    
+    # Text color
+    text_color = '#000000' if badge.rarity in ['COMMON', 'RARE'] else '#FFFFFF'
+    
+    # Draw title
+    title = "Certificate of Achievement"
+    draw.text((width//2, 80), title, fill=text_color, font=title_font, anchor="mm")
+    
+    # Draw badge name
+    draw.text((width//2, 180), badge.name, fill=text_color, font=subtitle_font, anchor="mm")
+    
+    # Draw student name
+    awarded_text = f"Awarded to {student.name}"
+    draw.text((width//2, 280), awarded_text, fill=text_color, font=text_font, anchor="mm")
+    
+    # Draw description
+    draw.text((width//2, 350), badge.description, fill=text_color, font=text_font, anchor="mm")
+    
+    # Draw date
+    date_text = f"Date: {timezone.now().strftime('%B %d, %Y')}"
+    draw.text((width//2, 450), date_text, fill=text_color, font=text_font, anchor="mm")
+    
+    # Draw rarity
+    rarity_text = f"Rarity: {badge.get_rarity_display()}"
+    draw.text((width//2, 500), rarity_text, fill=text_color, font=text_font, anchor="mm")
+    
+    return img
+
+
+def add_text_to_certificate(template_path, badge, student):
+    """
+    Add text overlay to existing certificate template.
+    """
+    # Open template
+    img = Image.open(template_path)
+    draw = ImageDraw.Draw(img)
+    
+    width, height = img.size
+    
+    # Try to load font
+    try:
+        title_font = ImageFont.truetype("arial.ttf", 48)
+        subtitle_font = ImageFont.truetype("arial.ttf", 32)
+        text_font = ImageFont.truetype("arial.ttf", 28)
+    except:
+        title_font = ImageFont.load_default()
+        subtitle_font = ImageFont.load_default()
+        text_font = ImageFont.load_default()
+    
+    # Determine text color based on template background
+    text_color = '#000000'
+    
+    # Draw badge name (centered)
+    draw.text((width//2, height//2 - 60), badge.name, fill=text_color, font=subtitle_font, anchor="mm")
+    
+    # Draw student name
+    draw.text((width//2, height//2 + 20), student.name, fill=text_color, font=text_font, anchor="mm")
+    
+    # Draw date
+    draw.text((width//2, height//2 + 80), timezone.now().strftime('%B %d, %Y'), fill=text_color, font=text_font, anchor="mm")
+    
+    return img
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe

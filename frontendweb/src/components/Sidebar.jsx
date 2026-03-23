@@ -2,7 +2,11 @@ import React from 'react';
 import { Crown } from 'lucide-react';
 import './Sidebar.css';
 
+<<<<<<< HEAD
 export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroom, onOpenDoubts, onLogout, currentPage, userRole, onOpenAdminTeachers, onOpenAdminStudents, onOpenAdminCourses, onOpenAdminAnnouncements, onOpenAdminPremium, onOpenAdminAttendance }) {
+=======
+export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroom, onOpenDoubts, onLogout, currentPage, userRole, onOpenAdminTeachers, onOpenAdminStudents, onOpenAdminCourses, onOpenAdminAnnouncements, onOpenAdminPremium, onOpenAdminAttendance, onOpenBadges, onOpenLeaderboard }) {
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     const isTeacher = userRole === 'teacher';
     const isAdmin = userRole === 'admin';
 
@@ -64,6 +68,32 @@ export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroo
 
                         <div className="nav-divider" />
 
+<<<<<<< HEAD
+=======
+                        {/* Student Gamification - Admin Only */}
+                        <div className={`nav-item ${currentPage === 'badges' ? 'active' : ''}`} onClick={onOpenBadges} title="Student Badges">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="8" r="7"></circle>
+                                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                            </svg>
+                            <span className="nav-label">Badges</span>
+                        </div>
+
+                        <div className={`nav-item ${currentPage === 'leaderboard' ? 'active' : ''}`} onClick={onOpenLeaderboard} title="Student Leaderboard">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <path d="M6 9H4.5a2.5 2.5 0 010-5H6"></path>
+                                <path d="M18 9h1.5a2.5 2.5 0 000-5H18"></path>
+                                <path d="M4 22h16"></path>
+                                <path d="M10 14V6a2 2 0 012-2h0a2 2 0 012 2v8"></path>
+                                <path d="M4 22V10a2 2 0 012-2h0a2 2 0 012 2v12"></path>
+                                <path d="M14 22V14a2 2 0 012-2h0a2 2 0 012 2v8"></path>
+                            </svg>
+                            <span className="nav-label">Rankings</span>
+                        </div>
+
+                        <div className="nav-divider" />
+
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
                         <div className={`nav-item nav-item-premium ${currentPage === 'admin_premium' ? 'active' : ''}`} onClick={onOpenAdminPremium} title="Premium Plans">
                             <Crown size={20} strokeWidth={2.5} />
                             <span className="nav-label nav-label-premium">Premium</span>
@@ -88,6 +118,33 @@ export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroo
                                 <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2v10z"></path>
                             </svg>
                         </div>
+<<<<<<< HEAD
+=======
+                        
+                        {/* Gamification Navigation - Students Only */}
+                        {!isTeacher && (
+                            <>
+                                <div className="nav-divider" />
+                                
+                                <div className={`nav-item ${currentPage === 'badges' ? 'active' : ''}`} onClick={onOpenBadges} title="My Badges">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <circle cx="12" cy="8" r="7"></circle>
+                                        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                                    </svg>
+                                </div>
+                                <div className={`nav-item ${currentPage === 'leaderboard' ? 'active' : ''}`} onClick={onOpenLeaderboard} title="Leaderboard">
+                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                        <path d="M6 9H4.5a2.5 2.5 0 010-5H6"></path>
+                                        <path d="M18 9h1.5a2.5 2.5 0 000-5H18"></path>
+                                        <path d="M4 22h16"></path>
+                                        <path d="M10 14V6a2 2 0 012-2h0a2 2 0 012 2v8"></path>
+                                        <path d="M4 22V10a2 2 0 012-2h0a2 2 0 012 2v12"></path>
+                                        <path d="M14 22V14a2 2 0 012-2h0a2 2 0 012 2v8"></path>
+                                    </svg>
+                                </div>
+                            </>
+                        )}
+>>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
                     </>
                 )}
             </div>
