@@ -336,70 +336,43 @@ graph TD
     classDef gateway fill:#6366F1,stroke:#4F46E5,stroke-width:2px,color:#fff
     classDef core fill:#059669,stroke:#047857,stroke-width:2px,color:#fff
     classDef data fill:#7C3AED,stroke:#6D28D9,stroke-width:2px,color:#fff
-    classDef cloud fill:#F59E0B,stroke:#D97706,stroke-width:2px,color:#fff
     classDef async fill:#EC4899,stroke:#DB2777,stroke-width:2px,color:#fff
 
-    subgraph CLIENTS["📱 Presentation Layer"]
-        M["📱 Expo Mobile App<br/>(React Native + TS)"]:::client
-        W["💻 Vite Web Portal<br/>(React 19 + JS)"]:::client
+    M["📱 Mobile App"]:::client
+    W["💻 Web Portal"]:::client
+    API["🔀 DRF Gateway"]:::gateway
+    FB["🔥 Firebase OTP"]:::gateway
+        L["🎥 Live Room"]:::core
+        AI["🤖 AI Tutor"]:::core
+        N["🔔 Alerts"]:::core
+        P["💳 Payments"]:::core
     end
 
-    subgraph AUTH["🛡️ Security Gateway"]
-        API["🔀 DRF API Gateway<br/>JWT + Rate Limiting"]:::gateway
-        FB["🔥 Firebase OTP<br/>Phone Verification"]:::gateway
+    subgraph ASYNC["⚡ Background"]
+        CW["🔄 Celery"]:::async
+        RD["⚡ Redis"]:::async
     end
 
-    subgraph CORE["🧠 Django Core — 21 Domain Apps"]
-        U["👤 Users & Auth"]:::core
-        C["📚 Courses & Lessons"]:::core
-        Q["📝 Quizzes & Assessment"]:::core
-        L["🎥 Live Classes & Video"]:::core
-        AI["🤖 AI Tutor & Intelligence"]:::core
-        A["📍 Attendance & Progress"]:::core
-        N["🔔 Notifications & Email"]:::core
-        P["💳 Payments & Analytics"]:::core
-        AD["👑 Admin Panel"]:::core
+    subgraph DATA["🗄️ Database"]
+        PG[("🛢️ Postgres")]:::data
+        ES[("🔍 Search")]:::data
     end
 
-    subgraph ASYNC["⚡ Background Processing"]
-        CW["🔄 Celery Workers"]:::async
-        CB["⏰ Celery Beat Scheduler"]:::async
-        FL["🌸 Flower Monitor"]:::async
-    end
+    M --> API
+    W --> API
+    API <--> FB
+    
+    API --> U
+    API --> C
+    API --> Q
+    API --> L
+    API --> AI
+    API --> N
+    API --> P
 
-    subgraph DATA["🗄️ Persistence Layer"]
-        PG[("🛢️ PostgreSQL<br/>Primary Database")]:::data
-        RD[("⚡ Redis<br/>Cache + Broker")]:::data
-        ES[("🔍 Elasticsearch<br/>Search Index")]:::data
-    end
-
-    subgraph CLOUD["☁️ Cloud Integrations"]
-        GR["🤖 Groq Cloud<br/>Llama 3 LLM"]:::cloud
-        JT["📹 Jitsi Meet<br/>Video Rooms"]:::cloud
-        CL["☁️ Cloudinary<br/>Media CDN"]:::cloud
-        ST["💳 Stripe<br/>Payments"]:::cloud
-        GM["📧 Gmail<br/>SMTP + IMAP"]:::cloud
-        SN["📊 Sentry<br/>Error Tracking"]:::cloud
-    end
-
-    M -->|"JWT / OTP"| API
-    W -->|"JWT / OTP"| API
-    API <-.-> FB
-
-    API ==> U & C & Q & L & AI & A & N & P & AD
-
-    U & C & Q & L & AI & A & N & P --> PG
-    CW -.-> RD
-    CB -.-> CW
-    FL -.-> CW
-    N -.-> CW
-
-    AI --> GR
-    L --> JT
-    C --> CL
-    P --> ST
-    N --> GM
-    AD --> SN
+    CORE --> PG
+    N --> CW
+    CW --> RD
     Q --> ES
 ```
 
@@ -684,28 +657,22 @@ Ready-to-use verified accounts injected directly into the active database for im
 </p>
 
 ```mermaid
-timeline
-    title MentiQ Evolution Timeline
-    V1 - Core Foundations : Courses & Lessons
-                          : Multi-Role Auth
-                          : Student & Teacher Profiles
-    V2 - Real-Time Era    : Jitsi Live Classes
-                          : Auto-Attendance Sync
-                          : In-App Notifications
-    V3 - AI Integration   : QBit Conversational Tutor
-                          : Smart Flashcard Engine
-                          : Premium PDF Study Planner
-    V4 - Security Armor   : Firebase OTP Auth
-                          : 3-Attempt Quiz Limits
-                          : Dynamic IP Detection
-                          : Biometric Lock
-    V5 - Automation Wave  : Campaign Email System
-                          : IMAP Inbox Sync
-                          : Premium UI Cards
-                          : Admin Control Center
-    V6 - Global Scale     : Multi-Lingual AI
-                          : ML Retention Predictors
-                          : Content Personalization
+graph LR
+    V1((V1)) --> V2((V2)) --> V3((V3)) --> V4((V4)) --> V5((V5)) --> V6((V6))
+    
+    V1 --- C1[Core Foundations]
+    V2 --- C2[Real-Time Era]
+    V3 --- C3[AI Integration]
+    V4 --- C4[Security Armor]
+    V5 --- C5[Automation Wave]
+    V6 --- C6[Global Scale]
+    
+    style V1 fill:#10B981,stroke:#fff
+    style V2 fill:#10B981,stroke:#fff
+    style V3 fill:#10B981,stroke:#fff
+    style V4 fill:#10B981,stroke:#fff
+    style V5 fill:#10B981,stroke:#fff
+    style V6 fill:#F59E0B,stroke:#fff
 ```
 
 <br/>
