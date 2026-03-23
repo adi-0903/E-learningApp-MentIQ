@@ -43,6 +43,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     class RoleChoices(models.TextChoices):
         STUDENT = 'student', 'Student'
         TEACHER = 'teacher', 'Teacher'
+        PARENT = 'parent', 'Parent'
         ADMIN = 'admin', 'Admin'
 
     # Core fields
@@ -146,6 +147,10 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     @property
     def is_student(self):
         return self.role == self.RoleChoices.STUDENT
+
+    @property
+    def is_parent(self):
+        return self.role == self.RoleChoices.PARENT
 
     @property
     def is_admin(self):

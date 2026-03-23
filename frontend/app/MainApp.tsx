@@ -19,6 +19,7 @@ import MyBadgesScreen from './screens/student/MyBadgesScreen';
 import AvailableBadgesScreen from './screens/student/AvailableBadgesScreen';
 import LeaderboardScreen from './screens/student/LeaderboardScreen';
 import CourseLessonsScreen from './screens/shared/CourseLessonsScreen';
+import DownloadsScreen from './screens/student/DownloadsScreen';
 
 // Teacher screens
 import CreateAnnouncementScreen from './screens/teacher/CreateAnnouncementScreen';
@@ -73,6 +74,7 @@ function StudentStack() {
       <Stack.Screen name="MyBadges" component={MyBadgesScreen} />
       <Stack.Screen name="AvailableBadges" component={AvailableBadgesScreen} />
       <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
+      <Stack.Screen name="Downloads" component={DownloadsScreen} />
     </Stack.Navigator>
   );
 }
@@ -153,6 +155,7 @@ function StudentProgressStack() {
       <Stack.Screen name="StudentVideoLectures" component={StudentVideoLecturesScreen} />
       <Stack.Screen name="AllQuizzes" component={AllQuizzesScreen} />
       <Stack.Screen name="CourseLessons" component={CourseLessonsScreen} />
+      <Stack.Screen name="Downloads" component={DownloadsScreen} />
     </Stack.Navigator>
   );
 }

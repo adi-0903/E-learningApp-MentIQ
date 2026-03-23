@@ -1,0 +1,10 @@
+from django.apps import AppConfig
+
+
+class OfflineConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'apps.offline'
+    verbose_name = 'Offline Mode'
+
+    def ready(self):
+        import apps.offline.signals  # noqa: F401

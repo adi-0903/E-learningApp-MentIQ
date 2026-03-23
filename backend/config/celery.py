@@ -35,6 +35,11 @@ app.conf.beat_schedule = {
         'task': 'apps.notifications.tasks.send_weekly_progress_reminders',
         'schedule': crontab(hour=9, minute=0, day_of_week=1),
     },
+    # Generate weekly parent reports on Monday at 2 AM
+    'generate-weekly-reports': {
+        'task': 'apps.parents.tasks.generate_weekly_reports',
+        'schedule': crontab(hour=2, minute=0, day_of_week=1),
+    },
 }
 
 

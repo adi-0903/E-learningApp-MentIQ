@@ -87,11 +87,18 @@ function StudentProgressScreen({ navigation }: any) {
             <MaterialCommunityIcons name="chevron-left" size={32} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Learning Progress</Text>
-          <TouchableOpacity onPress={() => navigation.navigate('MyBadges')}>
-            <View style={styles.badgeButton}>
-              <MaterialCommunityIcons name="trophy-outline" size={24} color="#fff" />
-            </View>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 10 }}>
+            <TouchableOpacity onPress={() => navigation.navigate('Downloads')}>
+              <View style={styles.badgeButton}>
+                <MaterialCommunityIcons name="download-outline" size={24} color="#fff" />
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => navigation.navigate('MyBadges')}>
+              <View style={styles.badgeButton}>
+                <MaterialCommunityIcons name="trophy-outline" size={24} color="#fff" />
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.summaryContainer}>
@@ -115,6 +122,20 @@ function StudentProgressScreen({ navigation }: any) {
       </LinearGradient>
 
       <ScrollView style={styles.contentScroll} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
+        <TouchableOpacity 
+          style={[styles.offlineCard, AppShadows.medium]}
+          onPress={() => navigation.navigate('Downloads')}
+        >
+          <View style={styles.offlineIconBox}>
+            <MaterialCommunityIcons name="cloud-download-outline" size={28} color={Colors.light.primary} />
+          </View>
+          <View style={styles.offlineTextContent}>
+            <Text style={styles.offlineTitle}>Offline Library</Text>
+            <Text style={styles.offlineSubtitle}>Access your saved lessons without internet</Text>
+          </View>
+          <MaterialCommunityIcons name="chevron-right" size={24} color="#cbd5e1" />
+        </TouchableOpacity>
+
         <Text style={styles.sectionTitle}>Course Roadmap</Text>
 
         {courseProgress.length === 0 ? (
@@ -299,6 +320,38 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 10,
     paddingHorizontal: 40,
+  },
+  offlineCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#f1f5f9',
+  },
+  offlineIconBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 14,
+    backgroundColor: '#eff6ff',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  offlineTextContent: {
+    flex: 1,
+  },
+  offlineTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: '#1e293b',
+  },
+  offlineSubtitle: {
+    fontSize: 12,
+    color: '#64748b',
+    marginTop: 2,
   },
 });
 

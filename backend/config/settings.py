@@ -64,6 +64,8 @@ INSTALLED_APPS = [
     'apps.emails',
     'apps.attendance',
     'apps.admin_panel',
+    'apps.offline',
+    'apps.parents',
 ]
 
 MIDDLEWARE = [

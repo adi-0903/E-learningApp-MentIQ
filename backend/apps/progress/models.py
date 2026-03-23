@@ -75,6 +75,9 @@ class StudentBadge(TimeStampedModel):
     is_claimed = models.BooleanField(default=False, help_text="Has student claimed this badge?")
     awarded_at = models.DateTimeField(null=True, blank=True, help_text="When badge was actually earned")
     
+    # Certificate & media
+    certificate_url = models.URLField(blank=True, null=True, help_text="Generated certificate URL")
+    
     # Trading
     is_tradeable = models.BooleanField(default=False)
     trade_status = models.CharField(

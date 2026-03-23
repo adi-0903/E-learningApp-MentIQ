@@ -21,6 +21,10 @@ import { AnnouncementPopup } from './components/AnnouncementPopup';
 import { QuizResultPage } from './components/QuizResultPage';
 import { ClassroomPage } from './components/ClassroomPage';
 
+// Badge System
+import BadgeGallery from './components/BadgeGallery';
+import LeaderboardPage from './components/LeaderboardPage';
+
 // Admin Pages
 import { AdminDashboard } from './admin/AdminDashboard';
 import { AdminTeachers } from './admin/AdminTeachers';
@@ -149,7 +153,7 @@ function App() {
     const isAdminPage = currentPage.startsWith('admin');
 
     // Determine which pages should hide the header
-    const hideHeaderPages = ['profile', 'notifications', 'contact', 'classroom', 'courses', 'doubts', 'curriculum_management', 'attendance', 'course_catalog', 'admin_attendance'];
+    const hideHeaderPages = ['profile', 'notifications', 'contact', 'classroom', 'courses', 'doubts', 'curriculum_management', 'attendance', 'course_catalog', 'badges', 'leaderboard'];
     const shouldHideHeader = hideHeaderPages.includes(currentPage) || isAdminPage;
 
     return (
@@ -170,6 +174,8 @@ function App() {
                 onOpenAdminAnnouncements={() => setCurrentPage('admin_announcements')}
                 onOpenAdminPremium={() => setCurrentPage('admin_premium')}
                 onOpenAdminAttendance={() => setCurrentPage('admin_attendance')}
+                onOpenBadges={() => setCurrentPage('badges')}
+                onOpenLeaderboard={() => setCurrentPage('leaderboard')}
             />
             <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''}`}>
                 {!shouldHideHeader && (
@@ -305,6 +311,10 @@ function App() {
                             setCurrentPage('course_detail');
                         }}
                     />
+                ) : currentPage === 'badges' && userRole === 'student' ? (
+                    <BadgeGallery />
+                ) : currentPage === 'leaderboard' && userRole === 'student' ? (
+                    <LeaderboardPage />
                 ) : userRole === 'teacher' ? (
                     <TeacherDashboard
                         userData={userData}
