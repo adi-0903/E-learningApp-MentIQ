@@ -1,4 +1,6 @@
 from .models import Notification, NotificationSetting
+from .tasks import send_push_notification
+
 
 def create_notification(user, title, body, notification_type=Notification.TypeChoices.SYSTEM, data=None):
     """
@@ -32,6 +34,11 @@ def create_notification(user, title, body, notification_type=Notification.TypeCh
             notification_type=notification_type,
             data=data or {}
         )
+        
+        # Trigger push notification if user has a token
+        if user.fcm_token:
+            send_push_notification.delay(str(user.id), title, body, data or {})
+            
         return notification
     except Exception as e:
         print(f"Error creating notification: {e}")

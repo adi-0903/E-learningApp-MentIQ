@@ -9,6 +9,8 @@ from .models import ParentAccount, WeeklyProgressReport
 from apps.quizzes.models import QuizAttempt
 from apps.progress.models import LessonProgress, StudentBadge
 from apps.attendance.models import AttendanceRecord
+from apps.notifications.utils import create_notification
+from apps.notifications.models import Notification
 
 User = get_user_model()
 logger = logging.getLogger(__name__)
@@ -49,6 +51,15 @@ def generate_weekly_reports():
                     week_end_date=end_date,
                     **report_data,
                     ai_summary=_generate_ai_summary(student, report_data)
+                )
+                
+                # Notify parent
+                create_notification(
+                    user=parent.user,
+                    title="Weekly Progress Report Ready",
+                    body=f"The weekly report for {student.name} is now available in your dashboard.",
+                    notification_type=Notification.TypeChoices.SYSTEM,
+                    data={"type": "weekly_report", "student_id": student.id}
                 )
                 count += 1
             except Exception as e:

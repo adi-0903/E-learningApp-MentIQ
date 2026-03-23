@@ -36,6 +36,15 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
                     attrs[User.USERNAME_FIELD] = user.email
                 except User.DoesNotExist:
                     pass # Let standard validation fail naturally
+            
+            # Check if username_value is a 6-digit Parent ID
+            elif cleaned_username.isdigit() and len(cleaned_username) == 6:
+                try:
+                    # If a user with this parent_id exists, switch to email auth
+                    user = User.objects.get(parent_id=cleaned_username)
+                    attrs[User.USERNAME_FIELD] = user.email
+                except User.DoesNotExist:
+                    pass # Let standard validation fail naturally
 
         data = super().validate(attrs)
         user = self.user
@@ -53,6 +62,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'is_phone_verified': user.is_phone_verified,
             'teacher_id': user.teacher_id,
             'student_id': user.student_id,
+            'parent_id': user.parent_id,
             'profile_avatar': user.profile_avatar,
         }
         return data
@@ -67,6 +77,8 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             token['teacher_id'] = user.teacher_id
         if user.student_id:
             token['student_id'] = user.student_id
+        if user.parent_id:
+            token['parent_id'] = user.parent_id
         return token
 
 
@@ -93,8 +105,8 @@ class RegisterSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         if attrs['password'] != attrs['password_confirm']:
             raise serializers.ValidationError({'password_confirm': 'Passwords do not match.'})
-        if attrs.get('role') not in ['student', 'teacher']:
-            raise serializers.ValidationError({'role': 'Role must be either student or teacher.'})
+        if attrs.get('role') not in ['student', 'teacher', 'parent']:
+            raise serializers.ValidationError({'role': 'Role must be either student, teacher or parent.'})
         return attrs
 
     def create(self, validated_data):
@@ -111,10 +123,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = User
         fields = [
             'id', 'email', 'name', 'role', 'bio', 'phone_number',
-            'profile_image', 'profile_image_url', 'teacher_id', 'student_id', 'profile_avatar',
+            'profile_image', 'profile_image_url', 'teacher_id', 'student_id', 'parent_id', 'profile_avatar',
             'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'email', 'role', 'teacher_id', 'student_id', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'email', 'role', 'teacher_id', 'student_id', 'parent_id', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

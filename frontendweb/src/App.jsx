@@ -17,6 +17,7 @@ import { CurriculumManagementPage } from './components/CurriculumManagementPage'
 import { AttendanceMarkingPage } from './components/AttendanceMarkingPage';
 import { CourseCatalogPage } from './components/CourseCatalogPage';
 import { AnnouncementPopup } from './components/AnnouncementPopup';
+import { ParentDashboard } from './components/ParentDashboard';
 
 import { QuizResultPage } from './components/QuizResultPage';
 import { ClassroomPage } from './components/ClassroomPage';
@@ -315,6 +316,8 @@ function App() {
                     <BadgeGallery />
                 ) : currentPage === 'leaderboard' && userRole === 'student' ? (
                     <LeaderboardPage />
+                ) : userRole === 'parent' ? (
+                    <ParentDashboard userData={userData} />
                 ) : userRole === 'teacher' ? (
                     <TeacherDashboard
                         userData={userData}
@@ -336,6 +339,7 @@ function App() {
                         onContinueCourse={(id) => { setSelectedCourseId(id); setCurrentPage('course_detail'); }}
                     />
                 )}
+
             </div>
 
             {/* Priority Announcement Popup — only for student/teacher on dashboard */}

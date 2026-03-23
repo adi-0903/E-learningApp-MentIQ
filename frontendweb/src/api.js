@@ -81,3 +81,32 @@ export const badgeAPI = {
         return response.data;
     },
 };
+
+// Parent Dashboard API
+export const parentAPI = {
+    getProfile: async () => {
+        const response = await api.get('parents/profile/');
+        return response.data;
+    },
+    updateProfile: async (data) => {
+        const response = await api.patch('parents/profile/', data);
+        return response.data;
+    },
+    getChildren: async () => {
+        const response = await api.get('parents/children/');
+        return response.data;
+    },
+    getChildReports: async (studentId) => {
+        const response = await api.get(`parents/children/${studentId}/reports/`);
+        return response.data;
+    },
+    requestLink: async (studentId) => {
+        const response = await api.post('parents/link/', { student_id: studentId });
+        return response.data;
+    },
+    getLinkRequests: async () => {
+        const response = await api.get('parents/link/status/');
+        return response.data;
+    }
+};
+

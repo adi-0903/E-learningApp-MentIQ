@@ -66,6 +66,7 @@ INSTALLED_APPS = [
     'apps.admin_panel',
     'apps.offline',
     'apps.parents',
+    'fcm_django',
 ]
 
 MIDDLEWARE = [

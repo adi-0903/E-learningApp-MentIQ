@@ -29,7 +29,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<'teacher' | 'student'>('student');
+  const [role, setRole] = useState<'teacher' | 'student' | 'parent'>('student');
   const [isBiometricEnabled, setIsBiometricEnabled] = useState(false);
   const [forgotStep, setForgotStep] = useState<'identifier' | 'otp' | null>(null);
   const [forgotId, setForgotId] = useState('');
@@ -64,7 +64,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       if (result.success) {
         const savedEmail = await AsyncStorage.getItem('last_user_email');
         const savedPass = await AsyncStorage.getItem('last_user_pass');
-        const savedRole = (await AsyncStorage.getItem('last_user_role')) as 'teacher' | 'student';
+        const savedRole = (await AsyncStorage.getItem('last_user_role')) as 'teacher' | 'student' | 'parent';
 
         if (savedEmail && savedPass) {
           setEmail(savedEmail);
@@ -184,7 +184,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         colors={
           role === 'student'
             ? [Colors.light.primaryDark, Colors.light.primary, Colors.light.secondaryLight]
-            : ['#1e1b4b', '#4338ca', '#818cf8'] // Deep Indigo gradient for Teacher
+            : role === 'teacher'
+            ? ['#1e1b4b', '#4338ca', '#818cf8']
+            : ['#0f172a', '#334155', '#64748b'] // Slate/Dark gradient for Parent
         }
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
@@ -237,11 +239,28 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                         >
                           <MaterialCommunityIcons
                             name="account-tie"
-                            size={24}
+                            size={20}
                             color={role === 'teacher' ? '#4338ca' : Colors.light.textLight}
                           />
-                          <Text style={[styles.roleButtonText, role === 'teacher' && styles.roleButtonTextActiveTeacher]}>
+                          <Text style={[styles.roleButtonText, { fontSize: 11 }, role === 'teacher' && styles.roleButtonTextActiveTeacher]}>
                             Teacher
+                          </Text>
+                        </TouchableOpacity>
+                      </Animated.View>
+
+                      <Animated.View style={{ flex: 1 }}>
+                        <TouchableOpacity
+                          style={[styles.roleButton, role === 'parent' && styles.roleButtonActiveParent]}
+                          onPress={() => setRole('parent')}
+                          disabled={isLoading}
+                        >
+                          <MaterialCommunityIcons
+                            name="account-child-circle"
+                            size={20}
+                            color={role === 'parent' ? '#0f172a' : Colors.light.textLight}
+                          />
+                          <Text style={[styles.roleButtonText, { fontSize: 11 }, role === 'parent' && styles.roleButtonTextActiveParent]}>
+                            Parent
                           </Text>
                         </TouchableOpacity>
                       </Animated.View>
@@ -252,7 +271,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                   <View style={styles.inputContainer}>
                     <MaterialCommunityIcons name="email-outline" size={20} color={Colors.light.textLight} style={styles.inputIcon} />
                     <TextInput
-                      placeholder={role === 'teacher' ? "Email Address or 5-digit ID" : "Email Address or 8-digit ID"}
+                      placeholder={
+                        role === 'teacher' 
+                          ? "Email Address or 5-digit ID" 
+                          : role === 'student' 
+                            ? "Email Address or 8-digit ID"
+                            : "Email Address or 6-digit ID"
+                      }
                       value={email}
                       onChangeText={setEmail}
                       mode="flat"
@@ -312,7 +337,13 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                       disabled={isLoading}
                     >
                       <LinearGradient
-                        colors={role === 'student' ? [Colors.light.primary, Colors.light.primaryDark] : ['#4338ca', '#1e1b4b']}
+                        colors={
+                          role === 'student' 
+                            ? [Colors.light.primary, Colors.light.primaryDark] 
+                            : role === 'teacher' 
+                              ? ['#4338ca', '#1e1b4b'] 
+                              : ['#334155', '#0f172a']
+                        }
                         start={{ x: 0, y: 0 }}
                         end={{ x: 1, y: 0 }}
                         style={styles.loginButtonGradient}
@@ -527,8 +558,13 @@ const styles = StyleSheet.create({
     borderColor: '#4338ca',
     backgroundColor: '#eef2ff',
   },
+  roleButtonActiveParent: {
+    borderColor: '#0f172a',
+    backgroundColor: '#f1f5f9',
+  },
   roleButtonText: {
     ...Typography.bodySmall,
+    fontSize: 12,
     fontWeight: '600',
     color: Colors.light.textLight,
   },
@@ -537,6 +573,9 @@ const styles = StyleSheet.create({
   },
   roleButtonTextActiveTeacher: {
     color: '#4338ca',
+  },
+  roleButtonTextActiveParent: {
+    color: '#0f172a',
   },
   inputContainer: {
     flexDirection: 'row',

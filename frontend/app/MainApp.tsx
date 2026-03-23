@@ -5,6 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Colors } from '@/constants/theme';
 import { TouchableOpacity, View } from 'react-native';
 import StudentAIStackNavigator from './navigation/StudentAIStackNavigator';
+import { useEffect } from 'react';
+import { registerForPushNotificationsAsync, setupNotificationListeners } from '@/services/notificationService';
+import * as Notifications from 'expo-notifications';
 
 // Screens - using absolute imports
 // Student screens
@@ -20,6 +23,12 @@ import AvailableBadgesScreen from './screens/student/AvailableBadgesScreen';
 import LeaderboardScreen from './screens/student/LeaderboardScreen';
 import CourseLessonsScreen from './screens/shared/CourseLessonsScreen';
 import DownloadsScreen from './screens/student/DownloadsScreen';
+import ParentLinkApprovalScreen from './screens/student/ParentLinkApprovalScreen';
+
+// Parent screens
+import ParentHomeScreen from './screens/parent/ParentHomeScreen';
+import ParentLinkChildScreen from './screens/parent/ParentLinkChildScreen';
+import ChildDetailScreen from './screens/parent/ChildDetailScreen';
 
 // Teacher screens
 import CreateAnnouncementScreen from './screens/teacher/CreateAnnouncementScreen';
@@ -75,6 +84,7 @@ function StudentStack() {
       <Stack.Screen name="AvailableBadges" component={AvailableBadgesScreen} />
       <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
       <Stack.Screen name="Downloads" component={DownloadsScreen} />
+      <Stack.Screen name="ParentLinkApproval" component={ParentLinkApprovalScreen} />
     </Stack.Navigator>
   );
 }
@@ -156,6 +166,7 @@ function StudentProgressStack() {
       <Stack.Screen name="AllQuizzes" component={AllQuizzesScreen} />
       <Stack.Screen name="CourseLessons" component={CourseLessonsScreen} />
       <Stack.Screen name="Downloads" component={DownloadsScreen} />
+      <Stack.Screen name="ParentLinkApproval" component={ParentLinkApprovalScreen} />
     </Stack.Navigator>
   );
 }
@@ -377,15 +388,118 @@ function TeacherTabs() {
   );
 }
 
+// Parent Navigation Stack
+function ParentStack() {
+  return (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      <Stack.Screen name="ParentHomeMain" component={ParentHomeScreen} />
+      <Stack.Screen name="LinkChild" component={ParentLinkChildScreen} />
+      <Stack.Screen name="ChildDetail" component={ChildDetailScreen} />
+    </Stack.Navigator>
+  );
+}
+
+// Parent Tab Navigator
+function ParentTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarActiveTintColor: Colors.light.primary,
+        tabBarInactiveTintColor: Colors.light.tabIconDefault,
+        tabBarStyle: {
+          borderTopColor: Colors.light.divider,
+          backgroundColor: Colors.light.surface,
+          boxShadow: '0 -2px 4px rgba(0, 0, 0, 0.1)',
+          shadowColor: '#000',
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.1,
+          shadowRadius: 4,
+        }
+      }}
+    >
+      <Tab.Screen
+        name="DashboardTab"
+        component={ParentStack}
+        options={{
+          tabBarLabel: 'Dashboard',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="view-dashboard-outline" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="ProfileTab"
+        component={ProfileStack}
+        options={{
+          tabBarLabel: 'Settings',
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="cog-outline" color={color} size={size} />
+          ),
+        }}
+      />
+    </Tab.Navigator>
+  );
+}
+
 import { UsageTracker } from '@/components/UsageTracker';
 
 function MainApp() {
-  const { user } = useAuthStore();
+  const { user, updateFCMToken } = useAuthStore();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    async function setupNotifications() {
+      if (user && isMounted) {
+        // 1. Register for push notifications and get token
+        const token = await registerForPushNotificationsAsync();
+        if (token) {
+          console.log('Registering push token with backend...');
+          await updateFCMToken(token).catch(err => 
+            console.error('Failed to update push token on server:', err)
+          );
+        }
+
+        // 2. Setup listeners for incoming notifications
+        const cleanupListeners = setupNotificationListeners(
+          (notification) => {
+            // Optional: Show an in-app toast or alert if needed
+            console.log('MainApp: Notification foreground:', notification.request.content.title);
+          },
+          (response) => {
+            // Optional: Logic to navigate based on notification data
+            const data = response.notification.request.content.data;
+            console.log('MainApp: User tapped notification with data:', data);
+          }
+        );
+
+        return cleanupListeners;
+      }
+    }
+
+    const cleanupPromise = setupNotifications();
+
+    return () => {
+      isMounted = false;
+      cleanupPromise.then(cleanup => cleanup && cleanup());
+    };
+  }, [user]);
+
+  const renderContent = () => {
+    if (user?.role === 'teacher') return <TeacherTabs />;
+    if (user?.role === 'parent') return <ParentTabs />;
+    return <StudentTabs />;
+  };
 
   return (
     <>
       <UsageTracker />
-      {user?.role === 'teacher' ? <TeacherTabs /> : <StudentTabs />}
+      {renderContent()}
     </>
   );
 }

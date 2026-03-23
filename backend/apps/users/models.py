@@ -96,6 +96,15 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         help_text="8-digit unique ID for students"
     )
 
+    # Unique parent ID
+    parent_id = models.CharField(
+        max_length=6, 
+        unique=True, 
+        blank=True, 
+        null=True,
+        help_text="6-digit unique ID for parents"
+    )
+
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -123,6 +132,14 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
                 
                 if not User.objects.filter(student_id=sid).exists():
                     self.student_id = sid
+                    break
+        
+        if self.role == self.RoleChoices.PARENT and not self.parent_id:
+            import random
+            while True:
+                pid = str(random.randint(100000, 999999))
+                if not User.objects.filter(parent_id=pid).exists():
+                    self.parent_id = pid
                     break
 
         super().save(*args, **kwargs)
