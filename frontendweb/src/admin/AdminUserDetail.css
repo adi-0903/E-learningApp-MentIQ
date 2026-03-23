@@ -1,0 +1,323 @@
+/* ═══════════════════════════════════════════════════════
+   ADMIN USER DETAIL
+   ═══════════════════════════════════════════════════════ */
+
+.admin-user-detail-page {
+    animation: adminFadeIn 0.5s ease-out forwards;
+}
+
+/* ── Profile Card ─────────────────────────────────────── */
+.admin-profile-card {
+    background: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+}
+
+.admin-profile-banner {
+    height: 120px;
+    background: linear-gradient(135deg, #7c3aed 0%, #4f46e5 50%, #06b6d4 100%);
+    position: relative;
+}
+
+.admin-profile-content {
+    padding: 0 2rem 2rem;
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    position: relative;
+}
+
+.admin-profile-avatar-wrapper {
+    margin-top: -50px;
+    position: relative;
+    z-index: 2;
+}
+
+.admin-profile-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    object-fit: cover;
+    border: 4px solid var(--card-bg);
+    background: #6b21a8;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+}
+
+.admin-profile-info {
+    flex: 1;
+    padding-top: 1.2rem;
+}
+
+.admin-profile-info h1 {
+    font-size: 1.6rem;
+    font-weight: 800;
+    color: white;
+    margin-bottom: 4px;
+}
+
+.admin-profile-info .admin-profile-role {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 14px;
+    border-radius: 100px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.admin-profile-role.teacher {
+    background: rgba(6, 182, 212, 0.15);
+    color: #67e8f9;
+}
+
+.admin-profile-role.student {
+    background: rgba(139, 92, 246, 0.15);
+    color: #a78bfa;
+}
+
+.admin-profile-meta {
+    display: flex;
+    gap: 2rem;
+    margin-top: 1rem;
+    flex-wrap: wrap;
+}
+
+.admin-profile-meta-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.admin-profile-meta-item label {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+
+.admin-profile-meta-item span {
+    font-size: 0.88rem;
+    color: white;
+    font-weight: 600;
+}
+
+.admin-profile-meta-item span.mono {
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    color: #a78bfa;
+}
+
+.admin-profile-actions {
+    display: flex;
+    gap: 0.8rem;
+    padding-top: 1.2rem;
+    flex-shrink: 0;
+}
+
+.admin-profile-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.04);
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Inter', sans-serif;
+}
+
+.admin-profile-action-btn:hover {
+    color: white;
+    background: rgba(139, 92, 246, 0.15);
+    border-color: rgba(139, 92, 246, 0.3);
+}
+
+.admin-profile-action-btn.danger:hover {
+    background: rgba(248, 113, 113, 0.15);
+    border-color: rgba(248, 113, 113, 0.3);
+    color: #f87171;
+}
+
+.admin-profile-action-btn svg {
+    width: 15px;
+    height: 15px;
+}
+
+/* ── Detail Panels ────────────────────────────────────── */
+.admin-detail-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.admin-detail-panel {
+    background: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+
+.admin-detail-panel-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.admin-detail-panel-header h3 {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.admin-detail-panel-header h3 svg {
+    width: 17px;
+    height: 17px;
+    color: var(--accent-purple);
+}
+
+.admin-detail-panel-body {
+    padding: 1rem 1.5rem;
+}
+
+.admin-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.admin-detail-item:last-child {
+    border-bottom: none;
+}
+
+.admin-detail-item label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.admin-detail-item span {
+    font-size: 0.85rem;
+    color: white;
+    font-weight: 600;
+}
+
+/* ── Course / Enrollment List ─────────────────────────── */
+.admin-detail-list-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.admin-detail-list-item:last-child {
+    border-bottom: none;
+}
+
+.admin-detail-list-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.admin-detail-list-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.admin-detail-list-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.admin-detail-list-info h4 {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: white;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.admin-detail-list-info p {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+}
+
+.admin-detail-empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+/* ── Attendance Stats ─────────────────────────────────── */
+.admin-attendance-bar {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+.admin-attendance-bar-track {
+    flex: 1;
+    height: 8px;
+    background: rgba(255, 255, 255, 0.06);
+    border-radius: 100px;
+    overflow: hidden;
+}
+
+.admin-attendance-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    background: linear-gradient(90deg, #7c3aed, #06b6d4);
+    transition: width 0.6s ease;
+}
+
+.admin-attendance-bar span {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: white;
+    min-width: 50px;
+    text-align: right;
+}
+
+@media (max-width: 1000px) {
+    .admin-detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-profile-content {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .admin-profile-meta {
+        justify-content: center;
+    }
+
+    .admin-profile-actions {
+        justify-content: center;
+    }
+}

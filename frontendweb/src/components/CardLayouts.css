@@ -1,0 +1,199 @@
+/* ================================================
+   DASHBOARD GRID — Explicit 3-col × 4-row layout
+   ================================================
+   Row 1: Attendance | Stats      | Greeting
+   Row 2: (cont.)    | Progress   | (cont.)
+   Row 3: LastLesson | LastLesson | AI Tutor
+   Row 4: Knowledge Graph (all columns)
+   ================================================ */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr 1fr;
+    grid-template-rows: auto auto auto auto;
+    gap: 1.5rem;
+    flex-grow: 1;
+    align-items: stretch;
+}
+
+/* ---- Explicit grid positions ---- */
+
+/* Col 1, Rows 1-2 */
+.attendance-card-wrapper {
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
+}
+
+/* Col 2, Row 1 */
+.stats-container {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+}
+
+/* Col 3, Rows 1-2 */
+.greeting-card {
+    grid-column: 3 / 4;
+    grid-row: 1 / 3;
+}
+
+/* Col 2, Row 2 */
+.progress-card {
+    grid-column: 2 / 3;
+    grid-row: 2 / 3;
+}
+
+/* Col 1-2, Row 3 */
+.last-lesson-card {
+    grid-column: 1 / 3;
+    grid-row: 3 / 4;
+}
+
+/* Col 3, Row 3 */
+.ai-assistant-card {
+    grid-column: 3 / 4;
+    grid-row: 3 / 4;
+}
+
+.knowledge-graph-card {
+    grid-column: 1 / 4;
+    grid-row: 4 / 5;
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1200px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto auto auto auto auto;
+    }
+
+    .attendance-card-wrapper {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+    }
+
+    .stats-container {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+    }
+
+    .greeting-card {
+        grid-column: 1 / 3;
+        grid-row: 1 / 2;
+    }
+
+    .progress-card {
+        grid-column: 1 / -1;
+        grid-row: 3 / 4;
+    }
+
+    .last-lesson-card {
+        grid-column: 1 / -1;
+        grid-row: 4 / 5;
+    }
+
+    .ai-assistant-card {
+        grid-column: 1 / -1;
+        grid-row: 5 / 6;
+    }
+
+    .knowledge-graph-card {
+        grid-column: 1 / -1;
+        grid-row: 6 / 7;
+    }
+}
+
+/* ---- Teacher grid ---- */
+.teacher-grid {
+    grid-template-columns: 1fr 1fr 1fr;
+    grid-template-rows: auto auto auto;
+}
+
+/* Explicit placements for Teacher Grid */
+
+.teacher-grid .teacher-attendance-card {
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
+}
+
+.teacher-grid .greeting-card {
+    grid-column: 2 / 4;
+    grid-row: 1 / 2;
+}
+
+.teacher-grid .quick-actions-card {
+    grid-column: 1 / 2;
+    grid-row: 2 / 3;
+}
+
+.teacher-grid .recent-doubts-card {
+    grid-column: 2 / 3;
+    grid-row: 2 / 4;
+}
+
+.teacher-grid .ai-assistant-card {
+    grid-column: 3 / 4;
+    grid-row: 2 / 4;
+}
+
+@media (max-width: 1200px) {
+    .teacher-grid {
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto;
+    }
+
+    .teacher-grid .teacher-attendance-card {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+    }
+
+    .teacher-grid .greeting-card {
+        grid-column: 1 / 3;
+        grid-row: 1 / 2;
+    }
+
+    .teacher-grid .quick-actions-card {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+    }
+
+    .teacher-grid .recent-doubts-card {
+        grid-column: 1 / 2;
+        grid-row: 3 / 4;
+    }
+
+    .teacher-grid .ai-assistant-card {
+        grid-column: 2 / 3;
+        grid-row: 3 / 4;
+    }
+}
+
+@media (max-width: 768px) {
+    .teacher-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .teacher-grid .teacher-attendance-card,
+    .teacher-grid .greeting-card,
+    .teacher-grid .quick-actions-card,
+    .teacher-grid .recent-doubts-card,
+    .teacher-grid .ai-assistant-card {
+        grid-column: 1 / -1;
+        grid-row: auto;
+    }
+}
+
+.placeholder-card {
+    grid-column: 1 / 3;
+    min-height: 200px;
+    background: var(--card-bg-light);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 3rem;
+}
+
+.placeholder-card h2 {
+    color: white;
+}

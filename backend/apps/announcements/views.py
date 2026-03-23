@@ -1,0 +1,151 @@
+"""
+Announcement views.
+"""
+from django.db.models import Q
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
+from apps.core.pagination import StandardPagination
+from apps.core.permissions import IsTeacher, IsTeacherOrReadOnly
+from apps.enrollments.models import Enrollment
+
+from .models import Announcement
+from .serializers import AnnouncementCreateSerializer, AnnouncementListSerializer
+from apps.notifications.utils import create_notification
+from apps.notifications.models import Notification
+
+
+class AnnouncementListCreateView(generics.ListCreateAPIView):
+    """
+    GET  /api/v1/announcements/  - List announcements for enrolled courses + global
+    POST /api/v1/announcements/  - Create announcement (teacher only)
+    """
+    permission_classes = [IsAuthenticated, IsTeacherOrReadOnly]
+    pagination_class = StandardPagination
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return AnnouncementCreateSerializer
+        return AnnouncementListSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        if user.role == 'teacher':
+            # Teachers see: their own announcements + admin announcements targeted to teachers or all
+            # PLUS personal announcements targeted directly at this teacher
+            own = Q(teacher=user) & Q(target_student__isnull=True)
+            admin_for_teachers = Q(created_by_admin=True) & (
+                Q(target_audience='teachers') | Q(target_audience='all')
+            ) & Q(target_student__isnull=True)
+            personal = Q(target_student=user)
+            return Announcement.objects.filter(
+                own | admin_for_teachers | personal
+            ).select_related('teacher', 'course').distinct()
+        elif user.role == 'student':
+            # Students see: enrolled course announcements + global, BUT only if audience is 'all' or 'students'
+            # PLUS personal announcements targeted directly at this student
+            enrolled_ids = Enrollment.objects.filter(
+                student=user, is_active=True
+            ).values_list('course_id', flat=True)
+            audience_filter = Q(target_audience='all') | Q(target_audience='students')
+            course_filter = Q(course__isnull=True) | Q(course_id__in=enrolled_ids)
+            # General announcements (not personal) matching audience + course
+            general = audience_filter & course_filter & Q(target_student__isnull=True)
+            # Personal announcements addressed to this student specifically
+            personal = Q(target_student=user)
+            return Announcement.objects.filter(
+                general | personal
+            ).select_related('teacher', 'course').distinct()
+        else:
+            # Admin sees all
+            return Announcement.objects.all().select_related('teacher', 'course')
+
+    def create(self, request, *args, **kwargs):
+        serializer = AnnouncementCreateSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        announcement = serializer.save()
+
+        # Trigger notifications for relevant users
+        try:
+            from apps.users.models import User
+            title = f"New Update: {announcement.title}"
+            body = announcement.content[:100] + ("..." if len(announcement.content) > 100 else "")
+            
+            if announcement.course:
+                # Notify students in the course
+                students = User.objects.filter(
+                    enrollments__course=announcement.course,
+                    enrollments__is_active=True
+                ).distinct()
+                type_val = Notification.TypeChoices.ANNOUNCEMENT
+                data = {'course_id': str(announcement.course.id), 'announcement_id': str(announcement.id)}
+            else:
+                # Institutional update: Notify ALL students
+                students = User.objects.filter(role='student')
+                type_val = Notification.TypeChoices.ANNOUNCEMENT
+                data = {'announcement_id': str(announcement.id)}
+
+            for student in students:
+                create_notification(
+                    user=student,
+                    title=title,
+                    body=body,
+                    notification_type=type_val,
+                    data=data
+                )
+        except Exception as e:
+            print(f"Announcement Notification Failure: {e}")
+
+        return Response({
+            'success': True,
+            'message': 'Announcement created.',
+            'data': AnnouncementListSerializer(announcement).data,
+        }, status=status.HTTP_201_CREATED)
+
+
+class AnnouncementDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """GET/PUT/DELETE /api/v1/announcements/<id>/"""
+    def get_serializer_class(self):
+        if self.request.method in ['PUT', 'PATCH']:
+            return AnnouncementCreateSerializer
+        return AnnouncementListSerializer
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return Announcement.objects.select_related('teacher', 'course')
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        return Response({'success': True, 'data': AnnouncementListSerializer(instance).data})
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.teacher != request.user and not request.user.role == 'admin':
+            return Response(
+                {'success': False, 'error': {'message': 'Only the author can update.'}},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        
+        # Use partial=True to allow partial updates (PATCH)
+        partial = kwargs.pop('partial', False)
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response({
+            'success': True,
+            'message': 'Announcement updated.',
+            'data': AnnouncementListSerializer(instance).data,
+        })
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.teacher != request.user and not request.user.role == 'admin':
+            return Response(
+                {'success': False, 'error': {'message': 'Only the author can delete.'}},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        instance.delete()
+        return Response({'success': True, 'message': 'Announcement deleted.'})

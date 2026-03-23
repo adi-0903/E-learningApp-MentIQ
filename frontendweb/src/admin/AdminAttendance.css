@@ -1,0 +1,377 @@
+/* ═══════════════════════════════════════════════════════════════
+   AdminAttendance.css — Premium Attendance Monitor Styling
+   ═══════════════════════════════════════════════════════════════ */
+
+.admin-attendance-page {
+    padding: 0 2rem 2rem;
+    animation: fadeInUp 0.4s ease-out;
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(15px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Stats Row ─────────────────────────────────────────── */
+.att-stats-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.att-stat-card {
+    background: linear-gradient(135deg, rgba(30, 27, 46, 0.95), rgba(36, 32, 56, 0.95));
+    border: 1px solid rgba(124, 58, 237, 0.15);
+    border-radius: 16px;
+    padding: 1.25rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all 0.3s ease;
+}
+
+.att-stat-card:hover {
+    border-color: rgba(124, 58, 237, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.12);
+}
+
+.att-stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.att-stat-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.att-stat-value {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #f0eef6;
+    line-height: 1.2;
+}
+
+.att-stat-label {
+    font-size: 0.78rem;
+    color: #9b95b0;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    margin-top: 2px;
+}
+
+/* ── Tabs ──────────────────────────────────────────────── */
+.att-tabs {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 1.25rem;
+    background: rgba(30, 27, 46, 0.6);
+    padding: 5px;
+    border-radius: 14px;
+    width: fit-content;
+}
+
+.att-tab {
+    padding: 0.6rem 1.5rem;
+    border: none;
+    background: transparent;
+    color: #9b95b0;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+}
+
+.att-tab:hover {
+    color: #f0eef6;
+    background: rgba(124, 58, 237, 0.1);
+}
+
+.att-tab.active {
+    background: linear-gradient(135deg, #7c3aed, #6d28d9);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.35);
+}
+
+/* ── Table Enhancements ────────────────────────────────── */
+.att-table tbody tr {
+    transition: all 0.2s ease;
+}
+
+.att-student-row:hover {
+    background: rgba(124, 58, 237, 0.06) !important;
+}
+
+.att-student-row.expanded {
+    background: rgba(124, 58, 237, 0.08) !important;
+    border-bottom: none;
+}
+
+/* ── Progress Bar ────────────────────────────────────────── */
+.att-progress-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 140px;
+}
+
+.att-progress-bar-bg {
+    flex: 1;
+    height: 7px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 99px;
+    overflow: hidden;
+}
+
+.att-progress-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.6s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.att-progress-text {
+    font-weight: 700;
+    font-size: 0.85rem;
+    min-width: 42px;
+    text-align: right;
+}
+
+.att-fraction {
+    color: #c4bfdb;
+    font-size: 0.85rem;
+}
+
+.att-fraction strong {
+    color: #f0eef6;
+}
+
+/* ── Status Badge ────────────────────────────────────────── */
+.att-status-badge {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+}
+
+.att-status-excellent {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+}
+
+.att-status-good {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+}
+
+.att-status-at-risk {
+    background: rgba(249, 115, 22, 0.15);
+    color: #fb923c;
+}
+
+.att-status-critical {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+}
+
+/* ── Alert Button ─────────────────────────────────────────── */
+.att-alert-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    transition: all 0.2s ease;
+}
+
+.att-alert-btn:hover {
+    background: rgba(245, 158, 11, 0.3);
+    transform: scale(1.1);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.3);
+}
+
+/* ── Expanded Detail Row ──────────────────────────────────── */
+.att-detail-row {
+    background: rgba(20, 18, 34, 0.6) !important;
+    border-bottom: 1px solid rgba(124, 58, 237, 0.15) !important;
+}
+
+.att-detail-row td {
+    padding: 0 !important;
+}
+
+.att-detail-content {
+    padding: 1.25rem 1.5rem;
+    animation: expandIn 0.3s ease-out;
+}
+
+@keyframes expandIn {
+    from { opacity: 0; max-height: 0; }
+    to { opacity: 1; max-height: 400px; }
+}
+
+.att-detail-content h4 {
+    color: #a78bfa;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1rem;
+    font-weight: 700;
+}
+
+.att-no-courses {
+    color: #9b95b0;
+    font-style: italic;
+    font-size: 0.85rem;
+}
+
+.att-course-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+}
+
+.att-course-card {
+    background: rgba(30, 27, 46, 0.9);
+    border: 1px solid rgba(124, 58, 237, 0.12);
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.25s ease;
+}
+
+.att-course-card:hover {
+    border-color: rgba(124, 58, 237, 0.3);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+}
+
+.att-course-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.6rem;
+}
+
+.att-course-title {
+    font-weight: 600;
+    color: #f0eef6;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+}
+
+.att-course-pct {
+    font-weight: 700;
+    font-size: 0.9rem;
+}
+
+.att-course-bar-bg {
+    height: 5px;
+    background: rgba(255, 255, 255, 0.07);
+    border-radius: 99px;
+    overflow: hidden;
+    margin-bottom: 0.6rem;
+}
+
+.att-course-bar-fill {
+    height: 100%;
+    border-radius: 99px;
+    transition: width 0.5s ease;
+}
+
+.att-course-stats {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.72rem;
+    color: #9b95b0;
+}
+
+/* ── Alert Modal ──────────────────────────────────────── */
+.att-alert-modal {
+    max-width: 500px;
+}
+
+.att-alert-target-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: rgba(30, 27, 46, 0.8);
+    border: 1px solid rgba(124, 58, 237, 0.15);
+    border-radius: 12px;
+    margin-bottom: 1.25rem;
+}
+
+.att-alert-target-info img {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid rgba(124, 58, 237, 0.3);
+}
+
+.att-alert-target-info strong {
+    color: #f0eef6;
+    display: block;
+    font-size: 1rem;
+}
+
+.att-alert-pct {
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.att-send-alert-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    background: linear-gradient(135deg, #f59e0b, #d97706) !important;
+    color: #fff !important;
+}
+
+.att-send-alert-btn:hover {
+    background: linear-gradient(135deg, #d97706, #b45309) !important;
+}
+
+/* ── UID Chip ──────────────────────────────────────── */
+.admin-uid-chip {
+    background: rgba(124, 58, 237, 0.12);
+    color: #a78bfa;
+    padding: 3px 10px;
+    border-radius: 8px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    font-family: 'JetBrains Mono', 'Fira Code', monospace;
+    letter-spacing: 0.3px;
+}
+
+/* ── Responsive ──────────────────────────────────────── */
+@media (max-width: 768px) {
+    .att-stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .att-course-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .admin-attendance-page {
+        padding: 0 1rem 1rem;
+    }
+}

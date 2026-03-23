@@ -1,0 +1,322 @@
+"""
+Quiz views - CRUD for quizzes/questions, submit/grade, results.
+"""
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+
+from apps.core.pagination import StandardPagination
+from apps.core.permissions import IsStudent, IsTeacher, IsTeacherOrReadOnly
+
+from .models import Quiz, QuizAttempt, QuizQuestion
+from .serializers import (
+    QuizAttemptDetailSerializer,
+    QuizAttemptSerializer,
+    QuizCreateSerializer,
+    QuizDetailSerializer,
+    QuizListSerializer,
+    QuizQuestionCreateSerializer,
+    QuizSubmitSerializer,
+)
+
+
+class QuizListCreateView(generics.ListCreateAPIView):
+    """
+    GET  /api/v1/quizzes/?course=<id>  - List quizzes for a course
+    POST /api/v1/quizzes/              - Create quiz with questions (teacher only)
+    """
+    permission_classes = [IsAuthenticated, IsTeacherOrReadOnly]
+    pagination_class = StandardPagination
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return QuizCreateSerializer
+        return QuizListSerializer
+
+    def get_queryset(self):
+        queryset = Quiz.objects.select_related('course')
+        course_id = self.request.query_params.get('course')
+        if course_id:
+            queryset = queryset.filter(course_id=course_id)
+        # Students see only published quizzes
+        if self.request.user.role == 'student':
+            queryset = queryset.filter(is_published=True)
+        return queryset
+
+    def create(self, request, *args, **kwargs):
+        serializer = QuizCreateSerializer(data=request.data, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        quiz = serializer.save()
+
+        # Trigger notifications for enrolled students
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            from apps.users.models import User
+            
+            # Notify students in the course
+            students = User.objects.filter(
+                enrollments__course=quiz.course,
+                enrollments__is_active=True
+            ).distinct()
+            
+            title = f"New Evaluation: {quiz.title}"
+            body = f"A new quiz is available in {quiz.course.title}. Start your mission now."
+            data = {
+                'course_id': str(quiz.course.id),
+                'quiz_id': str(quiz.id),
+                'type': 'quiz'
+            }
+
+            for student in students:
+                create_notification(
+                    user=student,
+                    title=title,
+                    body=body,
+                    notification_type=Notification.TypeChoices.QUIZ,
+                    data=data
+                )
+        except Exception as e:
+            print(f"Quiz Notification Failure: {e}")
+
+        return Response({
+            'success': True,
+            'message': 'Quiz created successfully.',
+            'data': QuizDetailSerializer(quiz).data,
+        }, status=status.HTTP_201_CREATED)
+
+
+class QuizDetailView(generics.RetrieveUpdateDestroyAPIView):
+    """
+    GET    /api/v1/quizzes/<id>/  - Get quiz with questions
+    PUT    /api/v1/quizzes/<id>/  - Update quiz (owner teacher)
+    DELETE /api/v1/quizzes/<id>/  - Delete quiz (owner teacher)
+    """
+    permission_classes = [IsAuthenticated]
+    lookup_field = 'id'
+
+    def get_serializer_class(self):
+        return QuizDetailSerializer
+
+    def get_queryset(self):
+        return Quiz.objects.prefetch_related('questions').select_related('course')
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = QuizDetailSerializer(instance)
+        return Response({'success': True, 'data': serializer.data})
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.course.teacher != request.user:
+            return Response(
+                {'success': False, 'error': {'message': 'Only the course teacher can update quizzes.'}},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        serializer = QuizCreateSerializer(instance, data=request.data, partial=True, context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            'success': True,
+            'message': 'Quiz updated successfully.',
+            'data': QuizDetailSerializer(instance).data,
+        })
+
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        if instance.course.teacher != request.user:
+            return Response(
+                {'success': False, 'error': {'message': 'Only the course teacher can delete quizzes.'}},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        instance.delete()
+        return Response({'success': True, 'message': 'Quiz deleted successfully.'})
+
+
+class QuizQuestionManageView(APIView):
+    """
+    POST /api/v1/quizzes/<quiz_id>/questions/
+    Add a question to a quiz (teacher only).
+    """
+    permission_classes = [IsAuthenticated, IsTeacher]
+
+    def post(self, request, quiz_id):
+        try:
+            quiz = Quiz.objects.get(id=quiz_id, course__teacher=request.user)
+        except Quiz.DoesNotExist:
+            return Response(
+                {'success': False, 'error': {'message': 'Quiz not found.'}},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        data = request.data.copy()
+        data['quiz'] = quiz.id
+        serializer = QuizQuestionCreateSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            'success': True,
+            'message': 'Question added successfully.',
+            'data': serializer.data,
+        }, status=status.HTTP_201_CREATED)
+
+    def delete(self, request, quiz_id):
+        """Delete a specific question by passing question_id in query."""
+        question_id = request.query_params.get('question_id')
+        if not question_id:
+            return Response(
+                {'success': False, 'error': {'message': 'question_id is required.'}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        try:
+            question = QuizQuestion.objects.get(
+                id=question_id, quiz_id=quiz_id, quiz__course__teacher=request.user
+            )
+        except QuizQuestion.DoesNotExist:
+            return Response(
+                {'success': False, 'error': {'message': 'Question not found.'}},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+        question.delete()
+        return Response({'success': True, 'message': 'Question deleted successfully.'})
+
+
+class QuizSubmitView(APIView):
+    """
+    POST /api/v1/quizzes/<quiz_id>/submit/
+    Student submits answers; server grades and returns result.
+    """
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    def post(self, request, quiz_id):
+        try:
+            quiz = Quiz.objects.prefetch_related('questions').get(id=quiz_id, is_published=True)
+        except Quiz.DoesNotExist:
+            return Response(
+                {'success': False, 'error': {'message': 'Quiz not found.'}},
+                status=status.HTTP_404_NOT_FOUND,
+            )
+
+        # 3 attempts limit within 24 hours logic
+        from django.utils import timezone
+        from datetime import timedelta
+        
+        one_day_ago = timezone.now() - timedelta(hours=24)
+        recent_attempts = QuizAttempt.objects.filter(
+            student=request.user, 
+            quiz=quiz, 
+            completed_at__gte=one_day_ago
+        ).count()
+        
+        if recent_attempts >= 3:
+            return Response(
+                {'success': False, 'error': {'message': 'You have used all 3 attempts for today. Mission will renew in 24 hours.'}},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        serializer = QuizSubmitSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        submitted_answers = serializer.validated_data['answers']
+        time_taken = serializer.validated_data.get('time_taken', 0)
+
+        # Grade the quiz
+        questions = quiz.questions.all()
+        total = questions.count()
+        score = 0
+
+        for question in questions:
+            submitted = submitted_answers.get(str(question.id), '').lower()
+            # Normalize for MSQ (sort options to avoid order issues)
+            sub_list = sorted([s.strip() for s in submitted.split(',') if s.strip()])
+            cor_list = sorted([c.strip() for c in question.correct_answer.lower().split(',') if c.strip()])
+            
+            if sub_list == cor_list:
+                score += 1
+
+        # Save attempt
+        attempt = QuizAttempt.objects.create(
+            quiz=quiz,
+            student=request.user,
+            score=score,
+            total_questions=total,
+            answers=submitted_answers,
+            time_taken=time_taken,
+        )
+
+        # 🏆 Automatically Check and Award Badges
+        new_badges = []
+        try:
+            from apps.progress.services import check_and_award_badge
+            
+            # 1. Check for 'first_quiz'
+            res = check_and_award_badge(request.user, 'first_quiz', {'quiz_completed': True})
+            if res.get('awarded'): new_badges.append(res)
+            
+            # 2. Check for 'quiz_novice' (5 quizzes)
+            res = check_and_award_badge(request.user, 'quiz_novice')
+            if res.get('awarded'): new_badges.append(res)
+
+            # 3. Check for 'quiz_warrior' (20 quizzes)
+            res = check_and_award_badge(request.user, 'quiz_warrior')
+            if res.get('awarded'): new_badges.append(res)
+
+            # 4. Check for 'quiz_master' (50 quizzes, 90%+)
+            res = check_and_award_badge(request.user, 'quiz_master')
+            if res.get('awarded'): new_badges.append(res)
+
+            # 5. Check for 'perfect_score' (100% on current quiz?) 
+            # Or total 100% scores. The service handles the tally.
+            if score == total:
+                res = check_and_award_badge(request.user, 'perfect_score')
+                if res.get('awarded'): new_badges.append(res)
+
+            # 6. Check for 'speed_demon'
+            # (Threshold might be based on context_data like time_taken < 30s)
+            if score == total and time_taken < 60: # Under 1 minute
+                res = check_and_award_badge(request.user, 'speed_demon')
+                if res.get('awarded'): new_badges.append(res)
+
+        except Exception as e:
+            print(f"Badge Award Error: {e}")
+
+        return Response({
+            'success': True,
+            'message': 'Quiz submitted successfully.',
+            'data': QuizAttemptDetailSerializer(attempt).data,
+            'new_badges': new_badges
+        }, status=status.HTTP_201_CREATED)
+
+
+class QuizAttemptsView(generics.ListAPIView):
+    """
+    GET /api/v1/quizzes/<quiz_id>/attempts/
+    Teacher: see all attempts. Student: see own attempts.
+    """
+    serializer_class = QuizAttemptSerializer
+    permission_classes = [IsAuthenticated]
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        quiz_id = self.kwargs['quiz_id']
+        user = self.request.user
+        queryset = QuizAttempt.objects.filter(quiz_id=quiz_id).select_related('quiz')
+
+        if user.role == 'student':
+            queryset = queryset.filter(student=user)
+
+        return queryset.order_by('-completed_at')
+
+
+class AllQuizAttemptsView(generics.ListAPIView):
+    """
+    GET /api/v1/quizzes/attempts/all/
+    Student: see all their attempts across all quizzes.
+    """
+    serializer_class = QuizAttemptSerializer
+    permission_classes = [IsAuthenticated, IsStudent]
+    pagination_class = StandardPagination
+
+    def get_queryset(self):
+        return QuizAttempt.objects.filter(student=self.request.user).select_related('quiz', 'quiz__course').order_by('-completed_at')
