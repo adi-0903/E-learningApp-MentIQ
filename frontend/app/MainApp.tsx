@@ -5,12 +5,9 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Colors } from '@/constants/theme';
 import { TouchableOpacity, View } from 'react-native';
 import StudentAIStackNavigator from './navigation/StudentAIStackNavigator';
-<<<<<<< HEAD
-=======
 import { useEffect } from 'react';
 import { registerForPushNotificationsAsync, setupNotificationListeners } from '@/services/notificationService';
 import * as Notifications from 'expo-notifications';
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 // Screens - using absolute imports
 // Student screens
@@ -25,8 +22,6 @@ import MyBadgesScreen from './screens/student/MyBadgesScreen';
 import AvailableBadgesScreen from './screens/student/AvailableBadgesScreen';
 import LeaderboardScreen from './screens/student/LeaderboardScreen';
 import CourseLessonsScreen from './screens/shared/CourseLessonsScreen';
-<<<<<<< HEAD
-=======
 import DownloadsScreen from './screens/student/DownloadsScreen';
 import ParentLinkApprovalScreen from './screens/student/ParentLinkApprovalScreen';
 
@@ -34,7 +29,6 @@ import ParentLinkApprovalScreen from './screens/student/ParentLinkApprovalScreen
 import ParentHomeScreen from './screens/parent/ParentHomeScreen';
 import ParentLinkChildScreen from './screens/parent/ParentLinkChildScreen';
 import ChildDetailScreen from './screens/parent/ChildDetailScreen';
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 // Teacher screens
 import CreateAnnouncementScreen from './screens/teacher/CreateAnnouncementScreen';
@@ -89,11 +83,8 @@ function StudentStack() {
       <Stack.Screen name="MyBadges" component={MyBadgesScreen} />
       <Stack.Screen name="AvailableBadges" component={AvailableBadgesScreen} />
       <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
-<<<<<<< HEAD
-=======
       <Stack.Screen name="Downloads" component={DownloadsScreen} />
       <Stack.Screen name="ParentLinkApproval" component={ParentLinkApprovalScreen} />
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     </Stack.Navigator>
   );
 }
@@ -174,11 +165,8 @@ function StudentProgressStack() {
       <Stack.Screen name="StudentVideoLectures" component={StudentVideoLecturesScreen} />
       <Stack.Screen name="AllQuizzes" component={AllQuizzesScreen} />
       <Stack.Screen name="CourseLessons" component={CourseLessonsScreen} />
-<<<<<<< HEAD
-=======
       <Stack.Screen name="Downloads" component={DownloadsScreen} />
       <Stack.Screen name="ParentLinkApproval" component={ParentLinkApprovalScreen} />
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     </Stack.Navigator>
   );
 }
@@ -400,12 +388,6 @@ function TeacherTabs() {
   );
 }
 
-<<<<<<< HEAD
-import { UsageTracker } from '@/components/UsageTracker';
-
-function MainApp() {
-  const { user } = useAuthStore();
-=======
 // Parent Navigation Stack
 function ParentStack() {
   return (
@@ -513,16 +495,11 @@ function MainApp() {
     if (user?.role === 'parent') return <ParentTabs />;
     return <StudentTabs />;
   };
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
   return (
     <>
       <UsageTracker />
-<<<<<<< HEAD
-      {user?.role === 'teacher' ? <TeacherTabs /> : <StudentTabs />}
-=======
       {renderContent()}
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     </>
   );
 }

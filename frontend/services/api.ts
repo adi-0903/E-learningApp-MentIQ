@@ -656,8 +656,6 @@ export const emailApi = {
     api.post(`/v1/emails/admin/contacts/${id}/reply/`, { reply_text }),
 };
 
-<<<<<<< HEAD
-=======
 // ─── Offline Mode ────────────────────────────────────────────────
 export const offlineApi = {
   getAvailableMicroLessons: (courseId?: string | number) => {
@@ -722,8 +720,6 @@ export const parentApi = {
   respondToParentRequest: (requestId: number, action: 'approve' | 'reject') =>
     api.post(`/v1/parents/student/requests/${requestId}/approve/`, { action }),
 };
-
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 // ─── Exported utilities ──────────────────────────────────────────
 export { setTokens, clearTokens, getTokens, API_BASE_URL };
 export default api;

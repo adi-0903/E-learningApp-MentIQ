@@ -25,10 +25,7 @@
     "expo-av": "~16.0.8",
     "expo-constants": "~18.0.10",
     "expo-dev-client": "~6.0.20",
-<<<<<<< HEAD
-=======
     "expo-device": "~8.0.10",
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     "expo-document-picker": "~14.0.8",
     "expo-file-system": "^19.0.17",
     "expo-firebase-core": "^6.0.0",
@@ -42,10 +39,7 @@
     "expo-linking": "~8.0.10",
     "expo-local-authentication": "~17.0.8",
     "expo-media-library": "~18.2.1",
-<<<<<<< HEAD
-=======
     "expo-notifications": "~0.32.16",
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     "expo-print": "~15.0.8",
     "expo-router": "~6.0.17",
     "expo-sharing": "~14.0.8",

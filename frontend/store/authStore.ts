@@ -6,11 +6,7 @@ export interface User {
   id: string;
   email: string;
   name: string;
-<<<<<<< HEAD
-  role: 'teacher' | 'student';
-=======
   role: 'teacher' | 'student' | 'parent';
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
   bio?: string;
   phoneNumber?: string;
   isEmailVerified?: boolean;
@@ -19,10 +15,7 @@ export interface User {
   profileAvatar?: string;
   teacherId?: string;
   studentId?: string;
-<<<<<<< HEAD
-=======
   parentId?: string;
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
   createdAt?: string;
   updatedAt?: string;
 }
@@ -31,11 +24,7 @@ interface AuthState {
   user: User | null;
   isLoading: boolean;
   isLoggedIn: boolean;
-<<<<<<< HEAD
-  login: (email: string, password: string, role: 'teacher' | 'student') => Promise<void>;
-=======
   login: (email: string, password: string, role: 'teacher' | 'student' | 'parent') => Promise<void>;
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
   logout: () => Promise<void>;
   getCurrentUser: () => Promise<User | null>;
   updateProfile: (name: string, bio: string, phoneNumber?: string, profileImageUri?: string, profileAvatar?: string) => Promise<void>;
@@ -50,11 +39,7 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: false,
   isLoggedIn: false,
 
-<<<<<<< HEAD
-  login: async (email: string, password: string, role: 'teacher' | 'student') => {
-=======
   login: async (email: string, password: string, role: 'teacher' | 'student' | 'parent') => {
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     set({ isLoading: true });
     try {
       const { data } = await authApi.login(email, password);
@@ -79,10 +64,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         profileAvatar: data.user?.profile_avatar || '',
         teacherId: data.user?.teacher_id || '',
         studentId: data.user?.student_id || '',
-<<<<<<< HEAD
-=======
         parentId: data.user?.parent_id || '',
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
       };
 
       // Verify role matches
@@ -155,10 +137,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           profileAvatar: actualData.profile_avatar || '',
           teacherId: actualData.teacher_id || '',
           studentId: actualData.student_id || '',
-<<<<<<< HEAD
-=======
           parentId: actualData.parent_id || '',
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         };
         set({ user: freshUser, isLoggedIn: true, isLoading: false });
         await AsyncStorage.setItem('currentUser', JSON.stringify(freshUser));

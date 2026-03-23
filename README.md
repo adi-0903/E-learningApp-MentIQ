@@ -56,19 +56,11 @@
 <p align="center">
   <img src="https://img.shields.io/badge/🔥_Status-Active_Development-00C853?style=flat-square" />
   <img src="https://img.shields.io/badge/🏗️_Build-Passing-brightgreen?style=flat-square" />
-<<<<<<< HEAD
-  <img src="https://img.shields.io/badge/📦_Version-1.5.0--stable-blue?style=flat-square" />
-  <img src="https://img.shields.io/badge/📜_License-MIT-green?style=flat-square" />
-  <img src="https://img.shields.io/badge/🧠_AI_Model-Llama_3-F39C12?style=flat-square" />
-  <img src="https://img.shields.io/badge/📱_Screens-33+-purple?style=flat-square" />
-  <img src="https://img.shields.io/badge/🔌_API_Routes-17_Groups-red?style=flat-square" />
-=======
   <img src="https://img.shields.io/badge/📦_Version-1.8.0--stable-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/📜_License-MIT-green?style=flat-square" />
   <img src="https://img.shields.io/badge/🧠_AI_Model-Llama_3-F39C12?style=flat-square" />
   <img src="https://img.shields.io/badge/📱_Screens-42+-purple?style=flat-square" />
   <img src="https://img.shields.io/badge/🔌_API_Routes-21_Groups-red?style=flat-square" />
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 </p>
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
@@ -177,15 +169,9 @@
 | Feature | Description | Tech |
 |:---|:---|:---|
 | 🧠 **Advanced Quizzes** | MCQ, True/False, Multi-Select with time-boxing | `QuizScreen.tsx` |
-<<<<<<< HEAD
-| ⚖️ **Anti-Cheat System** | Server-enforced **3-attempt daily limit** per quiz | `Backend Validation` |
-| 📊 **Micro-Level Analysis** | Per-question breakdown: submitted vs. correct answer comparison | `QuizAnalysisScreen.tsx` |
-| 🏆 **Result Dashboard** | Beautiful grade cards with score percentages and attempt history | `QuizResultScreen.tsx` |
-=======
 | 🎮 **Gamified Badges** | Achievement system with rarity tiers (Common to Mythic) | `AchievementBadge` · `PostgreSQL` |
 | 🛡️ **Anti-Cheat System** | Server-enforced **3-attempt daily limit** per quiz | `Backend Validation` |
 | 🏆 **Global Leaderboard** | Real-time platform rankings based on quiz accuracy & badges | `LeaderboardView` · `DRF` |
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 | 📈 **Platform Analytics** | Celery-generated daily snapshots of engagement, revenue, and scores | `django-celery-beat` |
 | 🔍 **Elasticsearch Index** | Full-text search across courses, lessons, and users | `elasticsearch-dsl` |
 
@@ -202,15 +188,9 @@
 | 📩 **Auto Welcome Emails** | Triggered on registration via async Celery workers | `Gmail SMTP` · `Celery` |
 | 📣 **Campaign System** | Admin-targeted mass emailing to student cohorts | `Campaign Model` |
 | 📥 **IMAP Inbox Sync** | Pulls support emails directly into the admin dashboard | `IMAP` · `Gmail` |
-<<<<<<< HEAD
-| 🔔 **Push Notifications** | Firebase Cloud Messaging for quiz alerts, class reminders | `fcm-django` · `firebase-admin` |
-| 📞 **SMS Integration** | Twilio-powered SMS alerts for critical notifications | `twilio` |
-| ✉️ **EmailJS Frontend** | Client-side contact forms with direct email dispatch | `@emailjs/browser` |
-=======
 | 🔔 **Notification Triggers** | Automated alerts for live classes, new content, and payments | `django-signals` · `FCM` |
 | 👥 **Parent Handshake** | Secure linking system for parents to monitor student progress | `ParentAccount` · `Invitation System` |
 | 📞 **SMS Integration** | Twilio-powered SMS alerts for critical notifications | `twilio` |
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 </details>
 
@@ -224,11 +204,7 @@
 |:---|:---|:---|
 | 🎓 **Course Engine** | Full CRUD with enrollment tracking, pricing, and progress binding | `Django ORM` |
 | 📖 **Lesson Builder** | Rich content creation with media attachments | `Cloudinary` · `expo-document-picker` |
-<<<<<<< HEAD
-| 📢 **Announcements** | Broadcast system with premium card UI and push integration | `Premium UI Cards` |
-=======
 | 📶 **Offline Mode** | Micro-lesson downloads for rural learning without data | `OfflineManager` · `FileSystem` |
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 | 💳 **Stripe Payments** | Secure course purchases and subscription management | `stripe` · `Webhooks` |
 | 👨‍🎓 **Student Progress** | Circular SVG progress tracking with milestone gamification | `Custom SVG` |
 | 🏫 **Curriculum Manager** | Drag-and-arrange lesson ordering with bulk operations | `CurriculumManagementPage.jsx` |
@@ -273,14 +249,9 @@
 - `BrowseCoursesScreen` — Course catalog
 - `BrowseLiveClassesScreen` — Live class finder
 - `StudentProgressScreen` — Progress tracker
-<<<<<<< HEAD
-- `AllQuizzesScreen` — Quiz library
-- `StudentVideoLecturesScreen` — Video player
-=======
 - `MyBadgesScreen` — Earned achievements
 - `LeaderboardScreen` — Global rankings
 - `DownloadsScreen` — Offline micro-lessons
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 - `StudentLiveClassRoomScreen` — Live room
 - `AI Center (Index)` — 70K char AI hub
 
@@ -291,21 +262,9 @@
 - `CreateCourseScreen` — Course builder
 - `CreateLessonScreen` — Lesson creator
 - `CreateQuizScreen` — Quiz designer
-<<<<<<< HEAD
-- `CreateLiveClassScreen` — Class scheduler
-- `CreateAnnouncementScreen` — Broadcaster
-- `ManageLessonsScreen` — Lesson organizer
-- `ManageQuizzesScreen` — Quiz manager
-- `ManageLiveClassesScreen` — Class admin
-- `ManageVideoLecturesScreen` — Video admin
-- `LiveClassRoomScreen` — Teaching room
-- `StudentDetailScreen` — Student profiles
-- `TeacherProgressScreen` — Analytics view
-=======
 - `StudentDetailScreen` — Detailed profiles
 - `TeacherProgressScreen` — Analytics view
 - `ManageLessons` · `ManageQuizzes`
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 </td>
 <td valign="top">
@@ -316,35 +275,14 @@
 - `SecurityScreen` — Password & OTP
 - `CourseDetailScreen` — Course deep-dive
 - `CourseLessonsScreen` — Lesson browser
-<<<<<<< HEAD
-- `LessonDetailScreen` — Content viewer
-- `QuizScreen` — Quiz engine
-- `QuizResultScreen` — Result analysis
-- `QuizAnalysisScreen` — Per-Q breakdown
-- `AnnouncementsScreen` — News feed
-- `NotificationSettingsScreen` — Alert config
-- `ContactUsScreen` — Support form
-- `AboutScreen` — Platform info
-
-**🔐 Auth Screens**
-=======
 - `QuizScreen` · `QuizResultScreen`
 - `Announcements` · `ContactUs`
 
 **🔐 Auth & Identity**
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 - `LoginScreen` — Multi-mode login
 - `SignupScreen` — Registration flow
 - `OnboardingScreen` — First-time UX
-<<<<<<< HEAD
-
-**🧩 Components (18)**
-
-- `StudentDashboard` · `TeacherDashboard`
-- `QbitChatWindow` · `QbitFloatingButton`
-- `FlashcardDeck` · `UsageTracker`
-=======
 - `ParentLinkScreen` — Parental association
 
 **🧩 Components (22)**
@@ -352,14 +290,12 @@
 - `BadgeCard` · `BadgeGallery`
 - `QbitChatWindow` · `UsageTracker`
 - `OfflineDownloadButton` · `SyncStatus`
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 </td>
 <td valign="top">
 
 **📊 Dashboard Cards**
 
-<<<<<<< HEAD
 - `GreetingCard` — Personalized welcome
 - `ProgressCard` — SVG progress rings
 - `StatsCard` — Key metrics display
@@ -564,19 +500,12 @@ graph TD
 | 15 | `/api/v1/ai/` | 🤖 AI Tutor | Chat, Flashcards, Study Plans, Knowledge Graph |
 | 16 | `/api/v1/emails/` | 📧 Emails | Campaigns, IMAP Sync, Contact Form, Logs |
 | 17 | `/api/v1/attendance/` | 📍 Attendance | Mark, History, Reports, Session Tracking |
-<<<<<<< HEAD
-| — | `/api/v1/admin/` | 👑 Admin Panel | Platform Management, User Control, Analytics |
-| — | `/api/health/` | ❤️ Health Check | System status verification |
-| — | `/api/docs/` | 📜 Swagger UI | Auto-generated API documentation |
-| — | `/api/redoc/` | 📘 ReDoc | Alternative API documentation |
-=======
 | 18 | `/api/v1/parents/` | 👥 Parents | Linking, Student Reports, Progress Monitoring |
 | 19 | `/api/v1/offline/` | 📶 Offline | Micro-lessons, Download Management, Sync |
 | 20 | `/api/v1/progress/badges/`| 🎮 Badges | Available, Earned, Leaderboard, Awards |
 | 21 | `/api/v1/admin/` | 👑 Admin Panel | Platform Management, User Control, Analytics |
 | — | `/api/health/` | ❤️ Health Check | System status verification |
 | — | `/api/docs/` | 📜 Swagger UI | Auto-generated API documentation |
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
 
@@ -593,36 +522,21 @@ graph TD
 │   │   ├── asgi.py · wsgi.py                # Server adapters
 │   │   └── __init__.py                      # Celery app loader
 │   │
-<<<<<<< HEAD
-│   ├── apps/                                # 🧩 21 Domain Microservices
-│   │   ├── users/           (14 files)      # 🔐 Auth, JWT, Registration
-│   │   ├── students/        (7 files)       # 🎓 Student profiles & data
-│   │   ├── teachers/        (7 files)       # 👨‍🏫 Teacher profiles & data
-=======
 │   ├── apps/                                # 🧩 22 Domain Microservices
 │   │   ├── users/           (14 files)      # 🔐 Auth, JWT, Registration
 │   │   ├── students/        (7 files)       # 🎓 Student profiles & data
 │   │   ├── teachers/        (7 files)       # 👨‍🏫 Teacher profiles & data
 │   │   ├── parents/         (12 files)      # 👥 Parental monitoring & linking
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 │   │   ├── courses/         (11 files)      # 📚 Course CRUD & catalog
 │   │   ├── lessons/         (9 files)       # 📖 Lesson management
 │   │   ├── quizzes/         (12 files)      # 📝 Quiz engine & grading
 │   │   ├── enrollments/     (9 files)       # 🎫 Enrollment tracking
-<<<<<<< HEAD
-│   │   ├── progress/        (9 files)       # 📊 Progress computation
-│   │   ├── live_classes/    (13 files)      # 🎥 Jitsi room management
-│   │   ├── attendance/      (10 files)      # 📍 Attendance sync engine
-│   │   ├── announcements/   (10 files)      # 📢 Broadcast system
-│   │   ├── notifications/   (13 files)      # 🔔 FCM + in-app alerts
-=======
 │   │   ├── progress/        (12 files)      # 📊 Progress & Badge system
 │   │   ├── live_classes/    (13 files)      # 🎥 Jitsi room management
 │   │   ├── attendance/      (10 files)      # 📍 Attendance sync engine
 │   │   ├── announcements/   (10 files)      # 📢 Broadcast system
 │   │   ├── notifications/   (13 files)      # 🔔 FCM + auto-triggers
 │   │   ├── offline/         (11 files)      # 📶 Micro-lessons & sync
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 │   │   ├── payments/        (9 files)       # 💳 Stripe integration
 │   │   ├── analytics/       (11 files)      # 📈 Celery snapshots
 │   │   ├── ai_tutor/        (9 files)       # 🤖 QBit AI engine

@@ -72,12 +72,8 @@
         }
       ],
       "expo-video",
-<<<<<<< HEAD
-      "expo-web-browser"
-=======
       "expo-web-browser",
       "expo-notifications"
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     ],
     "experiments": {
       "typedRoutes": true,
