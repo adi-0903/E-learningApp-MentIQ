@@ -12,11 +12,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuthStore } from '@/store/authStore';
 import { useCourseStore } from '@/store/courseStore';
 import { useProgressStore } from '@/store/progressStore';
-<<<<<<< HEAD
-=======
 import { useOfflineStore } from '@/store/offlineStore';
 import { downloadMicroLesson, getOfflineUri } from '@/services/offline.service';
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 import { Colors, Typography, Spacing, AppShadows, BorderRadius } from '@/constants/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -28,12 +25,6 @@ function LessonDetailScreen({ route, navigation }: any) {
   const [lesson, setLesson] = useState<any>(null);
   const [isCompleted, setIsCompleted] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-<<<<<<< HEAD
-  const [startTime] = useState(() => Date.now());
-
-  useEffect(() => {
-    loadLesson();
-=======
   const [isDownloading, setIsDownloading] = useState(false);
   const [offlineUri, setOfflineUri] = useState<string | null>(null);
   const [startTime] = useState(() => Date.now());
@@ -42,7 +33,6 @@ function LessonDetailScreen({ route, navigation }: any) {
   useEffect(() => {
     loadLesson();
     checkOfflineStatus();
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     return () => {
       if (user?.role === 'student' && user.id) {
         const timeSpent = Math.floor((Date.now() - startTime) / 1000);
@@ -51,8 +41,6 @@ function LessonDetailScreen({ route, navigation }: any) {
     };
   }, [lessonId]);
 
-<<<<<<< HEAD
-=======
   const checkOfflineStatus = async () => {
     const uri = await getOfflineUri(lessonId);
     setOfflineUri(uri);
@@ -60,8 +48,6 @@ function LessonDetailScreen({ route, navigation }: any) {
       fetchAvailable(courseId);
     }
   };
-
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
   const loadLesson = async () => {
     try {
       const lessonData = await getLessonById(lessonId);
@@ -100,8 +86,6 @@ function LessonDetailScreen({ route, navigation }: any) {
   };
 
   const handleOpenVideo = async () => {
-<<<<<<< HEAD
-=======
     if (offlineUri) {
       // If we have an offline version, we should ideally use a video player component
       // but for now we'll just open the local file URL
@@ -112,8 +96,6 @@ function LessonDetailScreen({ route, navigation }: any) {
       }
       return;
     }
-
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     if (lesson?.videoUrl) {
       if (!isValidUrl(lesson.videoUrl)) {
         Alert.alert('Error', 'Invalid video URL');
@@ -127,8 +109,6 @@ function LessonDetailScreen({ route, navigation }: any) {
     }
   };
 
-<<<<<<< HEAD
-=======
   const handleDownload = async () => {
     const microLesson = availableMicroLessons.find(ml => ml.lesson_id === lessonId);
     if (!microLesson) {
@@ -148,8 +128,6 @@ function LessonDetailScreen({ route, navigation }: any) {
       Alert.alert('Error', 'Failed to download lesson. Check your connection.');
     }
   };
-
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
   if (isLoading) {
     return (
       <View style={styles.centerContainer}>
@@ -208,23 +186,15 @@ function LessonDetailScreen({ route, navigation }: any) {
                 style={styles.videoGradient}
               >
                 <View style={styles.videoIconContainer}>
-<<<<<<< HEAD
-                  <MaterialCommunityIcons name="play-circle" size={56} color={Colors.light.white} />
-                </View>
-                <Text style={styles.videoText}>Watch Lesson Video</Text>
-                <Text style={styles.videoSubtext}>Tap to start playing</Text>
-=======
                   <MaterialCommunityIcons name={offlineUri ? "play-circle" : "play-circle-outline"} size={56} color={Colors.light.white} />
                 </View>
                 <Text style={styles.videoText}>{offlineUri ? 'Watch Offline' : 'Watch Lesson Video'}</Text>
                 <Text style={styles.videoSubtext}>{offlineUri ? 'Playing from local storage' : 'Tap to start streaming'}</Text>
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
-              </LinearGradient>
-            </TouchableOpacity>
-          )}
+              </LinearGradient >
+            </TouchableOpacity >
+          )
+          }
 
-<<<<<<< HEAD
-=======
           {/* Download for Offline (Student only) */}
           {user?.role === 'student' && lesson.videoUrl && !offlineUri && (
             <TouchableOpacity
@@ -233,10 +203,10 @@ function LessonDetailScreen({ route, navigation }: any) {
               disabled={isDownloading}
             >
               <View style={styles.downloadIconWrapper}>
-                <MaterialCommunityIcons 
-                  name={isDownloading ? "loading" : "download-circle-outline"} 
-                  size={24} 
-                  color={Colors.light.primary} 
+                <MaterialCommunityIcons
+                  name={isDownloading ? "loading" : "download-circle-outline"}
+                  size={24}
+                  color={Colors.light.primary}
                 />
               </View>
               <View style={styles.downloadInfoText}>
@@ -258,87 +228,93 @@ function LessonDetailScreen({ route, navigation }: any) {
               <Text style={styles.offlineReadyText}>Available Offline</Text>
             </View>
           )}
-
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
           {/* Description Section */}
-          {lesson.description && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <MaterialCommunityIcons name="text-box-outline" size={20} color={Colors.light.primary} />
-                <Text style={styles.sectionTitle}>Description</Text>
+          {
+            lesson.description && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <MaterialCommunityIcons name="text-box-outline" size={20} color={Colors.light.primary} />
+                  <Text style={styles.sectionTitle}>Description</Text>
+                </View>
+                <View style={[styles.card, AppShadows.light]}>
+                  <Text style={styles.description}>{lesson.description}</Text>
+                </View>
               </View>
-              <View style={[styles.card, AppShadows.light]}>
-                <Text style={styles.description}>{lesson.description}</Text>
-              </View>
-            </View>
-          )}
+            )
+          }
 
           {/* Content Section */}
-          {lesson.content && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <MaterialCommunityIcons name="book-open-page-variant" size={20} color={Colors.light.primary} />
-                <Text style={styles.sectionTitle}>Lesson Content</Text>
+          {
+            lesson.content && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <MaterialCommunityIcons name="book-open-page-variant" size={20} color={Colors.light.primary} />
+                  <Text style={styles.sectionTitle}>Lesson Content</Text>
+                </View>
+                <View style={[styles.card, AppShadows.light]}>
+                  <Text style={styles.contentText}>{lesson.content}</Text>
+                </View>
               </View>
-              <View style={[styles.card, AppShadows.light]}>
-                <Text style={styles.contentText}>{lesson.content}</Text>
-              </View>
-            </View>
-          )}
+            )
+          }
 
           {/* File Section */}
-          {lesson.fileUrl && (
-            <View style={styles.section}>
-              <View style={styles.sectionHeader}>
-                <MaterialCommunityIcons name="file-document-outline" size={20} color={Colors.light.warning} />
-                <Text style={styles.sectionTitle}>Resources</Text>
+          {
+            lesson.fileUrl && (
+              <View style={styles.section}>
+                <View style={styles.sectionHeader}>
+                  <MaterialCommunityIcons name="file-document-outline" size={20} color={Colors.light.warning} />
+                  <Text style={styles.sectionTitle}>Resources</Text>
+                </View>
+                <TouchableOpacity
+                  onPress={() => {
+                    if (isValidUrl(lesson.fileUrl)) {
+                      Linking.openURL(lesson.fileUrl).catch(() => {
+                        Alert.alert('Error', 'Could not open file');
+                      });
+                    } else {
+                      Alert.alert('Error', 'Invalid file URL');
+                    }
+                  }}
+                  style={[styles.fileCard, AppShadows.small]}
+                >
+                  <View style={[styles.fileIconContainer, { backgroundColor: '#FFF7ED' }]}>
+                    <MaterialCommunityIcons name="file-document" size={32} color={Colors.light.warning} />
+                  </View>
+                  <View style={styles.fileInfo}>
+                    <Text style={styles.fileName}>{lesson.fileType || 'Attached File'}</Text>
+                    <Text style={styles.fileSize}>Tap to download material</Text>
+                  </View>
+                  <View style={styles.downloadButton}>
+                    <MaterialCommunityIcons name="download" size={20} color={Colors.light.white} />
+                  </View>
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity
-                onPress={() => {
-                  if (isValidUrl(lesson.fileUrl)) {
-                    Linking.openURL(lesson.fileUrl).catch(() => {
-                      Alert.alert('Error', 'Could not open file');
-                    });
-                  } else {
-                    Alert.alert('Error', 'Invalid file URL');
-                  }
-                }}
-                style={[styles.fileCard, AppShadows.small]}
-              >
-                <View style={[styles.fileIconContainer, { backgroundColor: '#FFF7ED' }]}>
-                  <MaterialCommunityIcons name="file-document" size={32} color={Colors.light.warning} />
-                </View>
-                <View style={styles.fileInfo}>
-                  <Text style={styles.fileName}>{lesson.fileType || 'Attached File'}</Text>
-                  <Text style={styles.fileSize}>Tap to download material</Text>
-                </View>
-                <View style={styles.downloadButton}>
-                  <MaterialCommunityIcons name="download" size={20} color={Colors.light.white} />
-                </View>
-              </TouchableOpacity>
-            </View>
-          )}
+            )
+          }
 
           {/* Student Actions */}
-          {user?.role === 'student' && (
-            <View style={styles.studentActions}>
-              <Button
-                mode="contained"
-                onPress={handleMarkComplete}
-                style={[
-                  styles.completeButton,
-                  isCompleted ? { backgroundColor: Colors.light.success } : { backgroundColor: Colors.light.primary }
-                ]}
-                labelStyle={styles.completeButtonLabel}
-                icon={isCompleted ? "check" : undefined}
-              >
-                {isCompleted ? 'Completed' : 'Mark as Complete'}
-              </Button>
-            </View>
-          )}
-        </View>
-      </ScrollView>
-    </View>
+          {
+            user?.role === 'student' && (
+              <View style={styles.studentActions}>
+                <Button
+                  mode="contained"
+                  onPress={handleMarkComplete}
+                  style={[
+                    styles.completeButton,
+                    isCompleted ? { backgroundColor: Colors.light.success } : { backgroundColor: Colors.light.primary }
+                  ]}
+                  labelStyle={styles.completeButtonLabel}
+                  icon={isCompleted ? "check" : undefined}
+                >
+                  {isCompleted ? 'Completed' : 'Mark as Complete'}
+                </Button>
+              </View>
+            )
+          }
+        </View >
+      </ScrollView >
+    </View >
   );
 }
 
@@ -512,8 +488,6 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: Colors.light.white,
   },
-<<<<<<< HEAD
-=======
   downloadRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -561,7 +535,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#15803D',
   },
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 });
 
 export default LessonDetailScreen;

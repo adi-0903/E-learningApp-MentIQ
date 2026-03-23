@@ -51,8 +51,6 @@ api.interceptors.response.use(
 );
 
 export default api;
-<<<<<<< HEAD
-=======
 
 // Badge System API endpoints
 export const badgeAPI = {
@@ -112,4 +110,3 @@ export const parentAPI = {
     }
 };
 
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe

@@ -87,13 +87,6 @@ function StudentProgressScreen({ navigation }: any) {
             <MaterialCommunityIcons name="chevron-left" size={32} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Learning Progress</Text>
-<<<<<<< HEAD
-          <TouchableOpacity onPress={() => navigation.navigate('MyBadges')}>
-            <View style={styles.badgeButton}>
-              <MaterialCommunityIcons name="trophy-outline" size={24} color="#fff" />
-            </View>
-          </TouchableOpacity>
-=======
           <View style={{ flexDirection: 'row', gap: 10 }}>
             <TouchableOpacity onPress={() => navigation.navigate('Downloads')}>
               <View style={styles.badgeButton}>
@@ -106,7 +99,6 @@ function StudentProgressScreen({ navigation }: any) {
               </View>
             </TouchableOpacity>
           </View>
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         </View>
 
         <View style={styles.summaryContainer}>
@@ -130,8 +122,6 @@ function StudentProgressScreen({ navigation }: any) {
       </LinearGradient>
 
       <ScrollView style={styles.contentScroll} contentContainerStyle={styles.contentContainer} showsVerticalScrollIndicator={false}>
-<<<<<<< HEAD
-=======
         <TouchableOpacity 
           style={[styles.offlineCard, AppShadows.medium]}
           onPress={() => navigation.navigate('Downloads')}
@@ -145,8 +135,6 @@ function StudentProgressScreen({ navigation }: any) {
           </View>
           <MaterialCommunityIcons name="chevron-right" size={24} color="#cbd5e1" />
         </TouchableOpacity>
-
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         <Text style={styles.sectionTitle}>Course Roadmap</Text>
 
         {courseProgress.length === 0 ? (
@@ -332,8 +320,6 @@ const styles = StyleSheet.create({
     marginTop: 10,
     paddingHorizontal: 40,
   },
-<<<<<<< HEAD
-=======
   offlineCard: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -366,7 +352,6 @@ const styles = StyleSheet.create({
     color: '#64748b',
     marginTop: 2,
   },
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 });
 
 export default StudentProgressScreen;

@@ -317,8 +317,8 @@
 - `CurriculumManagementPage` — Organizer
 - `QuizTakingPage` · `QuizResultPage`
 
-**👑 Admin Suite (14 files)**
-=======
+**📊 Dashboard Cards**
+
 - `GreetingCard` · `ProgressCard`
 - `StatsCard` · `AttendanceCard`
 - `KnowledgeGraphCard` · `AIAssistantCard`
@@ -333,17 +333,15 @@
 - `CurriculumManagementPage`
 
 **👑 Admin Suite (16 files)**
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
+
 
 - `AdminDashboard` · `AdminProfile`
 - `AdminStudents` · `AdminTeachers`
 - `AdminCourses` · `AdminEnrollments`
 - `AdminAnnouncements` · `AdminPremium`
 - `AdminUserDetail` · `AdminUsers`
-<<<<<<< HEAD
-=======
 - `AdminAttendance` — Global marking views
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
+
 
 </td>
 </tr>
@@ -363,7 +361,6 @@ graph TD
     classDef gateway fill:#6366F1,stroke:#4F46E5,stroke-width:2px,color:#fff
     classDef core fill:#059669,stroke:#047857,stroke-width:2px,color:#fff
     classDef data fill:#7C3AED,stroke:#6D28D9,stroke-width:2px,color:#fff
-<<<<<<< HEAD
     classDef cloud fill:#F59E0B,stroke:#D97706,stroke-width:2px,color:#fff
     classDef async fill:#EC4899,stroke:#DB2777,stroke-width:2px,color:#fff
 
@@ -428,50 +425,7 @@ graph TD
     P --> ST
     N --> GM
     AD --> SN
-=======
-    classDef async fill:#EC4899,stroke:#DB2777,stroke-width:2px,color:#fff
 
-    M["📱 Mobile App"]:::client
-    W["💻 Web Portal"]:::client
-    API["🔀 DRF Gateway"]:::gateway
-    FB["🔥 Firebase OTP"]:::gateway
-    
-    U["👤 Users"]:::core
-    C["📚 Courses"]:::core
-    Q["📝 Quizzes"]:::core
-    L["🎥 Live Room"]:::core
-    AI["🤖 AI Tutor"]:::core
-    N["🔔 Alerts"]:::core
-    P["💳 Payments"]:::core
-    
-    CW["🔄 Celery Tasks"]:::async
-    RD["⚡ Redis Cache"]:::async
-    PG[("🛢️ Postgres DB")]:::data
-    ES[("🔍 Search Index")]:::data
-
-    M --> API
-    W --> API
-    API --- FB
-    
-    API --> U
-    API --> C
-    API --> Q
-    API --> L
-    API --> AI
-    API --> N
-    API --> P
-
-    U --> PG
-    C --> PG
-    Q --> PG
-    L --> PG
-    AI --> PG
-    N --> PG
-    P --> PG
-
-    N --> CW
-    CW --> RD
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     Q --> ES
 ```
 
@@ -761,20 +715,14 @@ Ready-to-use verified accounts injected directly into the active database for im
 - [ ] **📝 Quiz Fair-Play** — Take a quiz 4 times; 4th attempt **must** be blocked by the server
 - [ ] **📊 Quiz Analysis** — After submission, verify per-question correct/incorrect breakdown renders
 - [ ] **📍 Attendance Sync** — Teacher marks attendance on web → Student mobile dashboard updates instantly
-<<<<<<< HEAD
 - [ ] **🤖 AI Test** — Send `POST /api/v1/ai/ask/` and verify Groq Llama 3 response
-- [ ] **📅 Study Plan** — Generate a plan via DataList input → export as Premium PDF
-- [ ] **📧 IMAP Sync** — Send email to support address → verify it appears in admin dashboard
-- [ ] **🔔 Push Test** — Create a quiz → verify enrolled students receive Firebase push notification
-=======
-- [ ] **🤖 AI Test** — Send `POST /api/v1/ai/ask/` and verify Llama 3 response
 - [ ] **🎮 Badge Earn** — Complete a course and verify badge appears in `MyBadgesScreen`
 - [ ] **👥 Parent Link** — Generate link on Parent app → Approve on Student app → Verify visibility
 - [ ] **📶 Offline Sync** — Download a micro-lesson → mark as complete → sync when online
 - [ ] **📅 Study Plan** — Generate a plan via DataList input → export as Premium PDF
 - [ ] **📧 IMAP Sync** — Send email to support address → verify it appears in admin dashboard
 - [ ] **🔔 Push Test** — Verify notifications for Live Classes and New Quizzes
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
+
 - [ ] **💳 Payment Flow** — Initiate Stripe checkout → verify webhook confirmation
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
@@ -788,7 +736,6 @@ Ready-to-use verified accounts injected directly into the active database for im
 </p>
 
 ```mermaid
-<<<<<<< HEAD
 timeline
     title MentiQ Evolution Timeline
     V1 - Core Foundations : Courses & Lessons
@@ -811,24 +758,7 @@ timeline
     V6 - Global Scale     : Multi-Lingual AI
                           : ML Retention Predictors
                           : Content Personalization
-=======
-graph LR
-    V1((V1)) --> V2((V2)) --> V3((V3)) --> V4((V4)) --> V5((V5)) --> V6((V6))
-    
-    V1 --- C1[Core Foundations]
-    V2 --- C2[Real-Time Era]
-    V3 --- C3[AI Integration]
-    V4 --- C4[Security Armor]
-    V5 --- C5[Automation Wave]
-    V6 --- C6[Global Scale]
-    
-    style V1 fill:#10B981,stroke:#fff
-    style V2 fill:#10B981,stroke:#fff
-    style V3 fill:#10B981,stroke:#fff
-    style V4 fill:#10B981,stroke:#fff
-    style V5 fill:#10B981,stroke:#fff
-    style V6 fill:#F59E0B,stroke:#fff
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
+
 ```
 
 <br/>
@@ -839,13 +769,8 @@ graph LR
 | **V2: Real-Time Epoch** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | Live Classes, Jitsi Video Grid, Auto-Attendance Sync |
 | **V3: Artificial Mind** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | QBit Chat, Spaced Flashcards, Premium Plan Generator |
 | **V4: Security Armor** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | Firebase OTP, 3-Attempt Limits, Dynamic IP, Biometrics |
-<<<<<<< HEAD
-| **V5: Automation Wave** | <img src="https://img.shields.io/badge/🟡-Active-F59E0B?style=flat-square" /> | Campaign Emails, IMAP Sync, Premium UI, Admin Suite |
-| **V6: Global Scale** | <img src="https://img.shields.io/badge/⚪-Planned-6B7280?style=flat-square" /> | Multi-Lingual AI, ML Retention Predictors |
-=======
 | **V5: Automation Wave** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | Parent Dashboard, Offline Mode, Badge System, Admin Suite |
 | **V6: Global Scale** | <img src="https://img.shields.io/badge/🟡-Active-F59E0B?style=flat-square" /> | Multi-Lingual AI, ML Retention Predictors, Battle Leagues |
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
 
