@@ -60,6 +60,21 @@ class EnrollView(APIView):
             defaults={'progress_percentage': 0},
         )
 
+        # 🔔 Notify student about successful enrollment
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            
+            create_notification(
+                user=request.user,
+                title=f"Welcome to {course.title}!",
+                body=f"You have successfully enrolled. Your learning journey starts now!",
+                notification_type=Notification.TypeChoices.ENROLLMENT,
+                data={'course_id': str(course.id)}
+            )
+        except Exception as e:
+            print(f"Enrollment Notification Failure: {e}")
+
         return Response({
             'success': True,
             'message': 'Enrolled successfully.',

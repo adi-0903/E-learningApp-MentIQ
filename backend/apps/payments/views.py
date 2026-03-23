@@ -179,6 +179,26 @@ class StripeWebhookView(APIView):
                     defaults={'progress_percentage': 0},
                 )
 
+                # 🔔 Notify student about payment completion
+                try:
+                    from apps.notifications.utils import create_notification
+                    from apps.notifications.models import Notification
+                    from apps.users.models import User
+                    from apps.courses.models import Course
+                    
+                    student = User.objects.get(id=student_id)
+                    course = Course.objects.get(id=course_id)
+                    
+                    create_notification(
+                        user=student,
+                        title=f"Payment Successful: {course.title}",
+                        body=f"Your payment was successful and you are now enrolled in {course.title}. Happy learning!",
+                        notification_type=Notification.TypeChoices.ENROLLMENT,
+                        data={'course_id': str(course.id), 'payment_status': 'completed'}
+                    )
+                except Exception as e:
+                    logger.error(f"Payment Notification Failure: {e}")
+
                 logger.info(f"Payment completed: student={student_id}, course={course_id}")
 
             return Response({'received': True})

@@ -12,6 +12,11 @@ from apps.core.pagination import StandardPagination
 from apps.core.permissions import IsStudent, IsTeacher
 
 from apps.enrollments.models import Enrollment
+from apps.notifications.utils import create_notification
+from apps.notifications.models import Notification
+from apps.quizzes.models import Quiz, QuizAttempt
+from apps.live_classes.models import SessionBooking
+from apps.users.models import User
 from .models import Attendance, LiveClass, LiveClassChat, LiveClassParticipant
 from .serializers import (
     AttendanceSerializer,
@@ -61,6 +66,38 @@ class LiveClassListCreateView(generics.ListCreateAPIView):
         serializer = LiveClassCreateSerializer(data=request.data, context={'request': request})
         serializer.is_valid(raise_exception=True)
         live_class = serializer.save()
+
+        # 🔔 Notify enrolled students about the scheduled class
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            from apps.users.models import User
+            
+            if live_class.course:
+                students = User.objects.filter(
+                    enrollments__course=live_class.course,
+                    enrollments__is_active=True
+                ).distinct()
+                
+                title = f"Live Class Scheduled: {live_class.title}"
+                body = f"Get ready! A new live session is scheduled in {live_class.course.title}."
+                data = {
+                    'course_id': str(live_class.course.id),
+                    'live_class_id': str(live_class.id),
+                    'type': 'live_class'
+                }
+
+                for student in students:
+                    create_notification(
+                        user=student,
+                        title=title,
+                        body=body,
+                        notification_type=Notification.TypeChoices.LIVE_CLASS,
+                        data=data
+                    )
+        except Exception as e:
+            print(f"Live Class Scheduled Notification Failure: {e}")
+
         return Response({
             'success': True,
             'message': 'Live class created.',
@@ -95,6 +132,38 @@ class StartLiveClassView(APIView):
         live_class.status = 'live'
         live_class.started_at = timezone.now()
         live_class.save()
+
+        # 🚀 Notify enrolled students that class is LIVE NOW
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            from apps.users.models import User
+            
+            if live_class.course:
+                students = User.objects.filter(
+                    enrollments__course=live_class.course,
+                    enrollments__is_active=True
+                ).distinct()
+                
+                title = f"🔴 Live Now: {live_class.title}"
+                body = f"Class has started in {live_class.course.title}. Click to join now!"
+                data = {
+                    'course_id': str(live_class.course.id),
+                    'live_class_id': str(live_class.id),
+                    'type': 'live_class',
+                    'action': 'join'
+                }
+
+                for student in students:
+                    create_notification(
+                        user=student,
+                        title=title,
+                        body=body,
+                        notification_type=Notification.TypeChoices.LIVE_CLASS,
+                        data=data
+                    )
+        except Exception as e:
+            print(f"Live Class Started Notification Failure: {e}")
 
         # Jitsi doesn't require server-side token generation for free public rooms
         # But we return the necessary config for the frontend to embed the jitsi frame
@@ -341,6 +410,38 @@ class UploadRecordingView(APIView):
 
         live_class.recording_url = file_url
         live_class.save(update_fields=['recording_url'])
+
+        # 📼 Notify enrolled students that recording is AVAILABLE
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            from apps.users.models import User
+            
+            if live_class.course:
+                students = User.objects.filter(
+                    enrollments__course=live_class.course,
+                    enrollments__is_active=True
+                ).distinct()
+                
+                title = f"📼 Recording Available: {live_class.title}"
+                body = f"Missed the live session? Recording for {live_class.title} is now available."
+                data = {
+                    'course_id': str(live_class.course.id),
+                    'live_class_id': str(live_class.id),
+                    'type': 'course',
+                    'action': 'watch_recording'
+                }
+
+                for student in students:
+                    create_notification(
+                        user=student,
+                        title=title,
+                        body=body,
+                        notification_type=Notification.TypeChoices.COURSE,
+                        data=data
+                    )
+        except Exception as e:
+            print(f"Live Class Recording Notification Failure: {e}")
 
         return Response({
             'success': True,

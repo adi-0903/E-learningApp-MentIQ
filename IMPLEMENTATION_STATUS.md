@@ -49,7 +49,7 @@
   - [x] GET `/api/v1/progress/my-badges/` - Get user's earned badges
   - [x] POST `/api/v1/progress/badges/earn/` - Award badge to student
   - [x] GET `/api/v1/progress/leaderboard/` - Get leaderboard data
-  - [ ] POST `/api/v1/progress/badges/trade/` - List badge for trading (Phase 2)
+  - [x] POST `/api/v1/progress/badges/trade/` - List badge for trading (Phase 2)
   
 - [x] **Step 3:** Badge Earning Logic
   - [x] Signal triggers on quiz completion
@@ -76,8 +76,8 @@
   
 - [x] **Step 3:** UI Integration
   - [x] Badges screens added to navigation
-  - [ ] Profile shows badge showcase (Phase 2)
-  - [ ] Push notifications for badge earnings (Phase 2)
+  - [x] Profile shows badge showcase (Phase 2)
+  - [x] Push notifications for all major events (Live Class, Quizzes, Lessons, Payments)
   - [ ] Social sharing working (Phase 2)
 
 #### Web App Implementation 📅 PHASE 2
@@ -237,5 +237,14 @@ npm run build  # Should complete without errors
 
 ---
 
-**Last Updated:** [Auto-update timestamp]  
+## 🔔 NOTIFICATION TRIGGERS (BACKEND) ✅
+- [x] **Live Classes:** Scheduled, Started ("Live Now"), Recording Uploaded
+- [x] **Enrollments:** Welcome notification on enrollment, Payment completion notice
+- [x] **New Content:** New Lesson announcement, New Quiz announcement
+- [x] **1:1 Sessions:** Student booking request (to Teacher), Status updates (to Student)
+- [x] **Gamification:** Badge earned (Verified existing triggers)
+
+---
+
+**Last Updated:** 2026-03-23 19:50 IST  
 **Next Review:** Daily at 9 AM IST

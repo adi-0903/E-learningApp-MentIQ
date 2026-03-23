@@ -402,3 +402,31 @@ class TeacherSessionBookingUpdateView(generics.UpdateAPIView):
 
     def get_queryset(self):
         return self.queryset.filter(teacher=self.request.user)
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        
+        # 🔔 Notify STUDENT about the booking update
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            
+            status_map = {
+                'confirmed': '✅ Confirmed',
+                'cancelled': '❌ Cancelled',
+                'completed': '🏁 Completed',
+            }
+            status_text = status_map.get(instance.status, instance.status.capitalize())
+            
+            title = f"Session Update: {status_text}"
+            body = f"Your 1:1 session with {instance.teacher.name} on {instance.date} is now {status_text}."
+            
+            create_notification(
+                user=instance.student,
+                title=title,
+                body=body,
+                notification_type=Notification.TypeChoices.SYSTEM,
+                data={'booking_id': str(instance.id), 'status': instance.status}
+            )
+        except Exception as e:
+            print(f"Booking Update Notification Failure: {e}")

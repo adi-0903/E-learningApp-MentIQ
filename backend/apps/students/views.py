@@ -603,6 +603,23 @@ class StudentSessionBookingCreateView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         self.perform_create(serializer)
+        booking = serializer.instance
+
+        # 🔔 Notify TEACHER about the new session booking
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            
+            create_notification(
+                user=booking.teacher,
+                title=f"New Session Request: {booking.student.name}",
+                body=f"A student has requested a 1:1 session on {booking.date} regarding: {booking.topic[:50]}...",
+                notification_type=Notification.TypeChoices.SYSTEM,
+                data={'booking_id': str(booking.id), 'type': 'booking'}
+            )
+        except Exception as e:
+            print(f"Booking Notification Failure: {e}")
+
         return Response({
             'success': True, 
             'message': 'Session booked successfully.',
