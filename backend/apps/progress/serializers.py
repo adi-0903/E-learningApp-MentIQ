@@ -30,11 +30,7 @@ class StudentBadgeSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'student', 'student_name', 'badge', 'progress',
             'is_claimed', 'awarded_at', 'is_tradeable', 'trade_status',
-<<<<<<< HEAD
-            'showcase_on_profile', 'created_at'
-=======
             'showcase_on_profile', 'certificate_url', 'created_at'
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         ]
         read_only_fields = ['id', 'created_at']
 

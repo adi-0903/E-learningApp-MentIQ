@@ -1,10 +1,3 @@
-<<<<<<< HEAD
-"""
-Badge System Services - Logic for awarding badges automatically.
-"""
-from django.utils import timezone
-from django.db.models import Count, Q
-=======
 """Badge System Services - Logic for awarding badges automatically and certificate generation."""
 import cloudinary
 import cloudinary.uploader
@@ -14,7 +7,6 @@ from django.db.models import Count, Q, F
 from PIL import Image, ImageDraw, ImageFont
 import io
 import os
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 from .models import AchievementBadge, StudentBadge
 
 
@@ -146,16 +138,15 @@ def award_if_criteria_met(student_badge, badge, current_progress, criteria_met):
         badge.total_awarded += 1
         badge.save()
         
-<<<<<<< HEAD
-=======
         # Generate certificate in background (optional)
-        from .services import generate_certificate
+        # Note: This import is placed here as per user instruction to resolve merge conflict.
+        # In a typical Python project, imports are at the top of the file.
+        from .services import generate_certificate 
         try:
             cert_data = generate_certificate(student_badge)
         except Exception:
             pass  # Continue even if certificate generation fails
         
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         return {
             'awarded': True,
             'badge_name': badge.name,
@@ -163,12 +154,8 @@ def award_if_criteria_met(student_badge, badge, current_progress, criteria_met):
             'rarity': badge.rarity,
             'message': f'🏆 Congratulations! You earned the {badge.name} badge!',
             'progress': current_progress,
-<<<<<<< HEAD
-            'threshold': badge.criteria_threshold
-=======
             'threshold': badge.criteria_threshold,
             'certificate_url': getattr(student_badge, 'certificate_url', None)
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         }
     elif criteria_met and student_badge.is_claimed:
         return {
@@ -269,9 +256,6 @@ def get_initial_badges():
             created_badges.append(badge)
     
     return created_badges
-<<<<<<< HEAD
-=======
-
 
 def generate_certificate(student_badge):
     """
@@ -452,4 +436,3 @@ def add_text_to_certificate(template_path, badge, student):
     draw.text((width//2, height//2 + 80), timezone.now().strftime('%B %d, %Y'), fill=text_color, font=text_font, anchor="mm")
     
     return img
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe

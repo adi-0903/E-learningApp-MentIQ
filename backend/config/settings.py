@@ -64,12 +64,9 @@ INSTALLED_APPS = [
     'apps.emails',
     'apps.attendance',
     'apps.admin_panel',
-<<<<<<< HEAD
-=======
     'apps.offline',
     'apps.parents',
     'fcm_django',
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 ]
 
 MIDDLEWARE = [
@@ -297,11 +294,6 @@ EMAILJS_PUBLIC_KEY = env.str('EMAILJS_PUBLIC_KEY', '')
 
 # Firebase Cloud Messaging (Push Notifications)
 FCM_SERVER_KEY = env.str('FCM_SERVER_KEY', '')
-<<<<<<< HEAD
-FIREBASE_CREDENTIALS_PATH = BASE_DIR / 'config' / 'firebase-credentials.json'
-=======
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
-
 # Stripe Configuration
 STRIPE_PUBLIC_KEY = env.str('STRIPE_PUBLIC_KEY', '')
 STRIPE_SECRET_KEY = env.str('STRIPE_SECRET_KEY', '')

@@ -1,21 +1,13 @@
 """
-<<<<<<< HEAD
-Notification helper to create notifications and send FCM push.
-"""
-from celery import shared_task
-import logging
-=======
 Celery tasks for sending push notifications via FCM.
 """
 from celery import shared_task
 import logging
 from django.conf import settings
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
 logger = logging.getLogger(__name__)
 
 
-<<<<<<< HEAD
 def create_notification(user, title, body, notification_type='system', data=None):
     """Create an in-app notification and queue FCM push."""
     from .models import Notification
@@ -30,10 +22,6 @@ def create_notification(user, title, body, notification_type='system', data=None
     if user.fcm_token:
         send_push_notification.delay(str(user.id), title, body, data or {})
     return notif
-
-
-=======
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 def bulk_create_notifications(users, title, body, notification_type='system', data=None):
     """Create notifications for multiple users."""
     from .models import Notification
@@ -63,39 +51,24 @@ def send_push_notification(user_id, title, body, data):
 
         # FCM push (requires firebase-admin SDK)
         try:
-<<<<<<< HEAD
-            from django.conf import settings
-            import firebase_admin
-            from firebase_admin import messaging, credentials
-
-            if not firebase_admin._apps:
-                cred = credentials.Certificate(str(settings.FIREBASE_CREDENTIALS_PATH))
-                firebase_admin.initialize_app(cred)
-=======
             import firebase_admin
             from firebase_admin import messaging, credentials
             import os
 
             if not firebase_admin._apps:
                 # Check for service account file
-                cred_path = os.path.join(settings.BASE_DIR, 'config', 'firebase-credentials.json')
+                cred_path = str(settings.FIREBASE_CREDENTIALS_PATH)
                 if os.path.exists(cred_path):
                     cred = credentials.Certificate(cred_path)
                     firebase_admin.initialize_app(cred)
                 else:
                     logger.warning("No firebase-credentials.json found, using default initialization.")
                     firebase_admin.initialize_app()
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
             message = messaging.Message(
                 notification=messaging.Notification(title=title, body=body),
                 data={k: str(v) for k, v in data.items()},
                 token=user.fcm_token,
-<<<<<<< HEAD
-            )
-            messaging.send(message)
-            logger.info(f"Push notification sent to {user.email}")
-=======
                 # Add Android/iOS specific config for better "app-closed" reliability
                 android=messaging.AndroidConfig(
                     priority='high',
@@ -112,7 +85,6 @@ def send_push_notification(user_id, title, body, data):
             )
             response = messaging.send(message)
             logger.info(f"Push notification sent to {user.email}: {response}")
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         except ImportError:
             logger.warning("firebase-admin not installed, skipping FCM push.")
         except Exception as e:

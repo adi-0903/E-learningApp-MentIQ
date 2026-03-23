@@ -40,11 +40,8 @@ urlpatterns = [
     path('api/v1/emails/', include('apps.emails.urls')),
     path('api/v1/attendance/', include('apps.attendance.urls')),
     path('api/v1/admin/', include('apps.admin_panel.urls')),
-<<<<<<< HEAD
-=======
     path('api/v1/offline/', include('apps.offline.urls')),
     path('api/v1/parents/', include('apps.parents.urls')),
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
     # API Documentation
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

@@ -43,10 +43,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     class RoleChoices(models.TextChoices):
         STUDENT = 'student', 'Student'
         TEACHER = 'teacher', 'Teacher'
-<<<<<<< HEAD
-=======
         PARENT = 'parent', 'Parent'
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
         ADMIN = 'admin', 'Admin'
 
     # Core fields
@@ -99,8 +96,6 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         help_text="8-digit unique ID for students"
     )
 
-<<<<<<< HEAD
-=======
     # Unique parent ID
     parent_id = models.CharField(
         max_length=6, 
@@ -110,7 +105,6 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         help_text="6-digit unique ID for parents"
     )
 
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     objects = UserManager()
 
     USERNAME_FIELD = 'email'
@@ -139,8 +133,6 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
                 if not User.objects.filter(student_id=sid).exists():
                     self.student_id = sid
                     break
-<<<<<<< HEAD
-=======
         
         if self.role == self.RoleChoices.PARENT and not self.parent_id:
             import random
@@ -149,7 +141,6 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
                 if not User.objects.filter(parent_id=pid).exists():
                     self.parent_id = pid
                     break
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 
         super().save(*args, **kwargs)
 
@@ -175,13 +166,10 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         return self.role == self.RoleChoices.STUDENT
 
     @property
-<<<<<<< HEAD
-=======
     def is_parent(self):
         return self.role == self.RoleChoices.PARENT
 
     @property
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
     def is_admin(self):
         return self.role == self.RoleChoices.ADMIN
 
