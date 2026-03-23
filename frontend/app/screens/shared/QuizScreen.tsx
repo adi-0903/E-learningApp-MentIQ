@@ -109,6 +109,7 @@ function QuizScreen({ route, navigation }: any) {
         totalQuestions: totalQuestions,
         passingScore: quiz?.passingScore || 70,
         attempt: result, // Pass the full result for analysis
+        newBadges: result.new_badges || [], // 🏆 Pass newly earned badges
       });
     } catch (error) {
       if (!isAuto) {

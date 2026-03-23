@@ -15,6 +15,9 @@ import StudentProgressScreen from './screens/student/StudentProgressScreen';
 import StudentVideoLecturesScreen from './screens/student/StudentVideoLecturesScreen';
 import StudentLiveClassRoomScreen from './screens/student/StudentLiveClassRoomScreen';
 import AllQuizzesScreen from './screens/student/AllQuizzesScreen';
+import MyBadgesScreen from './screens/student/MyBadgesScreen';
+import AvailableBadgesScreen from './screens/student/AvailableBadgesScreen';
+import LeaderboardScreen from './screens/student/LeaderboardScreen';
 import CourseLessonsScreen from './screens/shared/CourseLessonsScreen';
 
 // Teacher screens
@@ -67,6 +70,9 @@ function StudentStack() {
       <Stack.Screen name="AllQuizzes" component={AllQuizzesScreen} />
       <Stack.Screen name="CourseLessons" component={CourseLessonsScreen} />
       <Stack.Screen name="Announcements" component={AnnouncementsScreen} />
+      <Stack.Screen name="MyBadges" component={MyBadgesScreen} />
+      <Stack.Screen name="AvailableBadges" component={AvailableBadgesScreen} />
+      <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
     </Stack.Navigator>
   );
 }
@@ -136,6 +142,9 @@ function StudentProgressStack() {
       }}
     >
       <Stack.Screen name="StudentProgressMain" component={StudentProgressScreen} />
+      <Stack.Screen name="MyBadges" component={MyBadgesScreen} />
+      <Stack.Screen name="AvailableBadges" component={AvailableBadgesScreen} />
+      <Stack.Screen name="Leaderboard" component={LeaderboardScreen} />
       <Stack.Screen name="CourseDetail" component={CourseDetailScreen} />
       <Stack.Screen name="LessonDetail" component={LessonDetailScreen} />
       <Stack.Screen name="Quiz" component={QuizScreen} />

@@ -245,10 +245,47 @@ class QuizSubmitView(APIView):
             time_taken=time_taken,
         )
 
+        # 🏆 Automatically Check and Award Badges
+        new_badges = []
+        try:
+            from apps.progress.services import check_and_award_badge
+            
+            # 1. Check for 'first_quiz'
+            res = check_and_award_badge(request.user, 'first_quiz', {'quiz_completed': True})
+            if res.get('awarded'): new_badges.append(res)
+            
+            # 2. Check for 'quiz_novice' (5 quizzes)
+            res = check_and_award_badge(request.user, 'quiz_novice')
+            if res.get('awarded'): new_badges.append(res)
+
+            # 3. Check for 'quiz_warrior' (20 quizzes)
+            res = check_and_award_badge(request.user, 'quiz_warrior')
+            if res.get('awarded'): new_badges.append(res)
+
+            # 4. Check for 'quiz_master' (50 quizzes, 90%+)
+            res = check_and_award_badge(request.user, 'quiz_master')
+            if res.get('awarded'): new_badges.append(res)
+
+            # 5. Check for 'perfect_score' (100% on current quiz?) 
+            # Or total 100% scores. The service handles the tally.
+            if score == total:
+                res = check_and_award_badge(request.user, 'perfect_score')
+                if res.get('awarded'): new_badges.append(res)
+
+            # 6. Check for 'speed_demon'
+            # (Threshold might be based on context_data like time_taken < 30s)
+            if score == total and time_taken < 60: # Under 1 minute
+                res = check_and_award_badge(request.user, 'speed_demon')
+                if res.get('awarded'): new_badges.append(res)
+
+        except Exception as e:
+            print(f"Badge Award Error: {e}")
+
         return Response({
             'success': True,
             'message': 'Quiz submitted successfully.',
             'data': QuizAttemptDetailSerializer(attempt).data,
+            'new_badges': new_badges
         }, status=status.HTTP_201_CREATED)
 
 

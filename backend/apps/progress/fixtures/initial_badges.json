@@ -1,0 +1,172 @@
+[
+{
+  "model": "progress.achievementbadge",
+  "pk": "10000000-0000-0000-0000-000000000001",
+  "fields": {
+    "name": "First Quiz",
+    "description": "Complete your very first quiz",
+    "rarity": "COMMON",
+    "icon_url": "https://cdn-icons-png.flaticon.com/512/6198/6198527.png",
+    "criteria_type": "first_quiz",
+    "criteria_threshold": 1,
+    "tradeable": false,
+    "drop_rate": 1.0,
+    "total_awarded": 0,
+    "created_at": "2026-03-24T00:00:00Z",
+    "updated_at": "2026-03-24T00:00:00Z"
+  }
+},
+{
+  "model": "progress.achievementbadge",
+  "pk": "10000000-0000-0000-0000-000000000002",
+  "fields": {
+    "name": "Quiz Novice",
+    "description": "Complete 5 quizzes with 70% or higher",
+    "rarity": "COMMON",
+    "icon_url": "https://cdn-icons-png.flaticon.com/512/6198/6198555.png",
+    "criteria_type": "quiz_novice",
+    "criteria_threshold": 5,
+    "tradeable": false,
+    "drop_rate": 0.6,
+    "total_awarded": 0,
+    "created_at": "2026-03-24T00:00:00Z",
+    "updated_at": "2026-03-24T00:00:00Z"
+  }
+},
+{
+  "model": "progress.achievementbadge",
+  "pk": "10000000-0000-0000-0000-000000000003",
+  "fields": {
+    "name": "Quiz Warrior",
+    "description": "Complete 20 quizzes with 85% or higher",
+    "rarity": "RARE",
+    "icon_url": "https://cdn-icons-png.flaticon.com/512/179/179251.png",
+    "criteria_type": "quiz_warrior",
+    "criteria_threshold": 20,
+    "tradeable": false,
+    "drop_rate": 0.3,
+    "total_awarded": 0,
+    "created_at": "2026-03-24T00:00:00Z",
+    "updated_at": "2026-03-24T00:00:00Z"
+  }
+},
+{
+  "model": "progress.achievementbadge",
+  "pk": "10000000-0000-0000-0000-000000000004",
+  "fields": {
+    "name": "7-Day Streak",
+    "description": "Log in and study for 7 consecutive days",
+    "rarity": "COMMON",
+    "icon_url": "https://cdn-icons-png.flaticon.com/512/10484/10484272.png",
+    "criteria_type": "streak_7days",
+    "criteria_threshold": 7,
+    "tradeable": false,
+    "drop_rate": 0.5,
+    "total_awarded": 0,
+    "created_at": "2026-03-24T00:00:00Z",
+    "updated_at": "2026-03-24T00:00:00Z"
+  }
+},
+{
+  "model": "progress.achievementbadge",
+  "pk": "10000000-0000-0000-0000-000000000005",
+  "fields": {
+    "name": "Course Finisher",
+    "description": "Complete your first course",
+    "rarity": "RARE",
+    "icon_url": "https://cdn-icons-png.flaticon.com/512/179/179249.png",
+    "criteria_type": "course_completion",
+    "criteria_threshold": 1,
+    "tradeable": false,
+    "drop_rate": 0.4,
+    "total_awarded": 0,
+    "created_at": "2026-03-24T00:00:00Z",
+    "updated_at": "2026-03-24T00:00:00Z"
+  }
+},
+{
+    "model": "progress.achievementbadge",
+    "pk": "10000000-0000-0000-0000-000000000006",
+    "fields": {
+      "name": "Quiz Master",
+      "description": "Complete 50 quizzes with a score of 90% or higher",
+      "rarity": "EPIC",
+      "icon_url": "https://cdn-icons-png.flaticon.com/512/3112/3112946.png",
+      "criteria_type": "quiz_master",
+      "criteria_threshold": 50,
+      "tradeable": true,
+      "drop_rate": 0.15,
+      "total_awarded": 0,
+      "created_at": "2026-03-24T00:00:00Z",
+      "updated_at": "2026-03-24T00:00:00Z"
+    }
+  },
+  {
+    "model": "progress.achievementbadge",
+    "pk": "10000000-0000-0000-0000-000000000007",
+    "fields": {
+      "name": "Perfect Score",
+      "description": "Achieve a 100% score on 10 different quizzes",
+      "rarity": "EPIC",
+      "icon_url": "https://cdn-icons-png.flaticon.com/512/10410/10410061.png",
+      "criteria_type": "perfect_score",
+      "criteria_threshold": 10,
+      "tradeable": true,
+      "drop_rate": 0.1,
+      "total_awarded": 0,
+      "created_at": "2026-03-24T00:00:00Z",
+      "updated_at": "2026-03-24T00:00:00Z"
+    }
+  },
+  {
+    "model": "progress.achievementbadge",
+    "pk": "10000000-0000-0000-0000-000000000008",
+    "fields": {
+      "name": "Speed Demon",
+      "description": "Complete 5 quizzes in record time with 100% accuracy",
+      "rarity": "LEGENDARY",
+      "icon_url": "https://cdn-icons-png.flaticon.com/512/10443/10443911.png",
+      "criteria_type": "speed_demon",
+      "criteria_threshold": 5,
+      "tradeable": true,
+      "drop_rate": 0.05,
+      "total_awarded": 0,
+      "created_at": "2026-03-24T00:00:00Z",
+      "updated_at": "2026-03-24T00:00:00Z"
+    }
+  },
+  {
+    "model": "progress.achievementbadge",
+    "pk": "10000000-0000-0000-0000-000000000009",
+    "fields": {
+      "name": "Knowledge Seeker",
+      "description": "Complete all lessons in 5 different course modules",
+      "rarity": "LEGENDARY",
+      "icon_url": "https://cdn-icons-png.flaticon.com/512/2436/2436702.png",
+      "criteria_type": "knowledge_seeker",
+      "criteria_threshold": 5,
+      "tradeable": true,
+      "drop_rate": 0.04,
+      "total_awarded": 0,
+      "created_at": "2026-03-24T00:00:00Z",
+      "updated_at": "2026-03-24T00:00:00Z"
+    }
+  },
+  {
+    "model": "progress.achievementbadge",
+    "pk": "10000000-0000-0000-0000-000000000010",
+    "fields": {
+      "name": "Elite Scholar",
+      "description": "Earn 10 Rare or higher badges to reach elite status",
+      "rarity": "MYTHIC",
+      "icon_url": "https://cdn-icons-png.flaticon.com/512/4489/4489655.png",
+      "criteria_type": "elite_scholar",
+      "criteria_threshold": 10,
+      "tradeable": true,
+      "drop_rate": 0.01,
+      "total_awarded": 0,
+      "created_at": "2026-03-24T00:00:00Z",
+      "updated_at": "2026-03-24T00:00:00Z"
+    }
+  }
+]

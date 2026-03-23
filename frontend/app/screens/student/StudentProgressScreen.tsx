@@ -87,7 +87,11 @@ function StudentProgressScreen({ navigation }: any) {
             <MaterialCommunityIcons name="chevron-left" size={32} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Learning Progress</Text>
-          <View style={{ width: 32 }} />
+          <TouchableOpacity onPress={() => navigation.navigate('MyBadges')}>
+            <View style={styles.badgeButton}>
+              <MaterialCommunityIcons name="trophy-outline" size={24} color="#fff" />
+            </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.summaryContainer}>
@@ -151,6 +155,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 30,
+  },
+  badgeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.3)',
   },
   headerTitle: {
     fontSize: 22,

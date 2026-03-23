@@ -431,6 +431,22 @@ export const progressApi = {
 
   getCourseProgress: (courseId: string | number) =>
     api.get(`/v1/progress/course/${courseId}/`),
+  
+  // Badge System Endpoints
+  getAvailableBadges: () =>
+    api.get('/v1/progress/badges/'),
+  
+  getMyBadges: () =>
+    api.get('/v1/progress/my-badges/'),
+  
+  getLeaderboard: (scope: 'global' | 'course' | 'school' = 'global') =>
+    api.get(`/v1/progress/leaderboard/?scope=${scope}`),
+  
+  earnBadge: (criteriaType: string, contextData?: any) =>
+    api.post('/v1/progress/badges/earn/', {
+      criteria_type: criteriaType,
+      context_data: contextData
+    }),
 };
 
 // ─── Live Classes ────────────────────────────────────────────────

@@ -5,11 +5,49 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AppShadows } from '@/constants/theme';
 import { useQuizStore } from '@/store/quizStore';
+import { BadgeEarnedModal } from '@/components/ui/BadgeEarnedModal';
 
 function QuizResultScreen({ route, navigation }: any) {
-    const { score, correctAnswers, totalQuestions, courseId, quizId, passingScore = 70, attempt } = route.params;
+    const { score, correctAnswers, totalQuestions, courseId, quizId, passingScore = 70, attempt, newBadges = [] } = route.params;
     const isPassed = score >= passingScore;
     const { fetchStudentAttempts, quizAttempts } = useQuizStore();
+
+    // --- Badge Earned Animation Logic ---
+    const [badgeQueue, setBadgeQueue] = useState<any[]>(newBadges);
+    const [currentBadge, setCurrentBadge] = useState<any>(null);
+    const [modalVisible, setModalVisible] = useState(false);
+
+    useEffect(() => {
+        if (badgeQueue.length > 0) {
+            // Delay slightly to follow the CINEMATIC result entrance
+            const timer = setTimeout(() => {
+                showNextBadge();
+            }, 3000); 
+            return () => clearTimeout(timer);
+        }
+    }, []);
+
+    const showNextBadge = () => {
+        if (badgeQueue.length > 0) {
+            const next = badgeQueue[0];
+            setCurrentBadge(next);
+            setModalVisible(true);
+            setBadgeQueue(prev => prev.slice(1));
+        } else {
+            setModalVisible(false);
+            setCurrentBadge(null);
+        }
+    };
+
+    const handleBadgeClose = () => {
+        setModalVisible(false);
+        // After close animation, show next if any
+        setTimeout(() => {
+            if (badgeQueue.length > 0) {
+                showNextBadge();
+            }
+        }, 300);
+    };
 
     // --- Attempt Logic ---
     const [attemptsToday, setAttemptsToday] = useState(0);
@@ -343,9 +381,15 @@ function QuizResultScreen({ route, navigation }: any) {
                     </View>
                 </Animated.View>
             </ScrollView>
+
+            <BadgeEarnedModal 
+                visible={modalVisible}
+                badge={currentBadge}
+                onClose={handleBadgeClose}
+            />
         </View>
     );
-}
+};
 
 const styles = StyleSheet.create({
     container: {
