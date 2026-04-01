@@ -110,3 +110,24 @@ export const parentAPI = {
     }
 };
 
+// Cognitive AI Companion API
+export const cognitiveAPI = {
+    /** Send batched interaction events for emotion/engagement detection */
+    trackInteractions: async (data) => {
+        const response = await api.post('ai/interactions/', data);
+        return response.data;
+    },
+
+    /** Get current cognitive/emotional state for the authenticated student */
+    getCognitiveState: async () => {
+        const response = await api.get('ai/cognitive-state/');
+        return response.data;
+    },
+
+    /** Get cognitive state trend history */
+    getCognitiveHistory: async (days = 20) => {
+        const response = await api.get(`ai/cognitive-state/history/?days=${days}`);
+        return response.data;
+    },
+};
+

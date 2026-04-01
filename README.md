@@ -169,9 +169,9 @@
 | Feature | Description | Tech |
 |:---|:---|:---|
 | 🧠 **Advanced Quizzes** | MCQ, True/False, Multi-Select with time-boxing | `QuizScreen.tsx` |
-| 🎮 **Gamified Badges** | Achievement system with rarity tiers (Common to Mythic) | `AchievementBadge` · `PostgreSQL` |
+| 🎮 **Gamified Badges** | Premium glassmorphism UI with rarity tiers (Common to Mythic) | `AchievementBadge` · `PostgreSQL` |
 | 🛡️ **Anti-Cheat System** | Server-enforced **3-attempt daily limit** per quiz | `Backend Validation` |
-| 🏆 **Global Leaderboard** | Real-time platform rankings based on quiz accuracy & badges | `LeaderboardView` · `DRF` |
+| 🏆 **Global Leaderboard** | Cinematic 3D podiums and real-time global platform rankings | `LeaderboardView` · `DRF` |
 | 📈 **Platform Analytics** | Celery-generated daily snapshots of engagement, revenue, and scores | `django-celery-beat` |
 | 🔍 **Elasticsearch Index** | Full-text search across courses, lessons, and users | `elasticsearch-dsl` |
 
@@ -328,8 +328,8 @@
 - `ClassroomPage` · `MyCoursesPage`
 - `ProfilePage` · `DoubtsPage`
 - `ParentDashboard` — Real-time tracking
-- `BadgeGallery` — Achievement portal
-- `LeaderboardPage` — Platform rankings
+- `BadgeGallery` — Premium dark glassmorphism achievements
+- `LeaderboardPage` — Cinematic 3D podium global rankings
 - `CurriculumManagementPage`
 
 **👑 Admin Suite (16 files)**

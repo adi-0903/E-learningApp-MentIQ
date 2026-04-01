@@ -22,15 +22,27 @@ const BadgeGallery = () => {
         try {
             setLoading(true);
             const token = localStorage.getItem('accessToken');
-            const response = await axios.get(`${API_URL}progress/my-badges/`, {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
             
-            if (response.data.success) {
-                setBadges(response.data.data || []);
-            }
+            const earnedRes = await axios.get(`${API_URL}progress/my-badges/`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            }).catch(() => ({ data: [] }));
+
+            const extractArray = (res) => {
+                if (!res || !res.data) return [];
+                if (Array.isArray(res.data)) return res.data;
+                if (res.data.success && Array.isArray(res.data.data)) return res.data.data;
+                if (Array.isArray(res.data.results)) return res.data.results;
+                return [];
+            };
+
+            const earnedBadgesRaw = extractArray(earnedRes);
+
+            const processedBadges = earnedBadgesRaw.map(earned => ({
+                ...earned,
+                is_earned: true
+            }));
+            
+            setBadges(processedBadges);
             setError(null);
         } catch (err) {
             console.error('Error fetching badges:', err);
@@ -163,7 +175,7 @@ const BadgeGallery = () => {
                         <BadgeCard 
                             key={badge.id || index} 
                             badge={badge}
-                            earned={true}
+                            earned={badge.is_earned || !!badge.awarded_at}
                         />
                     ))
                 ) : (

@@ -71,12 +71,11 @@ const LeaderboardPage = () => {
                 
                 {/* Filters */}
                 <div className="leaderboard-filters">
+                    
                     <div className="filter-group">
                         <label>Scope:</label>
                         <select value={scope} onChange={(e) => setScope(e.target.value)}>
-                            <option value="global">Global</option>
-                            <option value="school">My School</option>
-                            <option value="class">My Class</option>
+                            <option value="global">Global (All Students)</option>
                         </select>
                     </div>
                     
@@ -92,9 +91,13 @@ const LeaderboardPage = () => {
             </div>
 
             {leaderboard.length === 0 ? (
-                <div className="no-data-message">
-                    <h3>📊 No rankings yet</h3>
-                    <p>Be the first to earn badges and climb the leaderboard!</p>
+                <div className="no-data-message premium-empty-state">
+                    <div className="premium-empty-icon">
+                        <div className="glow-orb"></div>
+                        <span className="trophy-emoji">🏆</span>
+                    </div>
+                    <h3>Awaiting Champions</h3>
+                    <p>The leaderboard is currently empty.<br/>Be the first to earn badges and claim the top spot!</p>
                 </div>
             ) : (
                 <>

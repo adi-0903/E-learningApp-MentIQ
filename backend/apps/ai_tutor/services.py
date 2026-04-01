@@ -77,9 +77,13 @@ class QbitService:
 
         return f"QBit is temporarily overloaded. Please try again in a moment. (Debug: {last_error})"
 
-    def get_chat_response(self, query, context="", image=None, role='student'):
+    def get_chat_response(self, query, context="", image=None, role='student', cognitive_state=None):
         """
         Generates a response from Qbit via Groq. Personality is role-dependent.
+        
+        Now enhanced with cognitive_state parameter for emotion-aware responses.
+        When cognitive_state is provided, the system prompt is dynamically adjusted
+        based on the student's detected emotional state.
         """
         if role == 'teacher':
             system_instruction = """
@@ -105,6 +109,10 @@ Personality:
 - Style: Use Markdown. Break down complex concepts into simple terms.
 - Boundaries: You are a general-purpose AI assistant. While you have context about their courses, you can freely answer ANY type of question, whether it's related to general knowledge, coding, life advice, career guidance, or casual conversation.
 """
+            # ─── Cognitive AI Adaptation ─────────────────────────
+            if cognitive_state:
+                system_instruction += self._build_cognitive_instructions(cognitive_state)
+
             user_text = f"Learning Context:\n{context}\n\nStudent Question: {query or 'Please help me study.'}"
 
         # Note: Groq currently doesn't support vision/image input
@@ -117,6 +125,87 @@ Personality:
         ]
 
         return self._call_ai(messages)
+
+    def _build_cognitive_instructions(self, cognitive_state):
+        """
+        Build additional system prompt instructions based on the student's
+        cognitive/emotional state. This enables invisible, adaptive tutoring.
+        """
+        frustration = cognitive_state.get('frustration_score', 0)
+        engagement = cognitive_state.get('engagement_score', 0.5)
+        confidence = cognitive_state.get('confidence_score', 0.5)
+        mood = cognitive_state.get('current_mood', 'neutral')
+        load = cognitive_state.get('cognitive_load', 'medium')
+
+        instructions = "\n\n--- COGNITIVE ADAPTATION (Internal — do NOT mention to the student) ---\n"
+        instructions += f"Student's current detected state: Mood={mood}, Frustration={frustration:.1f}, Engagement={engagement:.1f}, Confidence={confidence:.1f}, Cognitive Load={load}\n"
+
+        # High frustration — be extra supportive
+        if frustration > 0.7:
+            instructions += """
+CRITICAL ADAPTATION: Student is highly frustrated.
+- Use an extra warm, encouraging, and patient tone
+- Break your explanation into very small, digestible steps
+- Start with what they already know and build from there
+- Use analogies and real-world examples
+- Offer alternative explanations if the first doesn't click
+- Add brief encouragements like "You're on the right track" or "This is a tricky one, let's work through it together"
+- Keep paragraphs SHORT (2-3 sentences max)
+"""
+        elif frustration > 0.4:
+            instructions += """
+ADAPTATION: Student shows moderate frustration.
+- Be extra patient and clear in explanations
+- Use more examples than usual
+- Break complex ideas into numbered steps
+- Add encouraging phrases naturally
+"""
+
+        # Low engagement — make it interesting
+        if engagement < 0.3:
+            instructions += """
+ADAPTATION: Student engagement is low.
+- Make your response more dynamic and interesting
+- Use emoji sparingly to add visual interest
+- Include a fun fact or surprising connection
+- Ask engaging follow-up questions
+- Keep responses concise — don't overwhelm
+"""
+
+        # High confidence — challenge them
+        if confidence > 0.8 and engagement > 0.5:
+            instructions += """
+ADAPTATION: Student is confident and engaged.
+- You can use more advanced terminology
+- Challenge them with deeper questions
+- Connect concepts to broader themes
+- Suggest related advanced topics they might enjoy
+- Be more concise — they can handle dense information
+"""
+
+        # Cognitive overload
+        if load == 'overloaded':
+            instructions += """
+CRITICAL ADAPTATION: Student is cognitively overloaded.
+- Give the SIMPLEST possible explanation first
+- Use bullet points, not paragraphs
+- Cover only ONE concept at a time
+- Suggest they take a break if the question is complex
+- Use "First... Then... Finally..." structure
+"""
+
+        # Bored
+        if mood == 'bored':
+            instructions += """
+ADAPTATION: Student appears bored.
+- Make the topic exciting with real-world applications
+- Use storytelling or narratives when possible
+- Include interesting "Did you know?" facts
+- Keep response energetic and dynamic
+"""
+
+        instructions += "--- END COGNITIVE ADAPTATION ---\n"
+        return instructions
 
     def generate_quiz(self, content, num_questions=5):
         prompt = f"""

@@ -31,4 +31,26 @@ export const aiApi = {
 
     generateStudyPlan: (examDate: string, hoursPerDay: number, subject?: string) =>
         api.post('/v1/ai/generate-plan/', { exam_date: examDate, hours_per_day: hoursPerDay, subject: subject || '' }),
+
+    // ─── Cognitive AI Companion Endpoints ────────────────────────
+
+    /** Send batched interaction events for emotion/engagement detection */
+    trackInteractions: (data: {
+        session_id: string;
+        platform: string;
+        events: Array<{
+            event_type: string;
+            metrics: Record<string, number>;
+            context?: Record<string, string>;
+            timestamp?: string;
+        }>;
+    }) => api.post('/v1/ai/interactions/', data),
+
+    /** Get current cognitive/emotional state */
+    getCognitiveState: () =>
+        api.get('/v1/ai/cognitive-state/'),
+
+    /** Get cognitive state history for trend analysis */
+    getCognitiveHistory: (days: number = 20) =>
+        api.get(`/v1/ai/cognitive-state/history/?days=${days}`),
 };

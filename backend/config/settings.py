@@ -80,6 +80,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'apps.core.middleware.RequestLoggingMiddleware',
+    'apps.ai_tutor.middleware.CognitiveStateMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
