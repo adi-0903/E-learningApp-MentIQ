@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import './NotificationsPage.css'; // Reusing premium layouts
 import api from '../api';
 
-export function CourseDetailPage({ courseId, onBack, onTakeQuiz }) {
+export function CourseDetailPage({ courseId, onBack, onTakeQuiz, onStartLesson }) {
     const [course, setCourse] = useState(null);
     const [lessons, setLessons] = useState([]);
     const [quizzes, setQuizzes] = useState([]);
@@ -113,16 +113,19 @@ export function CourseDetailPage({ courseId, onBack, onTakeQuiz }) {
                                         <h4 style={{ color: 'white', margin: 0, fontSize: '1rem' }}>{lesson.title}</h4>
                                         <span style={{ color: '#64748b', fontSize: '0.8rem' }}>{lesson.file_type || 'Lecture'}</span>
                                     </div>
-                                    <button style={{
-                                        padding: '8px 16px',
-                                        borderRadius: '12px',
-                                        border: 'none',
-                                        background: 'white',
-                                        color: '#0f172a',
-                                        fontWeight: '600',
-                                        fontSize: '0.8rem',
-                                        cursor: 'pointer'
-                                    }}>
+                                    <button 
+                                        onClick={() => onStartLesson(lesson, lessons)}
+                                        style={{
+                                            padding: '8px 16px',
+                                            borderRadius: '12px',
+                                            border: 'none',
+                                            background: 'white',
+                                            color: '#0f172a',
+                                            fontWeight: '600',
+                                            fontSize: '0.8rem',
+                                            cursor: 'pointer'
+                                        }}
+                                    >
                                         START
                                     </button>
                                 </div>

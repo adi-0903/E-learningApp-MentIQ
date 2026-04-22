@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import './MyCoursesPage.css'; // Reuse core course grid styles
 import api from '../api';
+import { SuccessModal } from './SuccessModal';
 
 export function CourseCatalogPage({ onBack, onEnrollSuccess }) {
     const [courses, setCourses] = useState([]);
     const [isLoading, setIsLoading] = useState(true);
     const [enrollingId, setEnrollingId] = useState(null);
+    const [successModal, setSuccessModal] = useState({ isOpen: false, courseTitle: '' });
 
     const fetchAllCourses = async () => {
         setIsLoading(true);
@@ -28,10 +30,13 @@ export function CourseCatalogPage({ onBack, onEnrollSuccess }) {
 
     const handleEnroll = async (courseId) => {
         setEnrollingId(courseId);
+        const course = courses.find(c => c.id === courseId);
+        const courseTitle = course ? course.title : "your new mission";
+
         try {
             const res = await api.post('enrollments/enroll/', { course_id: courseId });
             if (res.data && res.data.success) {
-                alert("Successfully enrolled! Welcome to your new mission.");
+                setSuccessModal({ isOpen: true, courseTitle });
                 if (onEnrollSuccess) onEnrollSuccess(courseId);
             }
         } catch (err) {
@@ -114,6 +119,14 @@ export function CourseCatalogPage({ onBack, onEnrollSuccess }) {
                     ))}
                 </div>
             )}
+
+            <SuccessModal 
+                isOpen={successModal.isOpen} 
+                onClose={() => setSuccessModal({ ...successModal, isOpen: false })}
+                title="Mission Accepted!"
+                message={`You've successfully enrolled in "${successModal.courseTitle}". Your journey to excellence begins now.`}
+                buttonText="LET'S GO"
+            />
         </div>
     );
 }

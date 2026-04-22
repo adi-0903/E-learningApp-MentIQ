@@ -21,6 +21,7 @@ import { ParentDashboard } from './components/ParentDashboard';
 
 import { QuizResultPage } from './components/QuizResultPage';
 import { ClassroomPage } from './components/ClassroomPage';
+import { LessonViewPage } from './components/LessonViewPage';
 
 // Badge System
 import BadgeGallery from './components/BadgeGallery';
@@ -50,6 +51,8 @@ function App() {
     const [selectedQuizId, setSelectedQuizId] = useState(null);
     const [quizResult, setQuizResult] = useState(null);
     const [selectedCourseTitle, setSelectedCourseTitle] = useState('');
+    const [selectedLesson, setSelectedLesson] = useState(null);
+    const [courseLessons, setCourseLessons] = useState([]);
 
     // Admin-specific state
     const [adminSelectedUserId, setAdminSelectedUserId] = useState(null);
@@ -286,6 +289,26 @@ function App() {
                         courseId={selectedCourseId}
                         onBack={() => setCurrentPage('dashboard')}
                         onTakeQuiz={(id) => { setSelectedQuizId(id); setCurrentPage('quiz'); }}
+                        onStartLesson={(lesson, allLessons) => {
+                            setSelectedLesson(lesson);
+                            setCourseLessons(allLessons);
+                            setCurrentPage('lesson_view');
+                        }}
+                    />
+                ) : currentPage === 'lesson_view' ? (
+                    <LessonViewPage
+                        lesson={selectedLesson}
+                        onBack={() => setCurrentPage('course_detail')}
+                        onNext={() => {
+                            const idx = courseLessons.findIndex(l => l.id === selectedLesson.id);
+                            if (idx < courseLessons.length - 1) setSelectedLesson(courseLessons[idx + 1]);
+                        }}
+                        onPrev={() => {
+                            const idx = courseLessons.findIndex(l => l.id === selectedLesson.id);
+                            if (idx > 0) setSelectedLesson(courseLessons[idx - 1]);
+                        }}
+                        hasNext={courseLessons.findIndex(l => l.id === selectedLesson.id) < courseLessons.length - 1}
+                        hasPrev={courseLessons.findIndex(l => l.id === selectedLesson.id) > 0}
                     />
                 ) : currentPage === 'quiz' ? (
                     <QuizTakingPage
