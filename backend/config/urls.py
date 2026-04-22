@@ -35,7 +35,7 @@ urlpatterns = [
     path('api/v1/notifications/', include('apps.notifications.urls')),
     path('api/v1/payments/', include('apps.payments.urls')),
     path('api/v1/analytics/', include('apps.analytics.urls')),
-    path('api/v1/media/', include('apps.media.urls')),
+    # path('api/v1/media/', include('apps.media.urls')),  # Temporarily disabled
     path('api/v1/ai/', include('apps.ai_tutor.urls')),
     path('api/v1/emails/', include('apps.emails.urls')),
     path('api/v1/attendance/', include('apps.attendance.urls')),
