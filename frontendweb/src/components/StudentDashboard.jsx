@@ -9,7 +9,7 @@ import { AttendanceCard } from './AttendanceCard';
 import { KnowledgeGraphCard } from './KnowledgeGraphCard';
 import api from '../api';
 
-export function StudentDashboard({ userData, userRole, onSeeAllCourses, onContinueCourse }) {
+export function StudentDashboard({ userData, userRole, onSeeAllCourses, onContinueCourse, onEnrollCourse }) {
     const [dashboardData, setDashboardData] = useState(null);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -34,7 +34,7 @@ export function StudentDashboard({ userData, userRole, onSeeAllCourses, onContin
         <div className="dashboard-grid">
             <StatsCard dashboardData={dashboardData} isLoading={isLoading} />
             <ProgressCard dashboardData={dashboardData} isLoading={isLoading} />
-            <GreetingCard userData={userData} userRole={userRole} />
+            <GreetingCard userData={userData} userRole={userRole} onEnrollCourse={onEnrollCourse} />
             <AttendanceCard dashboardData={dashboardData} isLoading={isLoading} />
             <LastLessonCard
                 dashboardData={dashboardData}

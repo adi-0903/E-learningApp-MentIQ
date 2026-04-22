@@ -74,10 +74,15 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourse
                     <h1 className="courses-title">{isTeacher ? "My Assigned Courses" : "My Enrolled Courses"}</h1>
                     <p className="courses-subtitle">{isTeacher ? "Manage your curriculum and track student progress across your active courses." : "Manage and continue your learning journey to perfection."}</p>
                 </div>
-                {isTeacher && (
+                {isTeacher ? (
                     <button className="premium-add-course-btn" onClick={() => setIsCreateModalOpen(true)}>
                         <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4"></path></svg>
                         <span>NEW COURSE</span>
+                    </button>
+                ) : (
+                    <button className="premium-add-course-btn" onClick={onBrowseCourses}>
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M12 4v16m8-8H4"></path></svg>
+                        <span>ENROLL COURSE</span>
                     </button>
                 )}
             </div>

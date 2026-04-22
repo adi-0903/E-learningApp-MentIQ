@@ -345,6 +345,7 @@ function App() {
                         userRole={userRole}
                         onSeeAllCourses={() => setCurrentPage('courses')}
                         onContinueCourse={(id) => { setSelectedCourseId(id); setCurrentPage('course_detail'); }}
+                        onEnrollCourse={() => setCurrentPage('course_catalog')}
                     />
                 )}
 
