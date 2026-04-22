@@ -11,6 +11,26 @@ os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
 
 app = Celery('mentiq')
 app.config_from_object('django.conf:settings', namespace='CELERY')
+
+# Strictly enforce connection timeout and retries to prevent hangs
+app.conf.update(
+    broker_connection_retry_on_startup=True,
+    broker_connection_max_retries=1,
+    broker_transport_options={
+        'max_retries': 1,
+        'interval_start': 0,
+        'interval_step': 0,
+        'interval_max': 0,
+    },
+    redis_backend_health_check_interval=5,
+    result_backend_transport_options={
+        'retry_policy': {
+            'timeout': 5.0,
+            'max_retries': 1
+        }
+    }
+)
+
 app.autodiscover_tasks()
 
 # Periodic Tasks Schedule
