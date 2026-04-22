@@ -204,8 +204,12 @@ if DEBUG:
 else:
     CORS_ALLOWED_ORIGINS = env.list(
         'CORS_ALLOWED_ORIGINS',
-        ['http://localhost:3000', 'http://localhost:8081']
+        ['http://localhost:3000', 'http://localhost:8081', 'http://localhost:5173']
     )
+CSRF_TRUSTED_ORIGINS = env.list(
+    'CSRF_TRUSTED_ORIGINS',
+    ['http://localhost:3000', 'http://localhost:8081', 'http://localhost:5173']
+)
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = [
     'DELETE',
@@ -344,32 +348,24 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
         },
-        'file': {
-            'level': 'INFO',
-            'class': 'logging.handlers.RotatingFileHandler',
-            'filename': BASE_DIR / 'logs' / 'django.log',
-            'maxBytes': 1024 * 1024 * 15,  # 15MB
-            'backupCount': 10,
-            'formatter': 'verbose',
-        },
     },
     'root': {
-        'handlers': ['console', 'file'],
+        'handlers': ['console'],
         'level': 'INFO',
     },
     'loggers': {
         'django': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': env.str('LOG_LEVEL', 'INFO'),
             'propagate': False,
         },
         'django.request': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'ERROR',
             'propagate': False,
         },
         'celery': {
-            'handlers': ['console', 'file'],
+            'handlers': ['console'],
             'level': 'INFO',
             'propagate': False,
         },
