@@ -9,8 +9,10 @@ def main():
     import sys
     from pathlib import Path
     BASE_DIR = Path(__file__).resolve().parent
-    sys.path.append(str(BASE_DIR))
-    
+    # Add both BASE_DIR and its parent to sys.path to ensure apps are found
+    sys.path.insert(0, str(BASE_DIR))
+    sys.path.insert(0, str(BASE_DIR.parent))
+
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     try:
         from django.core.management import execute_from_command_line
