@@ -9,9 +9,8 @@ def main():
     import sys
     from pathlib import Path
     BASE_DIR = Path(__file__).resolve().parent
-    # Add both BASE_DIR and its parent to sys.path to ensure apps are found
+    # Add BASE_DIR to sys.path so apps.media can be imported
     sys.path.insert(0, str(BASE_DIR))
-    sys.path.insert(0, str(BASE_DIR.parent))
 
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     try:

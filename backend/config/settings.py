@@ -60,7 +60,7 @@ INSTALLED_APPS = [
     'apps.notifications',
     'apps.payments',
     'apps.analytics',
-    'apps.media',
+    # 'apps.media',  # Temporarily disabled for deployment
     'apps.ai_tutor',
     'apps.intelligence',
     'apps.emails',
