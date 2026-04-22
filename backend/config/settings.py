@@ -17,6 +17,7 @@ env.read_env()
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
 sys.path.append(str(BASE_DIR))
+sys.path.append(str(BASE_DIR / 'apps'))
 
 # Security Settings
 SECRET_KEY = env.str('SECRET_KEY', 'django-insecure-change-this-in-production')
