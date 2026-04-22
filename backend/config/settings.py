@@ -106,13 +106,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database (PostgreSQL)
-# Database (PostgreSQL)
 DATABASES = {
     'default': dj_database_url.config(
-        default=env.str('DATABASE_URL'),
+        default=env.str('DATABASE_URL', 'postgresql://localhost'),
         conn_max_age=600,
         conn_health_checks=True,
-        ssl_require=not DEBUG,
+        ssl_require=True,
     )
 }
 
