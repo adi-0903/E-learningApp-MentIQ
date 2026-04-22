@@ -14,6 +14,8 @@ export function CurriculumManagementPage({ courseId, onBack }) {
     const [showLessonModal, setShowLessonModal] = useState(false);
     const [showQuizModal, setShowQuizModal] = useState(false);
     const [isSaving, setIsSaving] = useState(false);
+    const [isEditingAsset, setIsEditingAsset] = useState(false);
+    const [editingId, setEditingId] = useState(null);
 
     const [lessonData, setLessonData] = useState({
         title: '',
@@ -75,6 +77,33 @@ export function CurriculumManagementPage({ courseId, onBack }) {
         }
     };
 
+    const handleEditLesson = (lesson) => {
+        setLessonData({
+            title: lesson.title,
+            description: lesson.description || '',
+            content: lesson.content || '',
+            file_type: lesson.file_type || 'video',
+            video_url: lesson.video_url || '',
+            duration: lesson.duration || 0
+        });
+        setEditingId(lesson.id);
+        setIsEditingAsset(true);
+        setShowLessonModal(true);
+    };
+
+    const handleEditQuiz = (quiz) => {
+        setQuizData({
+            title: quiz.title,
+            description: quiz.description || '',
+            passing_score: quiz.passing_score || 70,
+            time_limit: quiz.time_limit || 30,
+            questions: quiz.questions || []
+        });
+        setEditingId(quiz.id);
+        setIsEditingAsset(true);
+        setShowQuizModal(true);
+    };
+
     const handleCreateLesson = async (e) => {
         e.preventDefault();
         setIsSaving(true);
@@ -89,12 +118,16 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                 duration: parseInt(lessonData.duration) || 0,
                 course: courseId,
             };
-            // Remove empty optional fields
-            if (!payload.video_url) delete payload.video_url;
-            if (!payload.content) delete payload.content;
 
-            await api.post('lessons/', payload);
+            if (isEditingAsset) {
+                await api.put(`lessons/${editingId}/`, payload);
+            } else {
+                await api.post('lessons/', payload);
+            }
+
             setShowLessonModal(false);
+            setIsEditingAsset(false);
+            setEditingId(null);
             fetchCurriculum();
             setLessonData({
                 title: '',
@@ -105,18 +138,8 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                 duration: 0
             });
         } catch (err) {
-            console.error('Create lesson error:', err.response?.data || err);
-            const errData = err.response?.data;
-            if (errData?.error) {
-                const errorObj = errData.error;
-                if (errorObj.details && typeof errorObj.details === 'object' && Object.keys(errorObj.details).length > 0) {
-                    alert(Object.entries(errorObj.details).map(([k, v]) => `${k}: ${[].concat(v).join(', ')}`).join('\n'));
-                } else {
-                    alert(errorObj.message || 'Failed to create lesson.');
-                }
-            } else {
-                alert('Failed to publish lesson. Check console.');
-            }
+            console.error('Save lesson error:', err.response?.data || err);
+            alert('Failed to save lesson.');
         } finally {
             setIsSaving(false);
         }
@@ -131,8 +154,16 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                 ...quizData,
                 course: courseId
             };
-            await api.post('quizzes/', payload);
+
+            if (isEditingAsset) {
+                await api.put(`quizzes/${editingId}/`, payload);
+            } else {
+                await api.post('quizzes/', payload);
+            }
+
             setShowQuizModal(false);
+            setIsEditingAsset(false);
+            setEditingId(null);
             fetchCurriculum();
             setQuizData({ title: '', description: '', passing_score: 70, time_limit: 30, questions: [] });
             setCurrentQuestion({
@@ -140,18 +171,8 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                 option_c: '', option_d: '', correct_answer: '', explanation: '', type: 'MCQ'
             });
         } catch (err) {
-            console.error('Create quiz error:', err.response?.data || err);
-            const errData = err.response?.data;
-            if (errData?.error) {
-                const errorObj = errData.error;
-                if (errorObj.details && typeof errorObj.details === 'object' && Object.keys(errorObj.details).length > 0) {
-                    alert(Object.entries(errorObj.details).map(([k, v]) => `${k}: ${[].concat(v).join(', ')}`).join('\n'));
-                } else {
-                    alert(errorObj.message || 'Failed to create quiz.');
-                }
-            } else {
-                alert('Failed to create quiz.');
-            }
+            console.error('Save quiz error:', err.response?.data || err);
+            alert('Failed to save quiz.');
         } finally {
             setIsSaving(false);
         }
@@ -222,7 +243,13 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                     </h2>
                     <button
                         className="premium-add-asset-btn"
-                        onClick={() => activeTab === 'quizzes' ? setShowQuizModal(true) : setShowLessonModal(true)}
+                        onClick={() => {
+                            setIsEditingAsset(false);
+                            setEditingId(null);
+                            setLessonData({ title: '', description: '', content: '', file_type: 'video', video_url: '', duration: 0 });
+                            setQuizData({ title: '', description: '', passing_score: 70, time_limit: 30, questions: [] });
+                            activeTab === 'quizzes' ? setShowQuizModal(true) : setShowLessonModal(true);
+                        }}
                     >
                         <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"></path></svg>
                         NEW {activeTab.toUpperCase().slice(0, -1)}
@@ -239,6 +266,9 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                                 <span className="asset-meta">{lesson.duration || 0} mins • {lesson.file_type}</span>
                             </div>
                             <div className="asset-ops">
+                                <button className="op-btn edit" onClick={() => handleEditLesson(lesson)}>
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
                                 <button className="op-btn delete" onClick={() => handleDeleteLesson(lesson.id)}>
                                     <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
@@ -257,6 +287,9 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                                 <span className="asset-meta">{video.duration || 0} mins</span>
                             </div>
                             <div className="asset-ops">
+                                <button className="op-btn edit" onClick={() => handleEditLesson(video)}>
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
                                 <button className="op-btn delete" onClick={() => handleDeleteLesson(video.id)}>
                                     <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
@@ -270,9 +303,12 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                             <div className="asset-info">
                                 <h3>{quiz.title}</h3>
                                 <p>{quiz.description || 'Assessment module'}</p>
-                                <span className="asset-meta">{quiz.total_questions} Qs • {quiz.passing_score}% Pass</span>
+                                <span className="asset-meta">{quiz.total_questions || quiz.questions?.length || 0} Qs • {quiz.passing_score}% Pass</span>
                             </div>
                             <div className="asset-ops">
+                                <button className="op-btn edit" onClick={() => handleEditQuiz(quiz)}>
+                                    <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                </button>
                                 <button className="op-btn delete" onClick={() => handleDeleteQuiz(quiz.id)}>
                                     <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
                                 </button>
@@ -297,7 +333,9 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                 <div className="curriculum-modal-overlay fade-in">
                     <div className="curriculum-modal-content">
                         <div className="curriculum-modal-header">
-                            <h2 className="curriculum-modal-title">New {activeTab === 'videos' ? 'Video Lecture' : 'Lesson Asset'}</h2>
+                            <h2 className="curriculum-modal-title">
+                                {isEditingAsset ? 'Edit' : 'New'} {activeTab === 'videos' ? 'Video Lecture' : 'Lesson Asset'}
+                            </h2>
                             <button className="curriculum-modal-close" onClick={() => setShowLessonModal(false)}>&times;</button>
                         </div>
                         <form onSubmit={handleCreateLesson} className="curriculum-modal-form">
@@ -393,7 +431,7 @@ export function CurriculumManagementPage({ courseId, onBack }) {
                 <div className="curriculum-modal-overlay fade-in">
                     <div className="curriculum-modal-content">
                         <div className="curriculum-modal-header">
-                            <h2 className="curriculum-modal-title">New Assessment</h2>
+                            <h2 className="curriculum-modal-title">{isEditingAsset ? 'Edit' : 'New'} Assessment</h2>
                             <button className="curriculum-modal-close" onClick={() => setShowQuizModal(false)}>&times;</button>
                         </div>
                         <form onSubmit={handleCreateQuiz} className="curriculum-modal-form">

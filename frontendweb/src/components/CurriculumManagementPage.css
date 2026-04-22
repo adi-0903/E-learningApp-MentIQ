@@ -234,6 +234,16 @@
     color: white;
 }
 
+.op-btn.edit {
+    background: rgba(99, 102, 241, 0.1);
+    color: #818cf8;
+}
+
+.op-btn.edit:hover {
+    background: #6366f1;
+    color: white;
+}
+
 .empty-content {
     display: flex;
     flex-direction: column;

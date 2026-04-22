@@ -105,9 +105,10 @@ class LessonDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def update(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.course.teacher != request.user:
+        # Allow if user is the course teacher OR an admin
+        if instance.course.teacher != request.user and request.user.role != 'admin':
             return Response(
-                {'success': False, 'error': {'message': 'Only the course teacher can update lessons.'}},
+                {'success': False, 'error': {'message': 'You do not have permission to update this lesson.'}},
                 status=status.HTTP_403_FORBIDDEN,
             )
         partial = kwargs.pop('partial', False)
@@ -122,9 +123,10 @@ class LessonDetailView(generics.RetrieveUpdateDestroyAPIView):
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
-        if instance.course.teacher != request.user:
+        # Allow if user is the course teacher OR an admin
+        if instance.course.teacher != request.user and request.user.role != 'admin':
             return Response(
-                {'success': False, 'error': {'message': 'Only the course teacher can delete lessons.'}},
+                {'success': False, 'error': {'message': 'You do not have permission to delete this lesson.'}},
                 status=status.HTTP_403_FORBIDDEN,
             )
         instance.soft_delete()

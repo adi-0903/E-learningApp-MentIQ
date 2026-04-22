@@ -157,34 +157,39 @@ function App() {
     const isAdmin = userRole === 'admin';
     const isAdminPage = currentPage.startsWith('admin');
 
-    // Determine which pages should hide the header
-    const hideHeaderPages = ['profile', 'notifications', 'contact', 'classroom', 'courses', 'doubts', 'curriculum_management', 'attendance', 'course_catalog', 'admin_attendance', 'badges', 'leaderboard'];
-    const shouldHideHeader = hideHeaderPages.includes(currentPage) || isAdminPage;
+    // Determine which pages should hide the header for maximum immersion
+    const hideHeaderPages = ['lesson_view', 'classroom', 'quiz'];
+    const shouldHideHeader = 
+        hideHeaderPages.includes(currentPage) || 
+        isAdminPage || 
+        (userRole === 'teacher' && currentPage !== 'dashboard');
 
     return (
         <>
-            <Sidebar
-                onOpenContact={() => setCurrentPage('contact')}
-                onGoHome={() => setCurrentPage('dashboard')}
-                onOpenCourses={() => setCurrentPage('courses')}
-                onOpenClassroom={() => setCurrentPage('classroom')}
-                onOpenDoubts={() => setCurrentPage('doubts')}
-                onLogout={handleLogout}
-                currentPage={currentPage}
-                userRole={userRole}
-                // Admin navigation
-                onOpenAdminTeachers={() => setCurrentPage('admin_teachers')}
-                onOpenAdminStudents={() => setCurrentPage('admin_students')}
-                onOpenAdminCourses={() => setCurrentPage('admin_courses')}
-                onOpenAdminAnnouncements={() => setCurrentPage('admin_announcements')}
-                onOpenAdminPremium={() => setCurrentPage('admin_premium')}
-                onOpenAdminAttendance={() => setCurrentPage('admin_attendance')}
-                onOpenAdminParents={() => setCurrentPage('admin_parents')}
-                onOpenBadges={() => setCurrentPage('badges')}
-                onOpenLeaderboard={() => setCurrentPage('leaderboard')}
-                onOpenParents={() => setCurrentPage('parents')}
-            />
-            <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''}`}>
+            {currentPage !== 'onboarding' && currentPage !== 'login' && (
+                <Sidebar
+                    onOpenContact={() => setCurrentPage('contact')}
+                    onGoHome={() => setCurrentPage('dashboard')}
+                    onOpenCourses={() => setCurrentPage('courses')}
+                    onOpenClassroom={() => setCurrentPage('classroom')}
+                    onOpenDoubts={() => setCurrentPage('doubts')}
+                    onLogout={handleLogout}
+                    currentPage={currentPage}
+                    userRole={userRole}
+                    // Admin navigation
+                    onOpenAdminTeachers={() => setCurrentPage('admin_teachers')}
+                    onOpenAdminStudents={() => setCurrentPage('admin_students')}
+                    onOpenAdminCourses={() => setCurrentPage('admin_courses')}
+                    onOpenAdminAnnouncements={() => setCurrentPage('admin_announcements')}
+                    onOpenAdminPremium={() => setCurrentPage('admin_premium')}
+                    onOpenAdminAttendance={() => setCurrentPage('admin_attendance')}
+                    onOpenAdminParents={() => setCurrentPage('admin_parents')}
+                    onOpenBadges={() => setCurrentPage('badges')}
+                    onOpenLeaderboard={() => setCurrentPage('leaderboard')}
+                    onOpenParents={() => setCurrentPage('parents')}
+                />
+            )}
+            <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''} ${currentPage === 'lesson_view' ? 'lesson-view-mode' : ''}`}>
                 {!shouldHideHeader && (
                     <Header
                         onGetStarted={() => setCurrentPage('login')}
@@ -298,6 +303,8 @@ function App() {
                 ) : currentPage === 'lesson_view' ? (
                     <LessonViewPage
                         lesson={selectedLesson}
+                        userRole={userRole}
+                        userData={userData}
                         onBack={() => setCurrentPage('course_detail')}
                         onNext={() => {
                             const idx = courseLessons.findIndex(l => l.id === selectedLesson.id);
