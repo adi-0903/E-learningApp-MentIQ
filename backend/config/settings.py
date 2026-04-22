@@ -3,7 +3,7 @@ Django settings for MentiQ E-Learning Platform
 Production-ready configuration with PostgreSQL, Redis, Celery
 """
 
-import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -16,6 +16,7 @@ env.read_env()
 
 # Build paths inside the project
 BASE_DIR = Path(__file__).resolve().parent.parent
+sys.path.append(str(BASE_DIR))
 
 # Security Settings
 SECRET_KEY = env.str('SECRET_KEY', 'django-insecure-change-this-in-production')
