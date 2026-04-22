@@ -49,6 +49,19 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         data = super().validate(attrs)
         user = self.user
 
+        # Handle Remember Me - Set token lifetime to 3 days if checked
+        remember_me = self.initial_data.get('remember_me', False)
+        if remember_me:
+            from datetime import timedelta
+            from rest_framework_simplejwt.tokens import RefreshToken
+            
+            # Generate new tokens with longer lifetime
+            refresh = RefreshToken.for_user(user)
+            refresh.set_exp(lifetime=timedelta(days=3))
+            
+            data['refresh'] = str(refresh)
+            data['access'] = str(refresh.access_token)
+
         # Add custom claims
         data['user'] = {
             'id': str(user.id),

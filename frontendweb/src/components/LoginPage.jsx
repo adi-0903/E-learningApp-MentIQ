@@ -97,6 +97,7 @@ const ONBOARDING_STEPS = [
 export function LoginPage({ onBack }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [rememberMe, setRememberMe] = useState(false);
     const [loading, setLoading] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
     const [msg, setMsg] = useState('');
@@ -119,7 +120,11 @@ export function LoginPage({ onBack }) {
         setErrorMsg('');
         setMsg('');
         try {
-            const response = await api.post('auth/login/', { email, password });
+            const response = await api.post('auth/login/', { 
+                email, 
+                password,
+                remember_me: rememberMe 
+            });
             if (response.data && response.data.user) {
                 const userData = response.data;
                 localStorage.setItem('accessToken', userData.access);
@@ -263,7 +268,11 @@ export function LoginPage({ onBack }) {
 
                                 <div className="form-actions-row">
                                     <label className="custom-checkbox">
-                                        <input type="checkbox" />
+                                        <input 
+                                            type="checkbox" 
+                                            checked={rememberMe}
+                                            onChange={(e) => setRememberMe(e.target.checked)}
+                                        />
                                         <span className="checkmark"></span>
                                         <span className="cb-text">Remember me</span>
                                     </label>
