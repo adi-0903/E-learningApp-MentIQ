@@ -172,3 +172,26 @@ class SessionBooking(TimeStampedModel):
 
     def __str__(self):
         return f"{self.student.name} -> {self.teacher.name} on {self.date} at {self.time}"
+
+
+class MentorMessage(TimeStampedModel):
+    """Messages between students and mentors."""
+    sender = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='sent_mentor_messages',
+    )
+    receiver = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='received_mentor_messages',
+    )
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'mentor_messages'
+        ordering = ['created_at']
+
+    def __str__(self):
+        return f"From {self.sender.name} to {self.receiver.name}: {self.message[:50]}"

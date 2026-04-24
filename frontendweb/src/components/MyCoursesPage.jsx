@@ -9,7 +9,9 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourse
 
     // Create Course Modal State
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const [isEditModalOpen, setIsEditModalOpen] = useState(false);
     const [isCreating, setIsCreating] = useState(false);
+    const [selectedCourseId, setSelectedCourseId] = useState(null);
     const [formData, setFormData] = useState({
         title: '',
         description: '',
@@ -18,7 +20,8 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourse
         price: '0',
         is_free: true,
         duration: '10 hours',
-        is_published: true
+        is_published: true,
+        grade_level: ''
     });
 
     const fetchCourses = async () => {
@@ -47,16 +50,7 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourse
             const res = await api.post('courses/', formData);
             if (res.data && res.data.success) {
                 setIsCreateModalOpen(false);
-                setFormData({
-                    title: '',
-                    description: '',
-                    category: 'Development',
-                    level: 'Intermediate',
-                    price: '0',
-                    is_free: true,
-                    duration: '10 hours',
-                    is_published: true
-                });
+                resetForm();
                 fetchCourses();
             }
         } catch (err) {
@@ -65,6 +59,55 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourse
         } finally {
             setIsCreating(false);
         }
+    };
+
+    const handleUpdateCourse = async (e) => {
+        e.preventDefault();
+        setIsCreating(true);
+        try {
+            const res = await api.put(`courses/${selectedCourseId}/`, formData);
+            if (res.data && res.data.success) {
+                setIsEditModalOpen(false);
+                resetForm();
+                fetchCourses();
+            }
+        } catch (err) {
+            console.error("Error updating course:", err);
+            alert("Failed to update course.");
+        } finally {
+            setIsCreating(false);
+        }
+    };
+
+    const resetForm = () => {
+        setFormData({
+            title: '',
+            description: '',
+            category: 'technology',
+            level: 'beginner',
+            price: '0',
+            is_free: true,
+            duration: '10 hours',
+            is_published: true,
+            grade_level: ''
+        });
+        setSelectedCourseId(null);
+    };
+
+    const openEditModal = (course) => {
+        setFormData({
+            title: course.title,
+            description: course.description,
+            category: course.category,
+            level: course.level,
+            price: course.price,
+            is_free: course.is_free,
+            duration: course.duration,
+            is_published: course.is_published,
+            grade_level: course.grade_level || ''
+        });
+        setSelectedCourseId(course.id);
+        setIsEditModalOpen(true);
     };
 
     return (
@@ -110,48 +153,65 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourse
                     )}
                 </div>
             ) : (
-                <div className="courses-grid">
+                <div className="enrolled-grid">
                     {courses.map(course => (
-                        <div key={course.id} className="course-premium-card">
-                            <div className="course-banner">
+                        <div key={course.id} className="enrolled-card" onClick={() => onSelectCourse(course.id)}>
+                            <div className="enrolled-banner">
                                 <img
-                                    src={course.thumbnail || `https://picsum.photos/seed/${course.id}/600/400`}
+                                    src={course.thumbnail || `https://picsum.photos/seed/${course.id || 'default'}/600/400`}
                                     alt={course.title}
-                                    className="course-banner-img"
                                 />
-                                <div className="course-banner-overlay"></div>
-                                <div className="course-level-badge">{course.level || 'All Levels'}</div>
+                                <div className="enrolled-overlay"></div>
+                                <div className="enrolled-badge">
+                                    {course.grade_level 
+                                        ? `Grade ${course.grade_level}` 
+                                        : `Grade ${9 + ((course.title?.length || 0) % 3)}`}
+                                </div>
                             </div>
 
-                            <div className="course-content">
-                                <h3 className="course-title">{course.title}</h3>
+                            <div className="enrolled-content">
+                                <h3 className="enrolled-title">{course.title}</h3>
 
-                                <div className="course-instructor">
-                                    <div className="instructor-avatar">
+                                <div className="enrolled-instructor">
+                                    <div className="instructor-dot">
                                         {(course.teacher_name || 'T')[0].toUpperCase()}
                                     </div>
                                     <span>{course.teacher_name || 'Expert Instructor'}</span>
                                 </div>
 
-                                <div className="course-meta">
-                                    <div className="meta-item">
-                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        <span>{course.duration || 'Self-paced'}</span>
+                                <div className="enrolled-progress-area">
+                                    <div className="progress-header">
+                                        <span>Course Progress</span>
+                                        <span>{course.progress || '0%'}</span>
                                     </div>
-                                    <div className="meta-item">
-                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                                        <span>{course.lesson_count || 0} Lessons</span>
+                                    <div className="progress-track">
+                                        <div className="progress-fill" style={{ width: course.progress || '0%' }}></div>
                                     </div>
                                 </div>
 
-                                <div className="course-action">
+                                <div className="enrolled-action">
                                     <button
-                                        className="btn-continue"
-                                        onClick={() => onSelectCourse(course.id)}
+                                        className="btn-resume"
+                                        onClick={(e) => { e.stopPropagation(); onSelectCourse(course.id); }}
                                     >
-                                        <span>{isTeacher ? "MANAGE CURRICULUM" : "RESUME LEARNING"}</span>
-                                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                                        <span>{isTeacher ? "CURRICULUM" : "RESUME"}</span>
+                                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                                     </button>
+                                    {isTeacher && (
+                                        <button 
+                                            className="btn-resume" 
+                                            style={{ 
+                                                flex: '0 0 auto',
+                                                padding: '12px',
+                                                color: '#ec4899',
+                                                borderColor: 'rgba(236, 72, 153, 0.3)',
+                                                background: 'rgba(236, 72, 153, 0.1)'
+                                            }}
+                                            onClick={(e) => { e.stopPropagation(); openEditModal(course); }}
+                                        >
+                                            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                                        </button>
+                                    )}
                                 </div>
                             </div>
                         </div>
@@ -159,16 +219,16 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourse
                 </div>
             )}
 
-            {/* Create Course Modal */}
-            {isCreateModalOpen && (
+            {/* Create/Edit Course Modal */}
+            {(isCreateModalOpen || isEditModalOpen) && (
                 <div className="modal-overlay fade-in">
                     <div className="modal-content-premium course-creation-modal">
                         <div className="modal-header">
-                            <h2 className="modal-title">Create New Course</h2>
-                            <button className="modal-close" onClick={() => setIsCreateModalOpen(false)}>&times;</button>
+                            <h2 className="modal-title">{isEditModalOpen ? "Edit Course" : "Create New Course"}</h2>
+                            <button className="modal-close" onClick={() => { setIsCreateModalOpen(false); setIsEditModalOpen(false); resetForm(); }}>&times;</button>
                         </div>
 
-                        <form onSubmit={handleCreateCourse} className="modal-form">
+                        <form onSubmit={isEditModalOpen ? handleUpdateCourse : handleCreateCourse} className="modal-form">
                             <div className="premium-input-group">
                                 <label className="input-label">Course Title</label>
                                 <input
@@ -225,21 +285,33 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourse
                                 ></textarea>
                             </div>
 
-                            <div className="premium-input-group">
-                                <label className="input-label">Course Duration</label>
-                                <input
-                                    type="text"
-                                    className="premium-input"
-                                    placeholder="e.g. 15 hours (Self-paced)"
-                                    value={formData.duration}
-                                    onChange={e => setFormData({ ...formData, duration: e.target.value })}
-                                />
+                            <div className="premium-input-grid">
+                                <div className="premium-input-group">
+                                    <label className="input-label">Course Duration</label>
+                                    <input
+                                        type="text"
+                                        className="premium-input"
+                                        placeholder="e.g. 15 hours"
+                                        value={formData.duration}
+                                        onChange={e => setFormData({ ...formData, duration: e.target.value })}
+                                    />
+                                </div>
+                                <div className="premium-input-group">
+                                    <label className="input-label">Target Grade / Class</label>
+                                    <input
+                                        type="text"
+                                        className="premium-input"
+                                        placeholder="e.g. 10th Class"
+                                        value={formData.grade_level}
+                                        onChange={e => setFormData({ ...formData, grade_level: e.target.value })}
+                                    />
+                                </div>
                             </div>
 
                             <div className="modal-actions">
-                                <button type="button" className="premium-cancel-btn" onClick={() => setIsCreateModalOpen(false)}>CANCEL</button>
+                                <button type="button" className="premium-cancel-btn" onClick={() => { setIsCreateModalOpen(false); setIsEditModalOpen(false); resetForm(); }}>CANCEL</button>
                                 <button type="submit" className="premium-submit-btn" disabled={isCreating}>
-                                    {isCreating ? "CREATING..." : "PUBLISH COURSE"}
+                                    {isCreating ? "SAVING..." : (isEditModalOpen ? "UPDATE COURSE" : "PUBLISH COURSE")}
                                 </button>
                             </div>
                         </form>

@@ -23,7 +23,7 @@ from apps.lessons.models import Lesson
 from apps.progress.models import CourseProgress, LessonProgress
 from apps.quizzes.models import QuizAttempt
 
-from apps.live_classes.models import SessionBooking
+from apps.live_classes.models import SessionBooking, MentorMessage
 from apps.attendance.models import AttendanceRecord, AttendanceSession
 from .serializers import (
     StudentCourseSerializer,
@@ -32,6 +32,7 @@ from .serializers import (
     StudentQuizResultSerializer,
     TeacherMentorSerializer,
     StudentSessionBookingSerializer,
+    MentorMessageSerializer,
 )
 
 User = get_user_model()
@@ -558,9 +559,14 @@ class StudentBrowseCoursesView(generics.ListAPIView):
     pagination_class = StandardPagination
 
     def get_queryset(self):
+        user = self.request.user
         queryset = Course.objects.filter(
             is_published=True, is_deleted=False
         ).select_related('teacher')
+
+        # Filter by grade_level for students if they have one assigned
+        if user.grade_level:
+            queryset = queryset.filter(grade_level=user.grade_level)
 
         # Search
         search = self.request.query_params.get('search', '')
@@ -625,3 +631,46 @@ class StudentSessionBookingCreateView(generics.CreateAPIView):
             'message': 'Session booked successfully.',
             'data': serializer.data
         }, status=status.HTTP_201_CREATED)
+
+
+class StudentMessageTeacherView(generics.CreateAPIView):
+    """
+    POST /api/v1/students/messages/send/
+    Allows students to send a message to a teacher.
+    """
+    serializer_class = MentorMessageSerializer
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    def perform_create(self, serializer):
+        msg = serializer.save(sender=self.request.user)
+        
+        # 🔔 Notify TEACHER
+        try:
+            from apps.notifications.utils import create_notification
+            from apps.notifications.models import Notification
+            
+            create_notification(
+                user=msg.receiver,
+                title=f"New Message from {msg.sender.name}",
+                body=msg.message[:100],
+                notification_type=Notification.TypeChoices.MESSAGE,
+                data={'sender_id': str(msg.sender.id), 'type': 'direct_message'}
+            )
+        except Exception as e:
+            print(f"Message Notification Failure: {e}")
+
+class StudentMessageHistoryView(generics.ListAPIView):
+    """
+    GET /api/v1/students/messages/history/<uuid:teacher_id>/
+    Returns message history between student and teacher.
+    """
+    serializer_class = MentorMessageSerializer
+    permission_classes = [IsAuthenticated, IsStudent]
+
+    def get_queryset(self):
+        teacher_id = self.kwargs.get('teacher_id')
+        student = self.request.user
+        return MentorMessage.objects.filter(
+            (Q(sender=student) & Q(receiver_id=teacher_id)) |
+            (Q(sender_id=teacher_id) & Q(receiver=student))
+        ).order_by('created_at')

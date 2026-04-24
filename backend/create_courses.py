@@ -88,7 +88,7 @@ for i, data in enumerate(courses_data):
     # Assign to teachers in a round-robin fashion
     teacher = teachers[i % len(teachers)]
     
-    course, created = Course.objects.get_or_create(
+    course, created = Course.objects.update_or_create(
         title=data['title'],
         defaults={
             'teacher': teacher,
@@ -97,11 +97,12 @@ for i, data in enumerate(courses_data):
             'level': data['level'],
             'price': data['price'],
             'is_free': data['price'] == 0,
-            'is_published': True
+            'is_published': True,
+            'grade_level': random.choice(['9', '10', '11'])
         }
     )
     
-    status = "created" if created else "already exists"
+    status = "created" if created else "updated"
     created_courses.append({'title': course.title, 'teacher': teacher.name, 'status': status})
 
 print("---RESULTS---")

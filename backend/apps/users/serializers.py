@@ -77,6 +77,7 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             'student_id': user.student_id,
             'parent_id': user.parent_id,
             'profile_avatar': user.profile_avatar,
+            'grade_level': user.grade_level,
         }
         return data
 
@@ -137,9 +138,9 @@ class UserProfileSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email', 'name', 'role', 'bio', 'phone_number',
             'profile_image', 'profile_image_url', 'teacher_id', 'student_id', 'parent_id', 'profile_avatar',
-            'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at',
+            'grade_level', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at',
         ]
-        read_only_fields = ['id', 'email', 'role', 'teacher_id', 'student_id', 'parent_id', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'email', 'role', 'teacher_id', 'student_id', 'parent_id', 'grade_level', 'is_email_verified', 'is_phone_verified', 'created_at', 'updated_at']
 
 
 class UserUpdateSerializer(serializers.ModelSerializer):

@@ -65,6 +65,7 @@ export function AdminCourses({ onBack }) {
                             <th>Course</th>
                             <th>Teacher</th>
                             <th>Category</th>
+                            <th>Grade</th>
                             <th>Level</th>
                             <th>Students</th>
                             <th>Lessons</th>
@@ -110,6 +111,7 @@ export function AdminCourses({ onBack }) {
                                         <div className="admin-table-user-email">{c.teacher_email}</div>
                                     </td>
                                     <td style={{ textTransform: 'capitalize' }}>{c.category?.replace('_', ' ') || '—'}</td>
+                                    <td><span className="admin-uid-chip" style={{ background: 'rgba(37, 99, 235, 0.1)', color: '#2563eb' }}>{c.grade_level || '—'}</span></td>
                                     <td style={{ textTransform: 'capitalize' }}>{c.level?.replace('_', ' ') || '—'}</td>
                                     <td>{c.student_count}</td>
                                     <td>{c.lesson_count}</td>

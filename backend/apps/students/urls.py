@@ -12,4 +12,6 @@ urlpatterns = [
     path('browse/', views.StudentBrowseCoursesView.as_view(), name='browse-courses'),
     path('progress/', views.StudentProgressView.as_view(), name='progress'),
     path('quiz-history/', views.StudentQuizHistoryView.as_view(), name='quiz-history'),
+    path('messages/send/', views.StudentMessageTeacherView.as_view(), name='send-message'),
+    path('messages/history/<uuid:teacher_id>/', views.StudentMessageHistoryView.as_view(), name='message-history'),
 ]

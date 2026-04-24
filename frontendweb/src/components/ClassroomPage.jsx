@@ -331,18 +331,15 @@ export function ClassroomPage({ onBack, userRole, userData }) {
         <div className="classroom-wrapper fade-in">
             <div className="classroom-header">
                 <div className="header-content">
-                    <h1>Virtual Classroom</h1>
-                    <p>Experience real-time learning with industry experts and interactive sessions.</p>
+                    <h1>{userRole === 'teacher' ? 'Virtual Classroom' : 'Live Session Hub'}</h1>
+                    <p>{userRole === 'teacher' 
+                        ? 'Manage your live sessions and broadcast knowledge.' 
+                        : 'Experience real-time learning with industry experts and interactive sessions.'}</p>
                 </div>
                 <div className="classroom-header-actions" style={{ display: 'flex', gap: '15px' }}>
                     {userRole === 'teacher' && (
                         <button className="premium-back-btn fade-in" onClick={() => setIsModalOpen(true)} style={{ background: 'linear-gradient(45deg, #9b6cff, #3b82f6)', border: 'none', color: 'white', padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold' }}>
                             + SCHEDULE CLASS
-                        </button>
-                    )}
-                    {onBack && (
-                        <button className="premium-back-btn" onClick={onBack} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'white', padding: '10px 20px', borderRadius: '30px', cursor: 'pointer', fontWeight: 'bold' }}>
-                            BACK TO DASHBOARD
                         </button>
                     )}
                 </div>

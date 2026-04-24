@@ -11,7 +11,7 @@ export function AdminUserDetail({ userId, userType, onBack }) {
     const [showResetModal, setShowResetModal] = useState(false);
     const [showEditModal, setShowEditModal] = useState(false);
     const [newPassword, setNewPassword] = useState('');
-    const [editData, setEditData] = useState({ name: '', bio: '', phone_number: '', is_active: true });
+    const [editData, setEditData] = useState({ name: '', bio: '', phone_number: '', is_active: true, grade_level: '' });
     const [actionMsg, setActionMsg] = useState({ text: '', type: '' });
     const [submitting, setSubmitting] = useState(false);
 
@@ -32,6 +32,7 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                     bio: res.data.data.bio || '',
                     phone_number: res.data.data.phone_number || '',
                     is_active: res.data.data.is_active,
+                    grade_level: res.data.data.grade_level || '',
                 });
             }
         } catch (err) {
@@ -160,6 +161,14 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                                 <label>Phone</label>
                                 <span>{user.phone_number || '—'}</span>
                             </div>
+                            {!isTeacher && (
+                                <div className="admin-profile-meta-item">
+                                    <label>Grade/Class</label>
+                                    <span className="admin-uid-chip" style={{ background: 'rgba(5, 150, 105, 0.1)', color: '#059669', fontSize: '0.75rem', padding: '2px 8px' }}>
+                                        {user.grade_level || 'Not Assigned'}
+                                    </span>
+                                </div>
+                            )}
                             <div className="admin-profile-meta-item">
                                 <label>Status</label>
                                 <span className={`admin-status-badge ${user.is_active ? 'active' : 'inactive'}`}>
@@ -199,6 +208,12 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                             <label>Bio</label>
                             <span>{user.bio || 'No bio added'}</span>
                         </div>
+                        {!isTeacher && (
+                            <div className="admin-detail-item">
+                                <label>Grade Level</label>
+                                <span>{user.grade_level || 'Not assigned'}</span>
+                            </div>
+                        )}
                         <div className="admin-detail-item">
                             <label>Email Verified</label>
                             <span style={{ color: user.is_email_verified ? '#34d399' : '#f87171' }}>
@@ -380,6 +395,17 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                                         onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
                                     />
                                 </div>
+                                {!isTeacher && (
+                                    <div className="admin-form-group">
+                                        <label>Grade Level / Class</label>
+                                        <input
+                                            type="text"
+                                            placeholder="e.g. 10th Class"
+                                            value={editData.grade_level}
+                                            onChange={(e) => setEditData({ ...editData, grade_level: e.target.value })}
+                                        />
+                                    </div>
+                                )}
                                 {actionMsg.text && (
                                     <div className={actionMsg.type === 'success' ? 'admin-form-success' : 'admin-form-error'}>
                                         {actionMsg.text}

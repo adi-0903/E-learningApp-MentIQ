@@ -19,6 +19,8 @@ export function Header({ onGetStarted, userData, isLoggedIn, onOpenProfile, onOp
             case 'contact': return 'Contact Support';
             case 'classroom': return isTeacher ? 'Live Sessions' : 'Virtual Classroom';
             case 'doubts': return isTeacher ? 'Student Doubts' : 'Mentorship';
+            case 'course_catalog': return '';
+            case 'course_detail': return '';
             case 'dashboard':
             default: return isAdmin ? 'Admin Portal' : isTeacher ? 'Teacher Portal' : 'Student Workspace';
         }
@@ -85,10 +87,12 @@ export function Header({ onGetStarted, userData, isLoggedIn, onOpenProfile, onOp
         <header className="header slide-up" style={{ animationDelay: '0.1s' }}>
             <h1>{getPageTitle()}</h1>
             <div className="header-right">
-                <div className="search-bar">
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" placeholder="Start searching here..." />
-                </div>
+                {(!currentPage || currentPage === 'dashboard') && (
+                    <div className="search-bar">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" placeholder="Start searching here..." />
+                    </div>
+                )}
 
                 {isLoggedIn && (
                     <div className="notification-wrapper" ref={dropdownRef}>
@@ -147,7 +151,12 @@ export function Header({ onGetStarted, userData, isLoggedIn, onOpenProfile, onOp
                             </div>
                         </div>
                         <img
-                            src={userData?.profile_avatar || userData?.profile_image || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData?.name || 'User')}&background=6b21a8&color=fff`}
+                            src={userData?.profile_avatar || userData?.profile_image || (function() {
+                                const firstName = userData?.name ? userData.name.split(' ')[0] : 'User';
+                                const lowerName = firstName.toLowerCase();
+                                const isFemale = lowerName.endsWith('a') || lowerName.endsWith('i') || lowerName.endsWith('e') || lowerName.endsWith('y');
+                                return isFemale ? "/premium_student_portrait_female.png" : "/premium_student_portrait.png";
+                            })()}
                             alt="Profile"
                             style={{ width: '40px', height: '40px', borderRadius: '50%', objectFit: 'cover', border: '2px solid rgba(255,255,255,0.1)', backgroundColor: '#6b21a8' }}
                         />

@@ -60,6 +60,12 @@ class Course(SoftDeleteModel):
                                  help_text='Estimated duration e.g. "4 weeks"')
     is_published = models.BooleanField(default=False, db_index=True)
     is_featured = models.BooleanField(default=False)
+    grade_level = models.CharField(
+        max_length=50, 
+        blank=True, 
+        null=True, 
+        help_text="Target grade or class for this course (e.g., 10th Class)"
+    )
 
     # Pricing (for future payment integration)
     is_free = models.BooleanField(default=True)

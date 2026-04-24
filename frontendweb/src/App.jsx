@@ -158,7 +158,7 @@ function App() {
     const isAdminPage = currentPage.startsWith('admin');
 
     // Determine which pages should hide the header for maximum immersion
-    const hideHeaderPages = ['lesson_view', 'classroom', 'quiz'];
+    const hideHeaderPages = ['lesson_view', 'classroom', 'quiz', 'course_catalog', 'course_detail', 'courses', 'doubts', 'badges', 'leaderboard', 'contact'];
     const shouldHideHeader = 
         hideHeaderPages.includes(currentPage) || 
         isAdminPage || 
@@ -176,6 +176,7 @@ function App() {
                     onLogout={handleLogout}
                     currentPage={currentPage}
                     userRole={userRole}
+                    userData={userData}
                     // Admin navigation
                     onOpenAdminTeachers={() => setCurrentPage('admin_teachers')}
                     onOpenAdminStudents={() => setCurrentPage('admin_students')}
@@ -189,7 +190,7 @@ function App() {
                     onOpenParents={() => setCurrentPage('parents')}
                 />
             )}
-            <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''} ${currentPage === 'lesson_view' ? 'lesson-view-mode' : ''}`}>
+            <div className={`main-content ${currentPage === 'classroom' ? 'classroom-mode' : ''} ${currentPage === 'lesson_view' ? 'lesson-view-mode' : ''} ${currentPage === 'doubts' ? 'mentorship-mode' : ''}`}>
                 {!shouldHideHeader && (
                     <Header
                         onGetStarted={() => setCurrentPage('login')}
@@ -343,6 +344,7 @@ function App() {
                     />
                 ) : currentPage === 'course_catalog' ? (
                     <CourseCatalogPage
+                        userData={userData}
                         onBack={() => setCurrentPage('dashboard')}
                         onEnrollSuccess={(courseId) => {
                             setSelectedCourseId(courseId);

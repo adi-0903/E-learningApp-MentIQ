@@ -9,7 +9,7 @@ from apps.courses.models import Course
 from apps.enrollments.models import Enrollment
 from apps.progress.models import CourseProgress, LessonProgress
 from apps.quizzes.models import QuizAttempt
-from apps.live_classes.models import SessionBooking
+from apps.live_classes.models import SessionBooking, MentorMessage
 
 User = get_user_model()
 
@@ -157,3 +157,14 @@ class StudentSessionBookingSerializer(serializers.ModelSerializer):
         model = SessionBooking
         fields = ['id', 'teacher', 'date', 'time', 'topic', 'status', 'created_at']
         read_only_fields = ['id', 'status', 'created_at']
+
+
+class MentorMessageSerializer(serializers.ModelSerializer):
+    """Messages between students and mentors."""
+    sender_name = serializers.CharField(source='sender.name', read_only=True)
+    receiver_name = serializers.CharField(source='receiver.name', read_only=True)
+
+    class Meta:
+        model = MentorMessage
+        fields = ['id', 'sender', 'sender_name', 'receiver', 'receiver_name', 'message', 'is_read', 'created_at']
+        read_only_fields = ['id', 'sender', 'is_read', 'created_at']

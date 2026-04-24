@@ -13,6 +13,20 @@ export function DoubtsPage({ onBack, userRole }) {
     const [mentors, setMentors] = useState([]);
     const [bookings, setBookings] = useState([]);
     const [loading, setLoading] = useState(true);
+    
+    // Chat State
+    const [chatMode, setChatMode] = useState(false);
+    const [chatHistory, setChatHistory] = useState([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [sending, setSending] = useState(false);
+    const chatHistoryRef = React.useRef(null);
+
+    // Auto-scroll chat
+    useEffect(() => {
+        if (chatHistoryRef.current) {
+            chatHistoryRef.current.scrollTop = chatHistoryRef.current.scrollHeight;
+        }
+    }, [chatHistory, chatMode]);
 
     // Generate upcoming 7 days for the premium date selector
     const getUpcomingDays = () => {
@@ -107,66 +121,42 @@ export function DoubtsPage({ onBack, userRole }) {
         }
     };
 
-    if (bookingMode && selectedMentor) {
-        return (
-            <div className="doubts-page-wrapper slide-up">
-                <button className="back-btn" onClick={() => setBookingMode(false)}>
-                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-                    Back to Mentors
-                </button>
+    const handleOpenChat = async (mentor) => {
+        setSelectedMentor(mentor);
+        setChatMode(true);
+        try {
+            const response = await api.get(`students/messages/history/${mentor.id}/`);
+            if (response.data && response.data.success) {
+                setChatHistory(response.data.results || response.data.data || []);
+            }
+        } catch (error) {
+            console.error("Error fetching chat history:", error);
+            setChatHistory([]);
+        }
+    };
 
-                <div className="booking-container slide-up">
-                    <div className="booking-header">
-                        <img src={selectedMentor.image} alt={selectedMentor.name} className={`booking-avatar ${selectedMentor.isAI ? 'ai-avatar' : ''}`} />
-                        <div className="booking-header-info">
-                            <h2>Book Session with {selectedMentor.name}</h2>
-                            <p>{selectedMentor.role}</p>
-                        </div>
-                    </div>
+    const handleSendMessage = async (e) => {
+        e.preventDefault();
+        if (!newMessage.trim()) return;
 
-                    <form className="booking-form" onSubmit={handleConfirmBooking}>
-                        <div className="form-group">
-                            <label><Calendar size={18} /> Select Date</label>
-                            <div className="premium-date-selector">
-                                {upcomingDays.map((d, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`date-tile ${date === d.fullDate ? 'selected' : ''}`}
-                                        onClick={() => setDate(d.fullDate)}
-                                    >
-                                        <span className="date-tile-name">{d.isToday ? 'Today' : d.dayName}</span>
-                                        <span className="date-tile-number">{d.dayNumber}</span>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+        setSending(true);
+        try {
+            const response = await api.post('students/messages/send/', {
+                receiver: selectedMentor.id,
+                message: newMessage
+            });
+            if (response.data && response.data.success) {
+                setChatHistory([...chatHistory, response.data.data]);
+                setNewMessage('');
+            }
+        } catch (error) {
+            console.error("Error sending message:", error);
+            alert("Failed to send message. Please try again.");
+        } finally {
+            setSending(false);
+        }
+    };
 
-                        <div className="form-group">
-                            <label><Clock size={18} /> Select Time Slot</label>
-                            <div className="premium-time-selector">
-                                {timeSlots.map((t, idx) => (
-                                    <div
-                                        key={idx}
-                                        className={`time-tile ${time === t ? 'selected' : ''}`}
-                                        onClick={() => setTime(t)}
-                                    >
-                                        {t}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-
-                        <div className="form-group">
-                            <label><MessageSquare size={18} /> What do you need help with?</label>
-                            <textarea placeholder="Briefly describe your doubt or topic..." required rows="4" value={topic} onChange={e => setTopic(e.target.value)}></textarea>
-                        </div>
-
-                        <button type="submit" className="confirm-booking-btn">Confirm Booking</button>
-                    </form>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="doubts-page-wrapper slide-up">
@@ -249,11 +239,6 @@ export function DoubtsPage({ onBack, userRole }) {
                 ) : (
                     mentors.map(mentor => (
                         <div key={mentor.id} className={`mentor-card ${mentor.isAI ? 'ai-mentor-card' : ''}`}>
-                            {mentor.isAI && (
-                                <div className="ai-badge">
-                                    <Bot size={14} /> 24/7 AI Mentor
-                                </div>
-                            )}
 
                             <div className="mentor-header">
                                 <div className="mentor-avatar-container">
@@ -295,20 +280,20 @@ export function DoubtsPage({ onBack, userRole }) {
                             <div className="mentor-actions">
                                 {mentor.isAI ? (
                                     <>
-                                        <button className="action-btn chat-btn">
-                                            <MessageSquare size={18} /> Chat Now
+                                        <button className="action-btn chat-btn" onClick={() => handleOpenChat(mentor)}>
+                                            <MessageSquare size={18} /> CHAT NOW
                                         </button>
                                         <button className="action-btn primary-action-btn" onClick={() => alert("Initiating Live Audio connection with MentIQ AI...")}>
-                                            <Video size={18} /> Start Live Audio Call
+                                            <Video size={18} /> START LIVE AUDIO CALL
                                         </button>
                                     </>
                                 ) : (
                                     <>
-                                        <button className="action-btn chat-btn">
-                                            <MessageSquare size={18} /> Drop a Message
+                                        <button className="action-btn chat-btn" onClick={() => handleOpenChat(mentor)}>
+                                            <MessageSquare size={18} /> DROP A MESSAGE
                                         </button>
                                         <button className="action-btn primary-action-btn" onClick={() => handleBookSession(mentor)}>
-                                            <Calendar size={18} /> Book 1:1 Session
+                                            <Calendar size={18} /> BOOK 1:1 SESSION
                                         </button>
                                     </>
                                 )}
@@ -317,6 +302,131 @@ export function DoubtsPage({ onBack, userRole }) {
                     ))
                 )}
             </div>
+            {/* Messaging Modal */}
+            {chatMode && selectedMentor && (
+                <div className="chat-modal-overlay fadeIn">
+                    <div className="chat-modal slide-up">
+                        <div className="chat-modal-header">
+                            <div className="mentor-header">
+                                <div className="mentor-avatar-container">
+                                    <img src={selectedMentor.image} alt={selectedMentor.name} className="mentor-avatar small" />
+                                    {selectedMentor.isOnline && <div className="online-indicator-header"></div>}
+                                </div>
+                                <div className="mentor-info">
+                                    <h3>{selectedMentor.name}</h3>
+                                    <p>{selectedMentor.role}</p>
+                                </div>
+                            </div>
+                            <button className="close-modal-btn" onClick={() => { setChatMode(false); setSelectedMentor(null); }}>×</button>
+                        </div>
+
+                        <div className="chat-history" ref={chatHistoryRef}>
+                            {chatHistory.length === 0 ? (
+                                <div className="empty-chat">
+                                    <MessageSquare size={32} />
+                                    <p>Start a conversation with {selectedMentor.name}. Your history will be saved here.</p>
+                                </div>
+                            ) : (
+                                chatHistory.map((msg, idx) => (
+                                    <div key={idx} className={`chat-bubble ${msg.sender === selectedMentor.id ? 'mentor' : 'me'}`}>
+                                        <div className="bubble-content">{msg.message}</div>
+                                        <div className="bubble-time">
+                                            {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {msg.sender !== selectedMentor.id && (
+                                                <span className="read-receipt">
+                                                    <svg className="check read" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                                    </svg>
+                                                    <svg className="check read" viewBox="0 0 24 24" fill="currentColor">
+                                                        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z"/>
+                                                    </svg>
+                                                </span>
+                                            )}
+                                        </div>
+                                    </div>
+                                ))
+                            )}
+                            {sending && (
+                                <div className="typing-indicator">
+                                    <div className="typing-dot"></div>
+                                    <div className="typing-dot"></div>
+                                    <div className="typing-dot"></div>
+                                </div>
+                            )}
+                        </div>
+
+                        <form className="chat-input-area" onSubmit={handleSendMessage}>
+                            <input 
+                                type="text" 
+                                placeholder="Type your message..." 
+                                value={newMessage} 
+                                onChange={e => setNewMessage(e.target.value)}
+                                disabled={sending}
+                            />
+                            <button type="submit" className="send-btn" disabled={sending || !newMessage.trim()}>
+                                {sending ? <Loader2 className="spinner" size={18} /> : "Send"}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            )}
+            {/* Booking Modal */}
+            {bookingMode && selectedMentor && (
+                <div className="booking-modal-overlay fadeIn">
+                    <div className="booking-modal slide-up">
+                        <div className="booking-modal-header">
+                            <div className="mentor-header">
+                                <img src={selectedMentor.image} alt={selectedMentor.name} className="mentor-avatar small" />
+                                <div className="mentor-info">
+                                    <h3>Book Session with {selectedMentor.name}</h3>
+                                    <p>{selectedMentor.role}</p>
+                                </div>
+                            </div>
+                            <button className="close-modal-btn" onClick={() => { setBookingMode(false); setSelectedMentor(null); }}>×</button>
+                        </div>
+
+                        <form className="booking-modal-form" onSubmit={handleConfirmBooking}>
+                            <div className="form-group">
+                                <label><Calendar size={18} /> Select Date</label>
+                                <div className="premium-date-selector">
+                                    {upcomingDays.map((d, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`date-tile ${date === d.fullDate ? 'selected' : ''}`}
+                                            onClick={() => setDate(d.fullDate)}
+                                        >
+                                            <span className="date-tile-name">{d.isToday ? 'Today' : d.dayName}</span>
+                                            <span className="date-tile-number">{d.dayNumber}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label><Clock size={18} /> Select Time Slot</label>
+                                <div className="premium-time-selector">
+                                    {timeSlots.map((t, idx) => (
+                                        <div
+                                            key={idx}
+                                            className={`time-tile ${time === t ? 'selected' : ''}`}
+                                            onClick={() => setTime(t)}
+                                        >
+                                            {t}
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+
+                            <div className="form-group">
+                                <label><MessageSquare size={18} /> What do you need help with?</label>
+                                <textarea placeholder="Briefly describe your doubt or topic..." required rows="4" value={topic} onChange={e => setTopic(e.target.value)}></textarea>
+                            </div>
+
+                            <button type="submit" className="confirm-booking-btn">Confirm Booking</button>
+                        </form>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

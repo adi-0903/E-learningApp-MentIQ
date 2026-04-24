@@ -8,7 +8,8 @@
     overflow-y: auto;
 }
 
-.main-content.classroom-mode {
+.main-content.classroom-mode,
+.main-content.mentorship-mode {
     padding: 0;
     background: transparent;
     gap: 0;

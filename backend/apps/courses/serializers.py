@@ -34,7 +34,7 @@ class CourseListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'category', 'level',
             'cover_image', 'duration', 'teacher_name',
-            'is_published', 'is_free', 'price',
+            'is_published', 'is_free', 'price', 'grade_level',
             'student_count', 'lesson_count', 'quiz_count',
             'created_at', 'updated_at',
         ]
@@ -53,7 +53,7 @@ class CourseDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'category', 'level',
             'cover_image', 'duration', 'teacher_id', 'teacher_name',
-            'is_published', 'is_featured', 'is_free', 'price',
+            'is_published', 'is_featured', 'is_free', 'price', 'grade_level',
             'student_count', 'lesson_count', 'quiz_count',
             'created_at', 'updated_at',
         ]
@@ -67,7 +67,7 @@ class CourseCreateSerializer(serializers.ModelSerializer):
         fields = [
             'title', 'description', 'category', 'level',
             'cover_image', 'duration', 'is_published',
-            'is_free', 'price',
+            'is_free', 'price', 'grade_level',
         ]
 
     def validate_title(self, value):
@@ -87,5 +87,5 @@ class CourseUpdateSerializer(serializers.ModelSerializer):
         fields = [
             'title', 'description', 'category', 'level',
             'cover_image', 'duration', 'is_published',
-            'is_free', 'price',
+            'is_free', 'price', 'grade_level',
         ]

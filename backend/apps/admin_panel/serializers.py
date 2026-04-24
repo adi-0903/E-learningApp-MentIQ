@@ -35,7 +35,7 @@ class AdminUserListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email', 'name', 'role', 'bio', 'phone_number',
             'profile_image', 'profile_image_url', 'profile_avatar',
-            'teacher_id', 'student_id',
+            'teacher_id', 'student_id', 'grade_level',
             'is_active', 'is_email_verified', 'is_phone_verified',
             'created_at', 'updated_at', 'last_login',
             'courses_count', 'enrollments_count',
@@ -66,7 +66,7 @@ class AdminUserDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email', 'name', 'role', 'bio', 'phone_number',
             'profile_image', 'profile_image_url', 'profile_avatar',
-            'teacher_id', 'student_id',
+            'teacher_id', 'student_id', 'grade_level',
             'is_active', 'is_email_verified', 'is_phone_verified',
             'is_staff', 'is_superuser',
             'created_at', 'updated_at', 'last_login',
@@ -150,7 +150,7 @@ class AdminCreateStudentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['email', 'name', 'password', 'bio', 'phone_number']
+        fields = ['email', 'name', 'password', 'bio', 'phone_number', 'grade_level']
 
     def validate_email(self, value):
         if User.objects.filter(email=value.lower()).exists():
@@ -173,7 +173,7 @@ class AdminUpdateUserSerializer(serializers.ModelSerializer):
     """Serializer for admin to update any user's profile."""
     class Meta:
         model = User
-        fields = ['name', 'bio', 'phone_number', 'is_active', 'is_email_verified']
+        fields = ['name', 'bio', 'phone_number', 'is_active', 'is_email_verified', 'grade_level']
 
     def validate_name(self, value):
         if len(value.strip()) < 2:
@@ -206,7 +206,7 @@ class AdminCourseListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'category', 'level',
             'teacher', 'teacher_name', 'teacher_email',
-            'is_published', 'is_featured', 'is_free', 'price',
+            'is_published', 'is_featured', 'is_free', 'price', 'grade_level',
             'student_count', 'lesson_count', 'quiz_count',
             'duration', 'created_at', 'updated_at',
         ]
@@ -230,7 +230,7 @@ class AdminCourseDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'title', 'description', 'category', 'level',
             'teacher', 'teacher_name', 'teacher_email',
-            'is_published', 'is_featured', 'is_free', 'price', 'duration',
+            'is_published', 'is_featured', 'is_free', 'price', 'duration', 'grade_level',
             'student_count', 'lesson_count', 'quiz_count',
             'lessons', 'quizzes', 'enrolled_students', 'reviews',
             'created_at', 'updated_at',

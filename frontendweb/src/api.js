@@ -107,6 +107,14 @@ export const parentAPI = {
     getLinkRequests: async () => {
         const response = await api.get('parents/link/status/');
         return response.data;
+    },
+    getChildCourses: async (studentId) => {
+        const response = await api.get(`parents/children/${studentId}/courses/`);
+        return response.data;
+    },
+    getChildGraph: async (studentId) => {
+        const response = await api.get(`parents/children/${studentId}/graph/`);
+        return response.data;
     }
 };
 

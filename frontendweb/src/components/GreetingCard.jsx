@@ -6,8 +6,9 @@ export function GreetingCard({ userData, userRole, onEnrollCourse }) {
     // If the name exists, grab just the first word (first name) for a casual greeting
     const firstName = userData?.name ? userData.name.split(' ')[0] : (isTeacher ? 'Instructor' : 'Student');
 
-    // Simple deterministic hash based on name to keep avatar consistent per user
-    const isFemale = firstName.length % 2 !== 0;
+    // Smart heuristic based on common name endings to assign default gender avatar
+    const lowerName = firstName.toLowerCase();
+    const isFemale = lowerName.endsWith('a') || lowerName.endsWith('i') || lowerName.endsWith('e') || lowerName.endsWith('y');
     const portraitSrc = isFemale ? "/premium_student_portrait_female.png" : "/premium_student_portrait.png";
 
     return (

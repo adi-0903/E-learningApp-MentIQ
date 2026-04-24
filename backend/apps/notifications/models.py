@@ -18,6 +18,7 @@ class Notification(TimeStampedModel):
         ENROLLMENT = 'enrollment', 'Enrollment'
         PROGRESS = 'progress', 'Progress'
         SYSTEM = 'system', 'System'
+        MESSAGE = 'message', 'Message'
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,

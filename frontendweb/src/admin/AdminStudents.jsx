@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { ArrowLeft, Search, Plus, Eye, UserX, X, Send, MessageSquare } from 'lucide-react';
+import { ArrowLeft, Search, Plus, Eye, UserX, X, Send, MessageSquare, Edit } from 'lucide-react';
 import api from '../api';
 import './AdminUsers.css';
 
@@ -10,7 +10,9 @@ export function AdminStudents({ onBack, onViewDetail }) {
     const [loading, setLoading] = useState(true);
     const [search, setSearch] = useState('');
     const [showModal, setShowModal] = useState(false);
-    const [formData, setFormData] = useState({ name: '', email: '', password: '', phone_number: '', bio: '' });
+    const [formData, setFormData] = useState({ name: '', email: '', password: '', phone_number: '', bio: '', grade_level: '' });
+    const [isEditing, setIsEditing] = useState(false);
+    const [editId, setEditId] = useState(null);
     const [formError, setFormError] = useState('');
     const [formSuccess, setFormSuccess] = useState('');
     const [submitting, setSubmitting] = useState(false);
@@ -49,15 +51,34 @@ export function AdminStudents({ onBack, onViewDetail }) {
         setFormSuccess('');
         setSubmitting(true);
         try {
-            const res = await api.post('admin/students/create/', formData);
-            if (res.data?.success) {
-                setFormSuccess(res.data.message);
-                setFormData({ name: '', email: '', password: '', phone_number: '', bio: '' });
-                fetchStudents();
-                setTimeout(() => {
-                    setShowModal(false);
-                    setFormSuccess('');
-                }, 1500);
+            if (isEditing) {
+                const res = await api.patch(`admin/students/${editId}/update/`, {
+                    name: formData.name,
+                    phone_number: formData.phone_number,
+                    bio: formData.bio,
+                    grade_level: formData.grade_level
+                });
+                if (res.data?.success) {
+                    setFormSuccess('Student profile updated successfully.');
+                    fetchStudents();
+                    setTimeout(() => {
+                        setShowModal(false);
+                        setIsEditing(false);
+                        setEditId(null);
+                        setFormSuccess('');
+                    }, 1500);
+                }
+            } else {
+                const res = await api.post('admin/students/create/', formData);
+                if (res.data?.success) {
+                    setFormSuccess(res.data.message);
+                    setFormData({ name: '', email: '', password: '', phone_number: '', bio: '', grade_level: '' });
+                    fetchStudents();
+                    setTimeout(() => {
+                        setShowModal(false);
+                        setFormSuccess('');
+                    }, 1500);
+                }
             }
         } catch (err) {
             const errData = err.response?.data;
@@ -88,6 +109,23 @@ export function AdminStudents({ onBack, onViewDetail }) {
         } catch (err) {
             console.error('Failed to toggle student status:', err);
         }
+    };
+
+    const openEditModal = (e, student) => {
+        e.stopPropagation();
+        setIsEditing(true);
+        setEditId(student.id);
+        setFormData({
+            name: student.name || '',
+            email: student.email || '',
+            password: '********', // Not editable
+            phone_number: student.phone_number || '',
+            bio: student.bio || '',
+            grade_level: student.grade_level || ''
+        });
+        setFormError('');
+        setFormSuccess('');
+        setShowModal(true);
     };
 
     const openMsgModal = (e, student) => {
@@ -151,7 +189,7 @@ export function AdminStudents({ onBack, onViewDetail }) {
                             onChange={(e) => setSearch(e.target.value)}
                         />
                     </div>
-                    <button className="admin-add-btn" onClick={() => setShowModal(true)}>
+                    <button className="admin-add-btn" onClick={() => { setIsEditing(false); setEditId(null); setFormData({ name: '', email: '', password: '', phone_number: '', bio: '', grade_level: '' }); setFormError(''); setFormSuccess(''); setShowModal(true); }}>
                         <Plus /> Add Student
                     </button>
                 </div>
@@ -164,6 +202,7 @@ export function AdminStudents({ onBack, onViewDetail }) {
                         <tr>
                             <th>Student</th>
                             <th>Student ID</th>
+                            <th>Class/Grade</th>
                             <th>Phone</th>
                             <th>Status</th>
                             <th>Enrollments</th>
@@ -200,6 +239,7 @@ export function AdminStudents({ onBack, onViewDetail }) {
                                         </div>
                                     </td>
                                     <td><span className="admin-uid-chip">S-{s.student_id || '—'}</span></td>
+                                    <td><span className="admin-uid-chip" style={{ background: 'rgba(5, 150, 105, 0.1)', color: '#059669' }}>{s.grade_level || '—'}</span></td>
                                     <td>{s.phone_number || '—'}</td>
                                     <td>
                                         <span className={`admin-status-badge ${s.is_active ? 'active' : 'inactive'}`}>
@@ -211,6 +251,9 @@ export function AdminStudents({ onBack, onViewDetail }) {
                                     <td>{new Date(s.created_at).toLocaleDateString()}</td>
                                     <td>
                                         <div className="admin-table-actions">
+                                            <button className="admin-table-action-btn" title="Edit Student" onClick={(e) => openEditModal(e, s)}>
+                                                <Edit size={18} />
+                                            </button>
                                             <button className="admin-table-action-btn" title="View Detail" onClick={(e) => { e.stopPropagation(); onViewDetail(s.id, 'student'); }}>
                                                 <Eye />
                                             </button>
@@ -234,7 +277,7 @@ export function AdminStudents({ onBack, onViewDetail }) {
                 <div className="admin-modal-overlay" onClick={() => setShowModal(false)}>
                     <div className="admin-modal" onClick={(e) => e.stopPropagation()}>
                         <div className="admin-modal-header">
-                            <h2>Create New Student</h2>
+                            <h2>{isEditing ? 'Update Student Profile' : 'Create New Student'}</h2>
                             <button className="admin-modal-close" onClick={() => setShowModal(false)}>
                                 <X />
                             </button>
@@ -261,17 +304,19 @@ export function AdminStudents({ onBack, onViewDetail }) {
                                         required
                                     />
                                 </div>
-                                <div className="admin-form-group">
-                                    <label>Password *</label>
-                                    <input
-                                        type="password"
-                                        placeholder="Min 8 characters"
-                                        value={formData.password}
-                                        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                                        required
-                                        minLength={8}
-                                    />
-                                </div>
+                                {!isEditing && (
+                                    <div className="admin-form-group">
+                                        <label>Password *</label>
+                                        <input
+                                            type="password"
+                                            placeholder="Min 8 characters"
+                                            value={formData.password}
+                                            onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                                            required
+                                            minLength={8}
+                                        />
+                                    </div>
+                                )}
                                 <div className="admin-form-group">
                                     <label>Phone Number</label>
                                     <input
@@ -279,6 +324,15 @@ export function AdminStudents({ onBack, onViewDetail }) {
                                         placeholder="+91 XXXXX XXXXX"
                                         value={formData.phone_number}
                                         onChange={(e) => setFormData({ ...formData, phone_number: e.target.value })}
+                                    />
+                                </div>
+                                <div className="admin-form-group">
+                                    <label>Grade Level / Class</label>
+                                    <input
+                                        type="text"
+                                        placeholder="e.g. 10th Class, CS-2024"
+                                        value={formData.grade_level}
+                                        onChange={(e) => setFormData({ ...formData, grade_level: e.target.value })}
                                     />
                                 </div>
                                 <div className="admin-form-group">
@@ -293,7 +347,7 @@ export function AdminStudents({ onBack, onViewDetail }) {
                                 {formError && <div className="admin-form-error">{formError}</div>}
                                 {formSuccess && <div className="admin-form-success">{formSuccess}</div>}
                                 <button className="admin-form-submit" type="submit" disabled={submitting}>
-                                    {submitting ? 'Creating...' : 'Create Student Account'}
+                                    {submitting ? (isEditing ? 'Updating...' : 'Creating...') : (isEditing ? 'Update Student Profile' : 'Create Student Account')}
                                 </button>
                             </form>
                         </div>

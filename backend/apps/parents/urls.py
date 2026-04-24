@@ -6,7 +6,9 @@ from .views import (
     ChildrenReportsView,
     MyChildrenProgressView,
     ListPendingLinkRequestsView,
-    ApproveLinkRequestView
+    ApproveLinkRequestView,
+    ChildEnrolledCoursesView,
+    ChildKnowledgeGraphView
 )
 
 urlpatterns = [
@@ -26,4 +28,6 @@ urlpatterns = [
     
     # Reports per child
     path('children/<uuid:student_id>/reports/', ChildrenReportsView.as_view(), name='child-reports'),
+    path('children/<uuid:student_id>/courses/', ChildEnrolledCoursesView.as_view(), name='child-courses'),
+    path('children/<uuid:student_id>/graph/', ChildKnowledgeGraphView.as_view(), name='child-graph'),
 ]

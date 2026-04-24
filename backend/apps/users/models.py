@@ -96,6 +96,13 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         help_text="8-digit unique ID for students"
     )
 
+    grade_level = models.CharField(
+        max_length=50, 
+        blank=True, 
+        null=True, 
+        help_text="Grade or Class of the student (e.g., 10th Class)"
+    )
+
     # Unique parent ID
     parent_id = models.CharField(
         max_length=6, 

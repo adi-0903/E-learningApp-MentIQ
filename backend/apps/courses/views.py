@@ -78,7 +78,10 @@ class CourseListCreateView(generics.ListCreateAPIView):
                 is_deleted=False,
             )
         else:
+            # Filter by grade_level for students if they have one assigned
             queryset = queryset.filter(is_published=True, is_deleted=False)
+            if user.role == 'student' and user.grade_level:
+                queryset = queryset.filter(grade_level=user.grade_level)
 
         # Search
         search = self.request.query_params.get('search', '')

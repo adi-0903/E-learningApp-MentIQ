@@ -44,6 +44,17 @@ const LeaderboardPage = () => {
     const topThree = leaderboard.slice(0, 3);
     const restOfLeaderboard = leaderboard.slice(3);
 
+    // Calculate statistics
+    const getStats = () => {
+        const totalParticipants = leaderboard.length;
+        const totalBadges = leaderboard.reduce((sum, entry) => sum + (entry.total_badges || 0), 0);
+        const totalRareBadges = leaderboard.reduce((sum, entry) => sum + (entry.rare_badges || 0), 0);
+        const topScore = leaderboard.length > 0 ? leaderboard[0].score : 0;
+        return { totalParticipants, totalBadges, totalRareBadges, topScore };
+    };
+
+    const stats = getStats();
+
     if (loading) {
         return (
             <div className="leaderboard-loading">
@@ -65,28 +76,81 @@ const LeaderboardPage = () => {
 
     return (
         <div className="leaderboard-page-container">
-            <div className="leaderboard-header">
-                <h1>🏆 Leaderboard</h1>
-                <p>Celebrating top achievers across the platform</p>
+            {/* Animated Background Particles */}
+            <div className="particles-container">
+                {[...Array(10)].map((_, i) => (
+                    <div key={i} className={`particle particle-${i % 5}`} />
+                ))}
+            </div>
+
+            {/* Hero Section */}
+            <div className="hero-section">
+                <div className="hero-content">
+                    <div className="trophy-animation">
+                        <div className="trophy-glow">
+                            <span className="trophy-icon">🏆</span>
+                        </div>
+                        <div className="trophy-rays">
+                            {[...Array(8)].map((_, i) => (
+                                <div key={i} className="ray" style={{ transform: `rotate(${i * 45}deg)` }} />
+                            ))}
+                        </div>
+                    </div>
+                    <h1 className="hero-title">Leaderboard</h1>
+                    <p className="hero-subtitle">Celebrating top achievers across the platform</p>
+                    
+                    {/* Stats Cards */}
+                    <div className="stats-grid">
+                        <div className="stat-card stat-participants">
+                            <div className="stat-icon">👥</div>
+                            <div className="stat-content">
+                                <div className="stat-value">{stats.totalParticipants}</div>
+                                <div className="stat-label">Participants</div>
+                            </div>
+                            <div className="stat-decoration" />
+                        </div>
+                        <div className="stat-card stat-badges">
+                            <div className="stat-icon">🎖️</div>
+                            <div className="stat-content">
+                                <div className="stat-value">{stats.totalBadges}</div>
+                                <div className="stat-label">Total Badges</div>
+                            </div>
+                            <div className="stat-decoration" />
+                        </div>
+                        <div className="stat-card stat-top-score">
+                            <div className="stat-icon">⭐</div>
+                            <div className="stat-content">
+                                <div className="stat-value">{stats.topScore}</div>
+                                <div className="stat-label">Top Score</div>
+                            </div>
+                            <div className="stat-decoration" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* Filters */}
+            <div className="leaderboard-filters">
+                <div className="filter-group">
+                    <label className="control-label">
+                        <span className="label-icon">🌍</span>
+                        Scope
+                    </label>
+                    <select value={scope} onChange={(e) => setScope(e.target.value)} className="filter-select">
+                        <option value="global">Global (All Students)</option>
+                    </select>
+                </div>
                 
-                {/* Filters */}
-                <div className="leaderboard-filters">
-                    
-                    <div className="filter-group">
-                        <label>Scope:</label>
-                        <select value={scope} onChange={(e) => setScope(e.target.value)}>
-                            <option value="global">Global (All Students)</option>
-                        </select>
-                    </div>
-                    
-                    <div className="filter-group">
-                        <label>Timeframe:</label>
-                        <select value={timeframe} onChange={(e) => setTimeframe(e.target.value)}>
-                            <option value="all_time">All Time</option>
-                            <option value="this_month">This Month</option>
-                            <option value="this_week">This Week</option>
-                        </select>
-                    </div>
+                <div className="filter-group">
+                    <label className="control-label">
+                        <span className="label-icon">📅</span>
+                        Timeframe
+                    </label>
+                    <select value={timeframe} onChange={(e) => setTimeframe(e.target.value)} className="filter-select">
+                        <option value="all_time">All Time</option>
+                        <option value="this_month">This Month</option>
+                        <option value="this_week">This Week</option>
+                    </select>
                 </div>
             </div>
 

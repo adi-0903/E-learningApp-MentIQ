@@ -126,15 +126,16 @@
     background: var(--card-bg);
 }
 
-.status-badge {
+.profile-status-badge {
     position: absolute;
     bottom: 6px;
-    right: 6px;
+    left: 6px;
     width: 20px;
     height: 20px;
     background: #10b981;
     border: 4px solid var(--card-bg-light);
     border-radius: 50%;
+    z-index: 2;
 }
 
 .identity-name {
@@ -665,4 +666,55 @@
     color: white;
     border: 2px solid #1e293b;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom Switch for Modals */
+.custom-switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 24px;
+}
+
+.custom-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.custom-switch .slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.1);
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.custom-switch .slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: #94a3b8;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+.custom-switch input:checked + .slider {
+    background-color: #6366f1;
+}
+
+.custom-switch input:focus + .slider {
+    box-shadow: 0 0 1px #6366f1;
+}
+
+.custom-switch input:checked + .slider:before {
+    transform: translateX(20px);
+    background-color: white;
 }

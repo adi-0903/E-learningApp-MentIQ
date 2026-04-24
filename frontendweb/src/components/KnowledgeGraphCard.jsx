@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BrainCircuit, Clock3, GitBranch, HelpCircle, Layers, Sparkles } from 'lucide-react';
+import { BrainCircuit, Clock3, GitBranch, HelpCircle, Layers, RefreshCw } from 'lucide-react';
 import './KnowledgeGraphCard.css';
 import api from '../api';
 
@@ -251,7 +251,7 @@ const buildLiveFallbackGraph = async () => {
     };
 };
 
-export function KnowledgeGraphCard({ isLoading }) {
+export function KnowledgeGraphCard({ isLoading, studentId, userRole }) {
     const [graphData, setGraphData] = useState(null);
     const [isGraphLoading, setIsGraphLoading] = useState(true);
     const [notice, setNotice] = useState('');
@@ -266,7 +266,10 @@ export function KnowledgeGraphCard({ isLoading }) {
             }
 
             try {
-                const res = await api.get('students/knowledge-graph/');
+                const endpoint = userRole === 'parent' && studentId 
+                    ? `parents/children/${studentId}/graph/` 
+                    : 'students/knowledge-graph/';
+                const res = await api.get(endpoint);
                 if (!res.data?.success || !res.data?.data) {
                     throw new Error('Invalid response payload');
                 }
@@ -277,6 +280,13 @@ export function KnowledgeGraphCard({ isLoading }) {
                 setError('');
                 return;
             } catch (primaryError) {
+                // For parents, we don't have a simple fallback yet, just show error
+                if (userRole === 'parent') {
+                    if (!isMounted) return;
+                    setError('Unable to load child knowledge graph.');
+                    return;
+                }
+
                 const fallbackData = await buildLiveFallbackGraph();
 
                 if (!isMounted) return;
@@ -308,7 +318,7 @@ export function KnowledgeGraphCard({ isLoading }) {
             isMounted = false;
             clearInterval(refreshInterval);
         };
-    }, []);
+    }, [studentId, userRole]);
 
     const nodes = useMemo(() => {
         const rawNodes = Array.isArray(graphData?.nodes) ? graphData.nodes : [];
@@ -346,8 +356,8 @@ export function KnowledgeGraphCard({ isLoading }) {
             <div className="knowledge-graph-header">
                 <div>
                     <div className="graph-kicker">
-                        <BrainCircuit size={14} />
-                        AI Knowledge Graph
+                        <GitBranch size={14} />
+                        Academic Concept Map
                     </div>
                     <h2 className="card-title">Living Concept Map</h2>
                     <p className="graph-subtitle">
@@ -355,8 +365,8 @@ export function KnowledgeGraphCard({ isLoading }) {
                     </p>
                 </div>
                 <div className="adaptive-pill">
-                    <Sparkles size={14} />
-                    <span>Live sync</span>
+                    <RefreshCw size={14} />
+                    <span>Real-time Sync</span>
                 </div>
             </div>
 

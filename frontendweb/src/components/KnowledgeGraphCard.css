@@ -1,6 +1,5 @@
 .knowledge-graph-card {
-    grid-column: 1 / 4;
-    grid-row: 4 / 5;
+    min-height: 450px;
     min-height: 390px;
     padding: 1.25rem 1.4rem;
     gap: 1rem;
