@@ -56,11 +56,11 @@
 <p align="center">
   <img src="https://img.shields.io/badge/🔥_Status-Active_Development-00C853?style=flat-square" />
   <img src="https://img.shields.io/badge/🏗️_Build-Passing-brightgreen?style=flat-square" />
-  <img src="https://img.shields.io/badge/📦_Version-1.8.0--stable-blue?style=flat-square" />
+  <img src="https://img.shields.io/badge/📦_Version-1.9.5--stable-blue?style=flat-square" />
   <img src="https://img.shields.io/badge/📜_License-MIT-green?style=flat-square" />
   <img src="https://img.shields.io/badge/🧠_AI_Model-Llama_3-F39C12?style=flat-square" />
-  <img src="https://img.shields.io/badge/📱_Screens-42+-purple?style=flat-square" />
-  <img src="https://img.shields.io/badge/🔌_API_Routes-21_Groups-red?style=flat-square" />
+  <img src="https://img.shields.io/badge/📱_Screens-51+_Web-purple?style=flat-square" />
+  <img src="https://img.shields.io/badge/🔌_API_Routes-20_Groups-red?style=flat-square" />
 </p>
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
@@ -77,7 +77,7 @@
 | 02 | [🚀 Epic Feature Matrix](#-epic-feature-matrix) | All modules and capabilities |
 | 03 | [📱 Screen Inventory](#-screen-inventory--3-platforms) | Every screen across 3 platforms |
 | 04 | [🏗️ Architecture Topology](#%EF%B8%8F-technical-architecture-topology) | System design and data flow |
-| 05 | [📡 API Command Center](#-api-command-center--17-route-groups) | All 17 API route groups |
+| 05 | [📡 API Command Center](#-api-command-center--20-route-groups) | All 20 active API route groups |
 | 06 | [📂 Codebase Anatomy](#-codebase-anatomy) | Folder structure breakdown |
 | 07 | [🔮 Environment Config](#-environment--secrets-config) | Environment variables guide |
 | 08 | [⚡ Launch Sequence](#-launch-sequence) | Step-by-step deployment |
@@ -91,15 +91,16 @@
 
 <img align="right" alt="Coding" width="380" src="https://cdn.dribbble.com/users/1162077/screenshots/3848914/programmer.gif" />
 
-**MentiQ** is a groundbreaking, full-stack e-learning ecosystem that transcends traditional LMS platforms. Built with a **Tri-Platform Architecture** — native mobile (iOS + Android via Expo), modern web (Vite + React), and an enterprise-grade Django backend — MentiQ delivers a seamlessly synchronized experience powered by **Generative AI**.
+**MentiQ** is a groundbreaking, full-stack e-learning ecosystem that transcends traditional LMS platforms. Built with a **Tri-Platform Architecture** — native mobile (iOS + Android via Expo), modern web (Vite + React 19), and an enterprise-grade Django backend — MentiQ delivers a seamlessly synchronized experience powered by **Generative AI**.
 
 ### 💡 Why MentiQ?
 
-- 🤖 **AI-First Design** — Groq-powered Llama 3 provides real-time tutoring, flashcard generation, and adaptive study plans
-- 🔐 **Zero-Friction Auth** — Firebase OTP + JWT + Multi-ID login (Email / Student ID / Teacher ID)
-- 📹 **Production-Grade Video** — Jitsi Meet integration for unlimited live sessions
-- ⚡ **Real-Time Sync** — Attendance, notifications, and progress update instantly across devices
-- 📊 **Enterprise Analytics** — Celery-powered background analytics with Elasticsearch indexing
+- 🤖 **AI-First Design** — Groq-powered Llama 3 provides real-time tutoring, flashcard generation, and adaptive study plans.
+- 🧠 **Cognitive Companion** — Real-time engagement and emotion tracking to personalize learning velocity.
+- 🔐 **Zero-Friction Auth** — Firebase OTP + JWT + Multi-ID login (Email / Student ID / Teacher ID).
+- 📹 **Production-Grade Video** — Jitsi Meet integration for unlimited live sessions.
+- ⚡ **Real-Time Sync** — Attendance, notifications, and progress update instantly across devices.
+- 📊 **Enterprise Analytics** — Celery-powered background analytics with Elasticsearch indexing.
 
 > *"To democratize intelligence-driven education by making classroom management effortless, learning deeply personalized, and assessments unequivocally fair."*
 
@@ -118,10 +119,25 @@
 | Feature | Description | Tech |
 |:---|:---|:---|
 | 💬 **Real-Time AI Tutor** | Context-aware conversational assistant with markdown rendering | `Groq API` · `Llama 3` |
+| 🧠 **Cognitive Tracking** | Detects engagement trends and emotional states via interaction patterns | `useInteractionTracker` · `CognitiveAPI` |
 | 🃏 **Smart Flashcards** | Auto-generates spaced-repetition decks from lesson content | `NLP` · `Semantic Extraction` |
 | 📅 **Premium Study Planner** | Generates weekly schedules with DataList subject picker → exports as styled PDFs | `expo-print` · `Custom Engine` |
 | 📊 **Knowledge Graph** | Tracks `quiz_accuracy`, `time_spent`, `flashcard_performance` per course | `Recharts` · `D3` |
-| 🧠 **Intelligence Module** | Dedicated AI center screen with a 70K-character index file | `TypeScript` · `React Native` |
+
+</details>
+
+<details>
+<summary>
+  <img src="https://img.shields.io/badge/👥_Parental_Monitoring_Hub-10B981?style=for-the-badge" />
+</summary>
+<br/>
+
+| Feature | Description | Tech |
+|:---|:---|:---|
+| 🔗 **Parent Handshake** | Secure linking system for parents to monitor student progress | `ParentAccount` · `Invitation System` |
+| 📊 **Student Reports** | Real-time dashboards showing course completion, quiz scores, and attendance | `ParentDashboard.jsx` · `ParentAPI` |
+| 📈 **Engagement Graph** | Visual trend analysis of student learning activity | `KnowledgeGraphCard` · `Recharts` |
+| 🔔 **Alert System** | Automated notifications for low scores or missed classes | `django-signals` · `FCM` |
 
 </details>
 
@@ -137,94 +153,38 @@
 | 🔑 **Multi-Mode Login** | Authenticate via Email, Student ID, or Teacher ID seamlessly | `Custom Backend Logic` |
 | 🛡️ **JWT Rotation** | Stateless sessions with SimpleJWT, auto-refresh, and token blacklisting | `djangorestframework-simplejwt` |
 | 🔒 **Biometric Lock** | Local authentication via fingerprint / face ID on mobile | `expo-local-authentication` |
-| 🌐 **Dynamic IP Bypass** | Auto-detects local network IP for frictionless multi-device dev | `Custom Network Fetcher` |
 | ⚙️ **Rate Limiting** | Brute-force protection on sensitive endpoints | `django-ratelimit` |
-| 🔐 **Argon2 Hashing** | Military-grade password hashing algorithm | `argon2-cffi` |
 
 </details>
 
 <details>
 <summary>
-  <img src="https://img.shields.io/badge/🎥_Virtual_Classrooms_%26_Live_Sync-8B5CF6?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/🎮_Gamified_Assessment_Engine-F59E0B?style=for-the-badge" />
 </summary>
 <br/>
 
 | Feature | Description | Tech |
 |:---|:---|:---|
-| 🎬 **Pro-Grade Video** | Enterprise Jitsi Meet integration for 1:1 and group sessions | `Jitsi SDK` · `WebView` |
-| 💬 **Live Chat System** | In-session messaging with dedicated chat store | `Zustand` · `WebSocket` |
-| 📍 **Auto-Attendance Sync** | Teacher marks → student dashboard updates instantly | `REST` · `Real-time Polling` |
-| 📹 **Video Lectures** | Upload, manage, and stream pre-recorded content | `Cloudinary` · `expo-video` |
-| 📅 **Smart Booking** | Role-aware calendar scheduling with conflict detection | `DateTimePicker` |
-| 🎯 **Video Streaming Service** | Dedicated streaming infrastructure with adaptive quality | `videoStreamingService.ts` |
+| 💎 **Premium Badges** | Glassmorphism UI achievements with rarity tiers (Common to Mythic) | `BadgeCard` · `BadgeGallery` |
+| 🏆 **3D Leaderboard** | Cinematic podiums and real-time global rankings | `LeaderboardPage` · `CinematicPodium` |
+| 📝 **Smart Quizzes** | MCQ, True/False, Multi-Select with server-enforced **3-attempt daily limit** | `QuizScreen` · `Backend Validation` |
+| 📈 **Platform Analytics** | Celery-generated daily snapshots of engagement and revenue | `django-celery-beat` · `Elasticsearch` |
 
 </details>
 
 <details>
 <summary>
-  <img src="https://img.shields.io/badge/💯_Assessment_%26_Analytics_Engine-F59E0B?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/👑_Admin_Command_Center-DC2626?style=for-the-badge" />
 </summary>
 <br/>
 
 | Feature | Description | Tech |
 |:---|:---|:---|
-| 🧠 **Advanced Quizzes** | MCQ, True/False, Multi-Select with time-boxing | `QuizScreen.tsx` |
-| 🎮 **Gamified Badges** | Premium glassmorphism UI with rarity tiers (Common to Mythic) | `AchievementBadge` · `PostgreSQL` |
-| 🛡️ **Anti-Cheat System** | Server-enforced **3-attempt daily limit** per quiz | `Backend Validation` |
-| 🏆 **Global Leaderboard** | Cinematic 3D podiums and real-time global platform rankings | `LeaderboardView` · `DRF` |
-| 📈 **Platform Analytics** | Celery-generated daily snapshots of engagement, revenue, and scores | `django-celery-beat` |
-| 🔍 **Elasticsearch Index** | Full-text search across courses, lessons, and users | `elasticsearch-dsl` |
-
-</details>
-
-<details>
-<summary>
-  <img src="https://img.shields.io/badge/📧_Enterprise_Communication_Engine-10B981?style=for-the-badge" />
-</summary>
-<br/>
-
-| Feature | Description | Tech |
-|:---|:---|:---|
-| 📩 **Auto Welcome Emails** | Triggered on registration via async Celery workers | `Gmail SMTP` · `Celery` |
-| 📣 **Campaign System** | Admin-targeted mass emailing to student cohorts | `Campaign Model` |
-| 📥 **IMAP Inbox Sync** | Pulls support emails directly into the admin dashboard | `IMAP` · `Gmail` |
-| 🔔 **Notification Triggers** | Automated alerts for live classes, new content, and payments | `django-signals` · `FCM` |
-| 👥 **Parent Handshake** | Secure linking system for parents to monitor student progress | `ParentAccount` · `Invitation System` |
-| 📞 **SMS Integration** | Twilio-powered SMS alerts for critical notifications | `twilio` |
-
-</details>
-
-<details>
-<summary>
-  <img src="https://img.shields.io/badge/📚_Course_%26_Content_Management-EC4899?style=for-the-badge" />
-</summary>
-<br/>
-
-| Feature | Description | Tech |
-|:---|:---|:---|
-| 🎓 **Course Engine** | Full CRUD with enrollment tracking, pricing, and progress binding | `Django ORM` |
-| 📖 **Lesson Builder** | Rich content creation with media attachments | `Cloudinary` · `expo-document-picker` |
-| 📶 **Offline Mode** | Micro-lesson downloads for rural learning without data | `OfflineManager` · `FileSystem` |
-| 💳 **Stripe Payments** | Secure course purchases and subscription management | `stripe` · `Webhooks` |
-| 👨‍🎓 **Student Progress** | Circular SVG progress tracking with milestone gamification | `Custom SVG` |
-| 🏫 **Curriculum Manager** | Drag-and-arrange lesson ordering with bulk operations | `CurriculumManagementPage.jsx` |
-
-</details>
-
-<details>
-<summary>
-  <img src="https://img.shields.io/badge/👑_Admin_Control_Center-DC2626?style=for-the-badge" />
-</summary>
-<br/>
-
-| Feature | Description | Tech |
-|:---|:---|:---|
-| 📊 **Admin Dashboard** | Real-time platform metrics with Recharts visualizations | `recharts` · `lucide-react` |
-| 👥 **User Management** | CRUD for students and teachers with detailed profile views | `AdminUserDetail.jsx` |
-| 💎 **Premium Plans** | Subscription tier management with custom pricing | `AdminPremium.jsx` |
-| 📋 **Enrollment Manager** | Track and manage all course enrollments | `AdminEnrollments.jsx` |
-| 🎨 **Premium Profile UI** | 21KB+ of custom CSS for polished admin profiles | `AdminProfile.css` |
-| 📣 **Announcement Manager** | Create and broadcast platform-wide announcements | `AdminAnnouncements.jsx` |
+| 📊 **Admin Dashboard** | Real-time platform metrics with interactive visualizations | `AdminDashboard.jsx` · `recharts` |
+| 👥 **Unified User Control** | CRUD for students/teachers with detailed profile deep-dives | `AdminUserDetail.jsx` |
+| 📍 **Global Attendance** | Master views of attendance across all courses and sessions | `AdminAttendance.jsx` |
+| 📣 **Broadcaster** | Create and manage platform-wide announcements and cohorts | `AdminAnnouncements.jsx` |
+| 💎 **Plan Manager** | Tier management with custom pricing and revenue tracking | `AdminPremium.jsx` |
 
 </details>
 
@@ -238,7 +198,7 @@
 <tr>
 <th align="left" width="34%">📱 Mobile App (Expo)<br/><sub>33+ Native Screens</sub></th>
 <th align="left" width="33%">📱 Shared & Auth Screens<br/><sub>12 Universal + 3 Auth + 18 Components</sub></th>
-<th align="left" width="33%">💻 Web Dashboard (Vite)<br/><sub>49 Components + Admin Suite</sub></th>
+<th align="left" width="33%">💻 Web Dashboard (Vite)<br/><sub>51+ Components + Admin Suite</sub></th>
 </tr>
 <tr>
 <td valign="top">
@@ -246,24 +206,22 @@
 **🎓 Student Screens**
 
 - `StudentHomeScreen` — Dashboard hub
-- `BrowseCoursesScreen` — Course catalog
-- `BrowseLiveClassesScreen` — Live class finder
-- `StudentProgressScreen` — Progress tracker
-- `MyBadgesScreen` — Earned achievements
-- `LeaderboardScreen` — Global rankings
-- `DownloadsScreen` — Offline micro-lessons
-- `StudentLiveClassRoomScreen` — Live room
-- `AI Center (Index)` — 70K char AI hub
+- `BrowseCoursesScreen` — Catalog
+- `StudentProgressScreen` — Tracker
+- `MyBadgesScreen` — Achievements
+- `LeaderboardScreen` — Rankings
+- `DownloadsScreen` — Offline
+- `StudentLiveClassRoomScreen`
+- `AI Center (Index)` — AI hub
 
 **👨‍🏫 Teacher Screens**
 
 - `TeacherHomeScreen` — Teaching hub
-- `MyCoursesScreen` — Course manager
-- `CreateCourseScreen` — Course builder
-- `CreateLessonScreen` — Lesson creator
-- `CreateQuizScreen` — Quiz designer
-- `StudentDetailScreen` — Detailed profiles
-- `TeacherProgressScreen` — Analytics view
+- `MyCoursesScreen` — Manager
+- `CreateCourseScreen` — Builder
+- `CreateLessonScreen` · `CreateQuiz`
+- `StudentDetailScreen` — Profiles
+- `TeacherProgressScreen` — Analytics
 - `ManageLessons` · `ManageQuizzes`
 
 </td>
@@ -271,77 +229,56 @@
 
 **🔗 Universal Screens**
 
-- `ProfileScreen` — Rich profile (37KB!)
+- `ProfileScreen` — Rich profile
 - `SecurityScreen` — Password & OTP
-- `CourseDetailScreen` — Course deep-dive
-- `CourseLessonsScreen` — Lesson browser
+- `CourseDetailScreen` — Deep-dive
+- `CourseLessonsScreen` — Browser
 - `QuizScreen` · `QuizResultScreen`
 - `Announcements` · `ContactUs`
 
 **🔐 Auth & Identity**
 
-- `LoginScreen` — Multi-mode login
-- `SignupScreen` — Registration flow
-- `OnboardingScreen` — First-time UX
-- `ParentLinkScreen` — Parental association
+- `LoginScreen` — Multi-mode
+- `SignupScreen` — Registration
+- `OnboardingScreen` — First-time
+- `ParentLinkScreen` — Association
 
 **🧩 Components (22)**
 
 - `BadgeCard` · `BadgeGallery`
 - `QbitChatWindow` · `UsageTracker`
-- `OfflineDownloadButton` · `SyncStatus`
+- `OfflineDownloadButton`
 
 </td>
 <td valign="top">
 
-**📊 Dashboard Cards**
+**📊 Dashboard & Learning**
 
-- `GreetingCard` — Personalized welcome
-- `ProgressCard` — SVG progress rings
-- `StatsCard` — Key metrics display
-- `LastLessonCard` — Resume learning
-- `AttendanceCard` — Attendance metrics
-- `CalendarCard` — Interactive calendar
-- `KnowledgeGraphCard` — Mastery map
-- `AIAssistantCard` — QBit web client
-
-**📄 Full Pages**
-
+- `StudentDashboard` · `TeacherDashboard`
+- `ParentDashboard` — Real-time monitor
+- `BadgeGallery` — Achievement hub
+- `LeaderboardPage` — 3D Rankings
 - `ClassroomPage` — Virtual room
-- `MyCoursesPage` — Course gallery
-- `ProfilePage` — Rich profiles
-- `DoubtsPage` — Q&A system
-- `NotificationsPage` — Alert center
-- `ContactUsPage` — Support portal
-- `OnboardingScreen` — First-run wizard
-- `CurriculumManagementPage` — Organizer
-- `QuizTakingPage` · `QuizResultPage`
-
-**📊 Dashboard Cards**
-
-- `GreetingCard` · `ProgressCard`
-- `StatsCard` · `AttendanceCard`
-- `KnowledgeGraphCard` · `AIAssistantCard`
-
-**📄 Full Pages**
-
-- `ClassroomPage` · `MyCoursesPage`
-- `ProfilePage` · `DoubtsPage`
-- `ParentDashboard` — Real-time tracking
-- `BadgeGallery` — Premium dark glassmorphism achievements
-- `LeaderboardPage` — Cinematic 3D podium global rankings
 - `CurriculumManagementPage`
+- `CourseCatalogPage` · `CourseDetail`
+- `LessonViewPage` · `QuizTaking`
+- `DoubtsPage` · `ContactUsPage`
 
-**👑 Admin Suite (16 files)**
-
+**👑 Admin Suite (18 Files)**
 
 - `AdminDashboard` · `AdminProfile`
 - `AdminStudents` · `AdminTeachers`
 - `AdminCourses` · `AdminEnrollments`
 - `AdminAnnouncements` · `AdminPremium`
+- `AdminAttendance` · `AdminParents`
 - `AdminUserDetail` · `AdminUsers`
-- `AdminAttendance` — Global marking views
 
+**🧩 Components (51+ JSX)**
+
+- `GreetingCard` · `ProgressCard`
+- `AIAssistantCard` · `KnowledgeGraph`
+- `CalendarCard` · `AttendanceCard`
+- `AnnouncementPopup` · `SuccessModal`
 
 </td>
 </tr>
@@ -352,7 +289,7 @@
 ## <img src="https://media.giphy.com/media/QssGEmpkyEOhBCb7e1/giphy.gif" width="30" /> &nbsp; Technical Architecture Topology
 
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=22&duration=2500&pause=800&color=8B5CF6&center=true&vCenter=true&width=1000&lines=🏛️+ARCHITECTURAL+BLUEPRINT;Tri-Platform+%7C+21+Microservices+%7C+6+Cloud+Integrations" alt="Arch Typing SVG" />
+  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=600&size=22&duration=2500&pause=800&color=8B5CF6&center=true&vCenter=true&width=1000&lines=🏛️+ARCHITECTURAL+BLUEPRINT;Tri-Platform+%7C+22+Microservices+%7C+6+Cloud+Integrations" alt="Arch Typing SVG" />
 </p>
 
 ```mermaid
@@ -374,7 +311,7 @@ graph TD
         FB["🔥 Firebase OTP<br/>Phone Verification"]:::gateway
     end
 
-    subgraph CORE["🧠 Django Core — 21 Domain Apps"]
+    subgraph CORE["🧠 Django Core — 22 Domain Apps"]
         U["👤 Users & Auth"]:::core
         C["📚 Courses & Lessons"]:::core
         Q["📝 Quizzes & Assessment"]:::core
@@ -431,33 +368,32 @@ graph TD
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
 
-## <img src="https://media2.giphy.com/media/QssGEmpkyEOhBCb7e1/giphy.gif" width="28"/> &nbsp; API Command Center — 17 Route Groups
+## <img src="https://media2.giphy.com/media/QssGEmpkyEOhBCb7e1/giphy.gif" width="28"/> &nbsp; API Command Center — 20 Route Groups
 
 <br/>
 
 | # | Endpoint Prefix | Module | Key Operations |
 |:---:|:---|:---|:---|
-| 01 | `/api/v1/auth/` | 🔐 Authentication | Register, Login, JWT Refresh, Logout, Password Reset |
+| 01 | `/api/v1/auth/` | 🔐 Authentication | Register, Login, JWT Refresh, Logout, Profile |
 | 02 | `/api/v1/students/` | 🎓 Students | Profile CRUD, Dashboard Data, Enrollment Stats |
-| 03 | `/api/v1/teachers/` | 👨‍🏫 Teachers | Profile CRUD, Course Stats, Student Management |
+| 03 | `/api/v1/teachers/` | 👨‍🏫 Teachers | Profile CRUD, Course Stats, Management |
 | 04 | `/api/v1/courses/` | 📚 Courses | Full CRUD, Search, Filter, Enrollment Triggers |
 | 05 | `/api/v1/lessons/` | 📖 Lessons | Create, Order, Media Upload, Content Management |
-| 06 | `/api/v1/quizzes/` | 📝 Quizzes | CRUD, Submit & Grade, Attempt History, Analysis |
+| 06 | `/api/v1/quizzes/` | 📝 Quizzes | CRUD, Submit & Grade, Attempt History |
 | 07 | `/api/v1/enrollments/` | 🎫 Enrollments | Enroll, Unenroll, Active Tracking, Stats |
-| 08 | `/api/v1/progress/` | 📊 Progress | Lesson Progress, Course Completion, Milestones |
-| 09 | `/api/v1/live-classes/` | 🎥 Live Classes | Create Room, Join, Schedule, Recordings |
+| 08 | `/api/v1/progress/` | 📊 Progress | Completion, Milestones, Badges, Leaderboards |
+| 09 | `/api/v1/live-classes/` | 🎥 Live Classes | Create Room, Join, Schedule, Chat |
 | 10 | `/api/v1/announcements/` | 📢 Announcements | Broadcast, Target, Archive, Analytics |
 | 11 | `/api/v1/notifications/` | 🔔 Notifications | Push, In-App, Settings, Batch Operations |
 | 12 | `/api/v1/payments/` | 💳 Payments | Stripe Checkout, Webhooks, Revenue Tracking |
 | 13 | `/api/v1/analytics/` | 📈 Analytics | Daily Snapshots, Course Insights, User Metrics |
-| 14 | `/api/v1/media/` | 🖼️ Media | Upload, Transform, CDN URLs, Gallery |
-| 15 | `/api/v1/ai/` | 🤖 AI Tutor | Chat, Flashcards, Study Plans, Knowledge Graph |
-| 16 | `/api/v1/emails/` | 📧 Emails | Campaigns, IMAP Sync, Contact Form, Logs |
-| 17 | `/api/v1/attendance/` | 📍 Attendance | Mark, History, Reports, Session Tracking |
-| 18 | `/api/v1/parents/` | 👥 Parents | Linking, Student Reports, Progress Monitoring |
-| 19 | `/api/v1/offline/` | 📶 Offline | Micro-lessons, Download Management, Sync |
-| 20 | `/api/v1/progress/badges/`| 🎮 Badges | Available, Earned, Leaderboard, Awards |
-| 21 | `/api/v1/admin/` | 👑 Admin Panel | Platform Management, User Control, Analytics |
+| 14 | `/api/v1/ai/` | 🤖 AI Tutor | Chat, Flashcards, Interaction Tracking, Cognitive State |
+| 15 | `/api/v1/emails/` | 📧 Emails | Campaigns, IMAP Sync, Contact Form, Logs |
+| 16 | `/api/v1/attendance/` | 📍 Attendance | Mark, History, Reports, Session Tracking |
+| 17 | `/api/v1/admin/` | 👑 Admin Panel | Platform Management, User Control, Analytics |
+| 18 | `/api/v1/offline/` | 📶 Offline | Micro-lessons, Download Management, Sync |
+| 19 | `/api/v1/parents/` | 👥 Parents | Linking, Student Reports, Progress Monitoring |
+| 20 | `/api/v1/intelligence/` | 🧠 Intelligence | Advanced AI logic and content indexing |
 | — | `/api/health/` | ❤️ Health Check | System status verification |
 | — | `/api/docs/` | 📜 Swagger UI | Auto-generated API documentation |
 
@@ -471,109 +407,57 @@ graph TD
 ├── 🐍 backend/                              # Django 5.x REST API Server
 │   ├── config/                              # Core Configuration
 │   │   ├── settings.py                      # 12KB master settings
-│   │   ├── urls.py                          # 17 API route groups
+│   │   ├── urls.py                          # 20 active API route groups
 │   │   ├── celery.py                        # Async task orchestration
-│   │   ├── asgi.py · wsgi.py                # Server adapters
-│   │   └── __init__.py                      # Celery app loader
+│   │   └── firebase-credentials.json        # Firebase SDK keys
 │   │
 │   ├── apps/                                # 🧩 22 Domain Microservices
-│   │   ├── users/           (14 files)      # 🔐 Auth, JWT, Registration
+│   │   ├── users/           (8 files)       # 🔐 Auth, JWT, Registration
 │   │   ├── students/        (7 files)       # 🎓 Student profiles & data
 │   │   ├── teachers/        (7 files)       # 👨‍🏫 Teacher profiles & data
-│   │   ├── parents/         (12 files)      # 👥 Parental monitoring & linking
-│   │   ├── courses/         (11 files)      # 📚 Course CRUD & catalog
-│   │   ├── lessons/         (9 files)       # 📖 Lesson management
-│   │   ├── quizzes/         (12 files)      # 📝 Quiz engine & grading
-│   │   ├── enrollments/     (9 files)       # 🎫 Enrollment tracking
-│   │   ├── progress/        (12 files)      # 📊 Progress & Badge system
-│   │   ├── live_classes/    (13 files)      # 🎥 Jitsi room management
-│   │   ├── attendance/      (10 files)      # 📍 Attendance sync engine
-│   │   ├── announcements/   (10 files)      # 📢 Broadcast system
-│   │   ├── notifications/   (13 files)      # 🔔 FCM + auto-triggers
-│   │   ├── offline/         (11 files)      # 📶 Micro-lessons & sync
-│   │   ├── payments/        (9 files)       # 💳 Stripe integration
-│   │   ├── analytics/       (11 files)      # 📈 Celery snapshots
-│   │   ├── ai_tutor/        (9 files)       # 🤖 QBit AI engine
-│   │   ├── intelligence/    (9 files)       # 🧠 Advanced AI logic
-│   │   ├── emails/          (12 files)      # 📧 SMTP + IMAP + Campaigns
-<<<<<<< HEAD
-│   │   ├── media/           (—)             # 🖼️ Upload handling
-│   │   ├── admin_panel/     (10 files)      # 👑 Admin endpoints
+│   │   ├── parents/         (9 files)       # 👥 Parental monitoring & linking
+│   │   ├── courses/         (7 files)       # 📚 Course CRUD & catalog
+│   │   ├── lessons/         (7 files)       # 📖 Lesson management
+│   │   ├── quizzes/         (7 files)       # 📝 Quiz engine & grading
+│   │   ├── progress/        (9 files)       # 📊 Progress & Badge system
+│   │   ├── live_classes/    (8 files)       # 🎥 Jitsi room management
+│   │   ├── ai_tutor/        (10 files)      # 🤖 AI Chat & Interaction Tracking
+│   │   ├── offline/         (9 files)       # 📶 Micro-lessons & sync
+│   │   ├── media/           (7 files)       # 🖼️ Media processing & Cloudinary
+│   │   ├── admin_panel/     (7 files)       # 👑 Admin endpoints
 │   │   └── core/            (8 files)       # ⚙️ Shared utils & health
-=======
-│   │   ├── media/           (5 files)       # 🖼️ Media processing & Cloudinary
-│   │   ├── core/            (8 files)       # ⚙️ Shared utils & health
-│   │   └── admin_panel/     (10 files)      # 👑 Admin endpoints
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 │   │
-│   ├── requirements.txt                     # 105 lines / 40+ packages
-│   ├── .env / .env.example                  # Environment configuration
+│   ├── seed_all.py                          # 🚀 Master data seeder
+│   ├── requirements.txt                     # 100+ lines / 45+ packages
 │   └── manage.py                            # Django CLI gateway
 │
 ├── 📱 frontend/                             # React Native Expo (v54)
-│   ├── app/                                 # 📲 Navigation & Routing
-│   │   ├── screens/
-│   │   │   ├── student/     (8 screens)     # 🎓 Student experiences
-│   │   │   ├── teacher/     (14 screens)    # 👨‍🏫 Teacher workflows
-│   │   │   ├── shared/      (12 screens)    # 🔗 Universal screens
-│   │   │   ├── auth/        (1 screen)      # 🔐 Auth redirect
-│   │   │   └── Intelligence/                # 🧠 AI sub-navigation
-│   │   ├── (student)/ · (teacher)/ · (tabs)/# 📂 Role-based layouts
-│   │   ├── navigation/                      # 🗺️ Navigator config
-│   │   └── MainApp.tsx                      # 🚀 App orchestrator (13KB)
+│   ├── app/                                 # 📲 Navigation & Screens
+│   ├── components/          (22 files)      # 🧩 Reusable UI Components
+│   ├── store/               (13 stores)     # 🏪 Zustand Global State
+│   │   ├── authStore · cognitiveStore       # Identity & AI State
+│   │   ├── badgeStore · parentStore         # Achievements & Linking
+│   │   └── quizStore · offlineStore         # Learning & Sync
 │   │
-│   ├── components/          (18 files)      # 🧩 Reusable UI Components
-│   │   ├── ai/                              # 🤖 QBit Chat + Flashcards
-│   │   ├── StudentDashboard.tsx  (26KB)     # 📊 Rich student dashboard
-│   │   └── TeacherDashboard.tsx  (17KB)     # 📊 Rich teacher dashboard
-│   │
-<<<<<<< HEAD
-│   ├── store/               (9 stores)      # 🏪 Zustand Global State
-│   │   ├── authStore · courseStore           # Core data stores
-│   │   ├── quizStore · progressStore        # Learning stores
-│   │   ├── liveClassStore · liveClassChatStore
-│   │   ├── announcementStore · notificationStore
-│   │   └── videoStreamStore                 # Media streaming
-│   │
-│   ├── services/            (6 services)    # 🔌 External Integrations
-│   │   ├── api.ts           (22KB)          # 🌐 Master API client
-│   │   ├── firebase.ts                      # 🔥 Firebase SDK init
-│   │   ├── ai.service.ts                    # 🤖 AI endpoint client
-│   │   ├── emailService.ts                  # 📧 EmailJS integration
-│   │   ├── mediaUpload.ts                   # 📤 Cloudinary uploads
-│   │   └── videoStreamingService.ts         # 📹 Video infrastructure
-│   │
-│   └── package.json                         # 50+ dependencies
-=======
-│   ├── store/               (12 stores)     # Store Layer
-│   │   ├── authStore · courseStore           # Core identity & content
-│   │   ├── badgeStore · parentStore         # Achievements & Parental link
-│   │   ├── quizStore · progressStore        # Learning & Metrics
-│   │   ├── offlineStore · notificationStore # Local storage & Alerts
-│   │   └── liveClassStore · videoStreamStore# Media streaming
-│   │
-│   ├── services/            (8 services)    # Integration Layer
+│   ├── services/            (8 services)    # 🔌 External Integrations
 │   │   ├── api.ts · ai.service.ts           # REST Clients
-│   │   ├── offline.service.ts               # Download & Sync engine
 │   │   ├── notificationService.ts           # FCM Handlers
-│   │   ├── emailService · mediaUpload.ts    # Cloud / External APIs
-│   │   └── videoStreamingService.ts         # Media infrastructure
+│   │   └── offline.service.ts               # Download Engine
 │   │
 │   └── package.json                         # 55+ dependencies
->>>>>>> 5631f33dd76a2ac308e2de2411b0d49693f15bfe
 │
 ├── 💻 frontendweb/                          # Vite + React 19 Web Portal
 │   ├── src/
-│   │   ├── components/      (49 files)      # 🧩 Full component library
+│   │   ├── components/      (72 files total)# 🧩 51 JSX + 21 CSS components
 │   │   │   ├── Dashboard Cards (8)          # 📊 Greeting · Progress · Stats
-│   │   │   ├── Full Pages (10+)             # 📄 Classroom · Profile · Quiz
-│   │   │   └── Sidebar · Header · Login     # 🎨 Core layout components
-│   │   ├── admin/           (14 files)      # 👑 Complete admin panel
-│   │   ├── App.jsx          (15KB)          # 🚀 App shell & routing
-│   │   ├── api.js                           # 🌐 Axios API client
-│   │   └── App.css · index.css              # 🎨 Global styling
+│   │   │   ├── AIAssistantCard              # 🤖 QBit Web Companion
+│   │   │   └── BadgeGallery · Leaderboard   # 🏆 Gamification suite
+│   │   ├── admin/           (18 files total)# 👑 11 JSX + 7 CSS Admin suite
+│   │   ├── hooks/                           # ⚓ useInteractionTracker
+│   │   ├── App.jsx          (20KB)          # 🚀 App shell & routing
+│   │   └── api.js                           # 🌐 Axios Client (Badge/Parent/AI)
 │   │
-│   └── public/                              # 📁 Static assets (Logo)
+│   └── package.json                         # React 19 + Vite 8 Beta
 │
 ├── 📜 LICENSE                               # MIT License
 └── 📘 README.md                             # This documentation
@@ -587,17 +471,14 @@ graph TD
 
 | Domain | Keys Required | Responsibility |
 |:---|:---|:---|
-| 🔐 **Core Identity** | `SECRET_KEY` · `DEBUG` · `ALLOWED_HOSTS` | Cryptographic signing, error modes, gateway whitelists |
-| 🛢️ **Database** | `DATABASE_URL` | PostgreSQL connection string for Django ORM |
-| ⚡ **Cache Layer** | `CELERY_BROKER_URL` · `CELERY_RESULT_BACKEND` | Redis-backed async task queue and result storage |
-| 🧠 **AI Engine** | `GROQ_API_KEY` | Authenticates Llama 3 calls for QBit tutor & planner |
-| 📧 **Mail System** | `EMAIL_HOST_USER` · `EMAIL_HOST_PASSWORD` · `IMAP_USER` | Gmail SMTP outbound + IMAP inbound sync |
-| ✉️ **Frontend Mail** | `EMAILJS_SERVICE_ID` · `EMAILJS_TEMPLATE_ID` · `EMAILJS_PUBLIC_KEY` | Client-side contact form dispatch |
-| 💳 **Payments** | `STRIPE_SECRET_KEY` · `STRIPE_WEBHOOK_SECRET` | Secure checkout and subscription webhooks |
-| 🔥 **Firebase** | `google-services.json` · Firebase Admin SDK JSON | Phone OTP auth + FCM push notifications |
-| ☁️ **Media CDN** | `CLOUDINARY_CLOUD_NAME` · `CLOUDINARY_API_KEY` · `CLOUDINARY_API_SECRET` | Image/video upload and transformation |
-| 📊 **Monitoring** | `SENTRY_DSN` | Error tracking and performance monitoring |
-| 🔍 **Search** | `ELASTICSEARCH_URL` | Full-text search indexing configuration |
+| 🔐 **Core Identity** | `SECRET_KEY` · `DEBUG` · `ALLOWED_HOSTS` | Cryptographic signing, security modes |
+| 🌐 **Frontend API** | `VITE_API_URL` | Base URL for web portal API communication |
+| 🛢️ **Database** | `DATABASE_URL` | PostgreSQL connection string |
+| ⚡ **Cache Layer** | `CELERY_BROKER_URL` · `REDIS_URL` | Redis-backed task queue |
+| 🧠 **AI Engine** | `GROQ_API_KEY` | Llama 3 LLM authentication |
+| 📧 **Mail System** | `EMAIL_HOST_USER` · `IMAP_USER` | SMTP outbound + IMAP inbound |
+| 🔥 **Firebase** | `firebase-credentials.json` | OTP auth + FCM notifications |
+| ☁️ **Media CDN** | `CLOUDINARY_API_KEY` · `CLOUDINARY_URL` | Media upload & transformation |
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
 
@@ -615,51 +496,27 @@ graph TD
 # 🐍 Enter the backend realm
 cd backend
 
-# 🏗️ Create isolated Python environment
+# 🏗️ Setup environment
 python -m venv .venv
 source .venv/bin/activate          # Windows: .venv\Scripts\activate
-
-# 📦 Install all 40+ dependencies
 pip install -r requirements.txt
 
-# 🔄 Configure environment
-cp .env.example .env               # Edit .env with your credentials
-
-# 🛢️ Evolve database schemas
+# 🔄 Configure & Migrate
+cp .env.example .env               # Edit with your credentials
 python manage.py migrate
 
-# 🚀 Launch server (0.0.0.0 enables dynamic IP network access)
-python manage.py runserver 0.0.0.0:8000
+# 🚀 Seed Initial Data (Optional)
+python seed_all.py                 # Injects admin, teacher, and student accounts
+
+# 🚀 Launch server
+python manage.py runserver 8000
 ```
 
 </details>
 
 <details open>
 <summary>
-  <img src="https://img.shields.io/badge/2️⃣_Background_Workers-37814A?style=for-the-badge&logo=celery&logoColor=white" />
-</summary>
-<br/>
-
-```bash
-# ⚡ Ensure Redis is running first
-docker run -d -p 6379:6379 redis
-
-# 🔄 Terminal A — Launch task execution workers
-celery -A config worker -l info
-
-# ⏰ Terminal B — Launch periodic task scheduler
-celery -A config beat -l info
-
-# 🌸 Terminal C — (Optional) Launch Flower monitoring UI
-celery -A config flower
-# → Open http://localhost:5555 for task monitoring dashboard
-```
-
-</details>
-
-<details open>
-<summary>
-  <img src="https://img.shields.io/badge/3️⃣_Web_Dashboard-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
+  <img src="https://img.shields.io/badge/2️⃣_Web_Dashboard-646CFF?style=for-the-badge&logo=vite&logoColor=white" />
 </summary>
 <br/>
 
@@ -674,16 +531,15 @@ npm run dev
 
 <details open>
 <summary>
-  <img src="https://img.shields.io/badge/4️⃣_Mobile_App-000020?style=for-the-badge&logo=expo&logoColor=white" />
+  <img src="https://img.shields.io/badge/3️⃣_Mobile_App-000020?style=for-the-badge&logo=expo&logoColor=white" />
 </summary>
 <br/>
 
 ```bash
 cd frontend
 npm install
-npx expo start --clear
-# 📱 → Scan the QR code with Expo Go app on your phone
-# 🤖 → Or press 'a' for Android emulator / 'i' for iOS simulator
+npx expo start
+# 📱 → Scan the QR code with Expo Go app
 ```
 
 </details>
@@ -695,108 +551,48 @@ npx expo start --clear
 <br/>
 
 ### 🔑 Pre-Configured Live Demo Accounts
+Ready-to-use accounts for immediate platform testing. All accounts use password `password123`.
 
-Ready-to-use verified accounts injected directly into the active database for immediate platform testing. All system accounts use the master password `password123`.
-
-| Role | Email Identity | Access Level & Modules |
+| Role | Email Identity | Access Level |
 | :--- | :--- | :--- |
-| 👑 **Global Admin** | `admin@mentiq.com` | Absolute platform control, React Admin suite, User overrides |
-| 👨‍🏫 **Instructor** | `teacher@mentiq.com` | Course authoring, Live room broadcasting, Dynamic Dashboard metrics |
-| 🎓 **Student** | `student@mentiq.com` | Active learning dashboard, Course playback, AI QBit Assistant access |
+| 👑 **Global Admin** | `admin@mentiq.com` | Full Control, Admin Suite |
+| 👨‍🏫 **Instructor** | `teacher@mentiq.com` | Course Authoring, Attendance |
+| 🎓 **Student** | `student@mentiq.com` | Dashboard, AI Tutor, Badges |
+| 👥 **Parent** | `parent@mentiq.com` | Child Monitoring, Reports |
 
 <br/>
 
-> Execute these verification matrices to certify your local instance:
+> Execute these checks to certify your instance:
 
-- [ ] **❤️ Health Pulse** — Verify `GET /api/health/` returns `{"status": "healthy"}`
-- [ ] **📜 API Docs** — Access auto-generated Swagger UI at `/api/docs/`
-- [ ] **🔐 Multi-Auth Check** — Login via Email, then try Student ID — both must yield valid JWTs
-- [ ] **📱 OTP Flow** — Trigger Firebase phone verification from mobile ProfileScreen
-- [ ] **📝 Quiz Fair-Play** — Take a quiz 4 times; 4th attempt **must** be blocked by the server
-- [ ] **📊 Quiz Analysis** — After submission, verify per-question correct/incorrect breakdown renders
-- [ ] **📍 Attendance Sync** — Teacher marks attendance on web → Student mobile dashboard updates instantly
-- [ ] **🤖 AI Test** — Send `POST /api/v1/ai/ask/` and verify Groq Llama 3 response
-- [ ] **🎮 Badge Earn** — Complete a course and verify badge appears in `MyBadgesScreen`
-- [ ] **👥 Parent Link** — Generate link on Parent app → Approve on Student app → Verify visibility
-- [ ] **📶 Offline Sync** — Download a micro-lesson → mark as complete → sync when online
-- [ ] **📅 Study Plan** — Generate a plan via DataList input → export as Premium PDF
-- [ ] **📧 IMAP Sync** — Send email to support address → verify it appears in admin dashboard
-- [ ] **🔔 Push Test** — Verify notifications for Live Classes and New Quizzes
-
-- [ ] **💳 Payment Flow** — Initiate Stripe checkout → verify webhook confirmation
+- [ ] **❤️ Health Pulse** — Verify `GET /api/health/` returns `{"status": "healthy"}`.
+- [ ] **🧠 Cognitive Sync** — Interact with the web dashboard and verify `POST ai/interactions/` tracking.
+- [ ] **📍 Attendance Sync** — Mark attendance on web → Check student mobile dashboard instantly.
+- [ ] **🤖 AI Response** — Send `POST /api/v1/ai/ask/` and verify Groq Llama 3 response.
+- [ ] **🎮 Badge Award** — Complete quiz/course and verify badge appears in `BadgeGallery`.
+- [ ] **👥 Parent Link** — Link a parent account and verify student progress visibility.
+- [ ] **📶 Offline Sync** — Download micro-lesson → Verify offline accessibility.
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
 
 ## <img src="https://media.giphy.com/media/j2pOGeGYKe2xCCKwfi/giphy.gif" width="30" /> &nbsp; Evolutionary Roadmap
 
-<br/>
-
 <p align="center">
-  <img src="https://geps.dev/progress/92?dangerColor=222222&warningColor=F59E0B&successColor=10B981" alt="Progress" width="80%" />
+  <img src="https://geps.dev/progress/95?dangerColor=222222&warningColor=F59E0B&successColor=10B981" alt="Progress" width="80%" />
 </p>
-
-```mermaid
-timeline
-    title MentiQ Evolution Timeline
-    V1 - Core Foundations : Courses & Lessons
-                          : Multi-Role Auth
-                          : Student & Teacher Profiles
-    V2 - Real-Time Era    : Jitsi Live Classes
-                          : Auto-Attendance Sync
-                          : In-App Notifications
-    V3 - AI Integration   : QBit Conversational Tutor
-                          : Smart Flashcard Engine
-                          : Premium PDF Study Planner
-    V4 - Security Armor   : Firebase OTP Auth
-                          : 3-Attempt Quiz Limits
-                          : Dynamic IP Detection
-                          : Biometric Lock
-    V5 - Automation Wave  : Campaign Email System
-                          : IMAP Inbox Sync
-                          : Premium UI Cards
-                          : Admin Control Center
-    V6 - Global Scale     : Multi-Lingual AI
-                          : ML Retention Predictors
-                          : Content Personalization
-
-```
-
-<br/>
 
 | Era | Status | Monumental Deliverables |
 |:---|:---:|:---|
-| **V1: Core Foundations** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | Courses, Interactive Lessons, Multi-Role Unified Auth |
-| **V2: Real-Time Epoch** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | Live Classes, Jitsi Video Grid, Auto-Attendance Sync |
-| **V3: Artificial Mind** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | QBit Chat, Spaced Flashcards, Premium Plan Generator |
-| **V4: Security Armor** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | Firebase OTP, 3-Attempt Limits, Dynamic IP, Biometrics |
-| **V5: Automation Wave** | <img src="https://img.shields.io/badge/✅-Forged-10B981?style=flat-square" /> | Parent Dashboard, Offline Mode, Badge System, Admin Suite |
-| **V6: Global Scale** | <img src="https://img.shields.io/badge/🟡-Active-F59E0B?style=flat-square" /> | Multi-Lingual AI, ML Retention Predictors, Battle Leagues |
+| **V4: Security Armor** | ✅ | Firebase OTP, 3-Attempt Limits, Biometrics |
+| **V5: Automation Wave** | ✅ | Parent Hub, Offline Sync, 3D Leaderboards, Admin Suite |
+| **V6: Cognitive Era** | 🟡 | Interaction Tracking, Emotion Analysis, Adaptive Velocity |
 
 <img src="https://user-images.githubusercontent.com/73097560/115834477-dbab4500-a447-11eb-908a-139a6edaec5c.gif" width="100%" />
 
 ## 📜 License
-
 This project is officially licensed under the **[MIT License](LICENSE)**.
-
-```
-MIT License — Copyright (c) 2026 MentiQ
-Full terms available in the LICENSE file.
-```
-
-<br/>
 
 <div align="center">
   <img src="frontendweb/public/Logo.png" width="80" alt="MentiQ" />
-  <br/><br/>
-  <a href="mailto:mentiq.learn@gmail.com">
-    <img src="https://img.shields.io/badge/Email-mentiq.learn@gmail.com-0EA5E9?style=for-the-badge&logo=gmail&logoColor=white" />
-  </a>
-  &nbsp;
-  <a href="http://mentiq.com">
-    <img src="https://img.shields.io/badge/Website-mentiq.com-6366F1?style=for-the-badge&logo=googlechrome&logoColor=white" />
-  </a>
-  &nbsp;
-  <img src="https://img.shields.io/badge/Location-Punjab,_India-EC4899?style=for-the-badge&logo=googlemaps&logoColor=white" />
   <br/><br/>
   <b>The MentiQ Advanced Systems Team</b>
   <br/>
@@ -806,7 +602,7 @@ Full terms available in the LICENSE file.
 <br/>
 
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=500&size=14&duration=4000&pause=500&color=64748B&center=true&vCenter=true&width=1000&lines=Developed+with+%E2%9D%A4%EF%B8%8F+for+a+better+future+in+education;%C2%A9+MentiQ+2026+%E2%80%94+Distributed+under+the+MIT+License;21+Backend+Apps+%E2%80%A2+33%2B+Mobile+Screens+%E2%80%A2+49+Web+Components+%E2%80%A2+17+API+Groups" alt="Footer Typing SVG" />
+  <img src="https://readme-typing-svg.herokuapp.com?font=Fira+Code&weight=500&size=14&duration=4000&pause=500&color=64748B&center=true&vCenter=true&width=1000&lines=Developed+with+%E2%9D%A4%EF%B8%8F+for+a+better+future+in+education;%C2%A9+MentiQ+2026+%E2%80%94+Distributed+under+the+MIT+License;22+Backend+Apps+%E2%80%A2+33%2B+Mobile+Screens+%E2%80%A2+51+Web+Components+%E2%80%A2+20+API+Groups" alt="Footer Typing SVG" />
 </p>
 
 <img width="100%" src="https://capsule-render.vercel.app/api?type=waving&color=0:8B5CF6,50:6366F1,100:0EA5E9&height=120&section=footer" />
