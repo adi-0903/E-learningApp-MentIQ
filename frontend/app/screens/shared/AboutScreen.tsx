@@ -66,7 +66,7 @@ function AboutScreen({ navigation }: AboutScreenProps) {
                   </View>
                 </View>
                 <View style={styles.brandTextBody}>
-                  <Text style={styles.brandName}>EduBloom</Text>
+                  <Text style={styles.brandName}>MentIQ</Text>
                   <Text style={styles.brandTagline}>Intelligence & Growth</Text>
                   <View style={styles.badgeRow}>
                     <View style={styles.stableBadge}>
@@ -149,7 +149,7 @@ function AboutScreen({ navigation }: AboutScreenProps) {
               </View>
               <View style={styles.connectMain}>
                 <Text style={styles.connectLabel}>Global Concierge</Text>
-                <Text style={styles.connectValue}>support@edubloom.com</Text>
+                <Text style={styles.connectValue}>support@MentIQ.com</Text>
               </View>
               <MaterialCommunityIcons name="arrow-right-circle-outline" size={22} color="#cbd5e1" />
             </TouchableOpacity>
@@ -162,7 +162,7 @@ function AboutScreen({ navigation }: AboutScreenProps) {
               </View>
               <View style={styles.connectMain}>
                 <Text style={styles.connectLabel}>Digital Portal</Text>
-                <Text style={styles.connectValue}>www.edubloom.com</Text>
+                <Text style={styles.connectValue}>www.MentIQ.com</Text>
               </View>
               <MaterialCommunityIcons name="arrow-right-circle-outline" size={22} color="#cbd5e1" />
             </TouchableOpacity>
@@ -172,7 +172,7 @@ function AboutScreen({ navigation }: AboutScreenProps) {
           <View style={styles.footerBranding}>
             <View style={styles.footerLogoRow}>
               <View style={styles.miniDot} />
-              <Text style={styles.footerBrandName}>EDUBLOOM LABS</Text>
+              <Text style={styles.footerBrandName}>MentIQ LABS</Text>
               <View style={styles.miniDot} />
             </View>
             <Text style={styles.legalNotice}>© 2026 Bloom Collective. All access rights reserved.</Text>

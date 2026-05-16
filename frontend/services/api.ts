@@ -11,19 +11,25 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 // enter it manually. Falls back to localhost if detection fails.
 
 function getDevBaseUrl(): string {
-  // Expo SDK 49+: debuggerHost is available in dev
+  // Expo SDK 49+ and SDK 53+: improved detection for dev machine IP
   const debuggerHost =
-    Constants.expoConfig?.hostUri ?? // e.g. "192.168.1.7:8081"
+    Constants.expoConfig?.hostUri ??
     Constants.manifest2?.extra?.expoGo?.debuggerHost ??
     (Constants.manifest as any)?.debuggerHost;
 
   if (debuggerHost) {
-    const ip = debuggerHost.split(':')[0]; // strip the Expo port
-    return `http://${ip}:8000/api`;
+    const ip = debuggerHost.split(':')[0]; // strip the Expo port (8081)
+    
+    // If the IP is an obvious placeholder or local loopback, 
+    // it might not work on physical devices.
+    if (ip && ip !== 'localhost' && ip !== '127.0.0.1') {
+      return `http://${ip}:8000/api`;
+    }
   }
 
-  // Fallback for edge-cases
-  return 'http://localhost:8000/api';
+  // If you are on a physical device and connection fails, 
+  // replace 'localhost' with your computer's actual IP address (e.g., 192.168.1.5)
+  return 'http://10.0.2.2:8000/api'; // 10.0.2.2 is the default for Android Emulator to host machine
 }
 
 const API_BASE_URL = __DEV__

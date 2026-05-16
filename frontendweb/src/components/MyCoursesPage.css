@@ -10,12 +10,17 @@
 
 /* Dashboard Header */
 .courses-header {
-    background: linear-gradient(180deg, rgba(30, 41, 59, 0.8) 0%, rgba(15, 23, 42, 0) 100%);
+    background: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
     border-radius: 24px;
     padding: 40px;
     margin-bottom: 40px;
     position: relative;
-    border-top: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
 }
 
 .courses-title {
@@ -437,4 +442,108 @@ textarea.premium-input {
 .btn-submit:disabled {
     opacity: 0.7;
     cursor: not-allowed;
+}
+
+.premium-enroll-btn {
+    background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
+    color: white;
+    border: none;
+    padding: 14px 32px;
+    border-radius: 14px;
+    font-size: 14px;
+    font-weight: 800;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.premium-enroll-btn:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(99, 102, 241, 0.5);
+    filter: brightness(1.1);
+}
+
+.empty-state-modern {
+    position: relative;
+    background: rgba(30, 41, 59, 0.3);
+    border: 1px dashed rgba(148, 163, 184, 0.2);
+    border-radius: 24px;
+    padding: 80px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow: hidden;
+}
+
+.empty-icon-circle {
+    width: 80px;
+    height: 80px;
+    background: rgba(99, 102, 241, 0.1);
+    border: 1px solid rgba(99, 102, 241, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #818cf8;
+    margin-bottom: 24px;
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.1);
+}
+
+.empty-state-modern h3 {
+    font-size: 28px;
+    font-weight: 800;
+    color: white;
+    margin: 0 0 12px 0;
+    letter-spacing: -0.5px;
+}
+
+.empty-state-modern p {
+    color: #94a3b8;
+    max-width: 450px;
+    margin: 0 0 32px 0;
+    line-height: 1.6;
+    font-size: 16px;
+}
+
+.empty-state-glow {
+    position: absolute;
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+}
+
+.empty-state-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 10px;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Glassmorphism Header Tweak */
+.courses-header {
+    background: rgba(30, 41, 59, 0.4);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
 }

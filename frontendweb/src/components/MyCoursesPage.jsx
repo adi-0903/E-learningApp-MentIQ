@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Plus } from 'lucide-react';
 import './MyCoursesPage.css';
 import api from '../api';
 
@@ -112,7 +113,7 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourse
 
     return (
         <div className="courses-dashboard slide-up">
-            <div className="courses-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+            <div className="courses-header">
                 <div>
                     <h1 className="courses-title">{isTeacher ? "My Assigned Courses" : "My Enrolled Courses"}</h1>
                     <p className="courses-subtitle">{isTeacher ? "Manage your curriculum and track student progress across your active courses." : "Manage and continue your learning journey to perfection."}</p>
@@ -136,21 +137,32 @@ export function MyCoursesPage({ onBack, onSelectCourse, userRole, onBrowseCourse
                     <p style={{ color: '#94a3b8' }}>Synthesizing your knowledge base...</p>
                 </div>
             ) : courses.length === 0 ? (
-                <div className="course-empty-state">
-                    <div className="empty-icon-wrapper">
-                        <svg width="32" height="32" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <div className="empty-state-modern fade-in">
+                    <div className="empty-state-glow"></div>
+                    <div className="empty-icon-circle">
+                        <svg width="40" height="40" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                        </svg>
                     </div>
-                    <h3>{isTeacher ? "No Assigned Courses" : "No Courses Yet"}</h3>
-                    <p>{isTeacher ? "It looks like you haven't been assigned to any courses yet." : "It looks like you haven't enrolled in any courses yet. Explore our catalog to find your next great lesson!"}</p>
-                    {isTeacher ? (
-                        <button className="btn-continue" style={{ width: 'auto', marginTop: '20px', padding: '12px 30px' }} onClick={() => setIsCreateModalOpen(true)}>
-                            CREATE FIRST COURSE
-                        </button>
-                    ) : (
-                        <button className="btn-continue" style={{ width: 'auto', marginTop: '20px', padding: '12px 30px' }} onClick={onBrowseCourses}>
-                            BROWSE MISSION CATALOG
-                        </button>
-                    )}
+                    <h3>{isTeacher ? "No Assigned Courses" : "Your Mission Awaits"}</h3>
+                    <p>
+                        {isTeacher 
+                          ? "It looks like you haven't been assigned to any courses yet. Start by creating a new curriculum to lead your students." 
+                          : "You haven't initiated any training modules yet. Enrolling in a course will unlock new skills and level up your profile."}
+                    </p>
+                    <div className="empty-state-actions">
+                        {isTeacher ? (
+                            <button className="premium-enroll-btn" onClick={() => setIsCreateModalOpen(true)}>
+                                <Plus size={20} />
+                                <span>CREATE FIRST COURSE</span>
+                            </button>
+                        ) : (
+                            <button className="premium-enroll-btn" onClick={onBrowseCourses}>
+                                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                                <span>BROWSE MISSION CATALOG</span>
+                            </button>
+                        )}
+                    </div>
                 </div>
             ) : (
                 <div className="enrolled-grid">

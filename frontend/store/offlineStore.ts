@@ -66,8 +66,9 @@ export const useOfflineStore = create<OfflineStore>((set, get) => ({
   fetchAvailable: async (courseId) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await offlineApi.getAvailableMicroLessons(courseId);
-      set({ availableMicroLessons: response.data.results, isLoading: false });
+      const { data } = await offlineApi.getAvailableMicroLessons(courseId);
+      const results = data.data || data.results || data;
+      set({ availableMicroLessons: Array.isArray(results) ? results : [], isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
     }
@@ -76,8 +77,9 @@ export const useOfflineStore = create<OfflineStore>((set, get) => ({
   fetchMyDownloads: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await offlineApi.getMyDownloads();
-      set({ myDownloads: response.data.results, isLoading: false });
+      const { data } = await offlineApi.getMyDownloads();
+      const results = data.data || data.results || data;
+      set({ myDownloads: Array.isArray(results) ? results : [], isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
     }

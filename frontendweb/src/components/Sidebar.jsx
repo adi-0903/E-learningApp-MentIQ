@@ -19,14 +19,16 @@ export function Sidebar({ onOpenContact, onGoHome, onOpenCourses, onOpenClassroo
         { divider: true },
         { id: 'admin_courses', icon: 'book', label: 'Courses', onClick: onOpenAdminCourses },
         { id: 'admin_attendance', icon: 'clipboard-check', label: 'Attendance', onClick: onOpenAdminAttendance },
-        { id: 'admin_announcements', icon: 'megaphone', label: 'Alerts', onClick: onOpenAdminAnnouncements, badge: 3 },
+        { id: 'admin_announcements', icon: 'megaphone', label: 'Alerts', onClick: onOpenAdminAnnouncements },
         { divider: true },
         { id: 'admin_premium', icon: 'crown', label: 'Premium', onClick: onOpenAdminPremium, premium: true },
     ] : [
         { id: 'dashboard', icon: 'home', label: 'Home', onClick: onGoHome },
-        { id: 'courses', icon: 'book', label: 'My Courses', onClick: onOpenCourses },
-        { id: 'classroom', icon: 'monitor', label: 'Classroom', onClick: onOpenClassroom },
-        { id: 'doubts', icon: 'message-circle', label: 'Doubts', onClick: onOpenDoubts },
+        ...(userRole === 'parent' ? [] : [
+            { id: 'courses', icon: 'book', label: 'My Courses', onClick: onOpenCourses },
+            { id: 'classroom', icon: 'monitor', label: 'Classroom', onClick: onOpenClassroom },
+            { id: 'doubts', icon: 'message-circle', label: 'Doubts', onClick: onOpenDoubts },
+        ]),
         ...(isTeacher ? [{ id: 'parents', icon: 'users-round', label: 'Parents', onClick: onOpenParents }] : []),
         ...(userRole === 'student' ? [
             { divider: true },

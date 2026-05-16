@@ -258,7 +258,7 @@ function ProfileScreen({ navigation }: any) {
         {/* Stats Row */}
         <View style={styles.statsRow}>
           <View style={styles.statCard}>
-            <Text style={styles.statValue}>{user.role === 'parent' ? children.length : courses.length}</Text>
+            <Text style={styles.statValue}>{user.role === 'parent' ? (children || []).length : (courses || []).length}</Text>
             <Text style={styles.statLabel}>{user.role === 'parent' ? 'Children' : 'Courses'}</Text>
           </View>
           <View style={styles.statDivider} />
@@ -266,14 +266,14 @@ function ProfileScreen({ navigation }: any) {
             <>
               <View style={styles.statCard}>
                 <Text style={styles.statValue}>
-                  {enrollments.filter((e: Enrollment) => e.completionPercentage >= 100).length}
+                  {(enrollments || []).filter((e: Enrollment) => e.completionPercentage >= 100).length}
                 </Text>
                 <Text style={styles.statLabel}>Completed</Text>
               </View>
               <View style={styles.statDivider} />
               <View style={styles.statCard}>
                 <Text style={styles.statValue}>
-                  {courses.length > 0 ? Math.round(enrollments.reduce((acc: number, curr: Enrollment) => acc + curr.completionPercentage, 0) / courses.length) : 0}%
+                  {(courses || []).length > 0 ? Math.round((enrollments || []).reduce((acc: number, curr: Enrollment) => acc + curr.completionPercentage, 0) / (courses || []).length) : 0}%
                 </Text>
                 <Text style={styles.statLabel}>Avg %</Text>
               </View>
@@ -456,21 +456,39 @@ function ProfileScreen({ navigation }: any) {
                 )}
 
                 {user?.role === 'student' && user?.studentId && (
-                  <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
-                    <View style={styles.infoIconWrapper}>
-                      <MaterialCommunityIcons name="card-account-details-outline" size={18} color={accentColor} />
-                    </View>
-                    <View style={styles.infoContent}>
-                      <Text style={styles.infoLabel}>S-UID</Text>
-                      <View style={styles.phoneValueRow}>
-                        <Text style={[styles.infoValue, { fontWeight: '900', color: accentColor }]}>{user.studentId}</Text>
-                        <View style={[styles.verifyStatus, { backgroundColor: '#ecfdf5' }]}>
-                          <MaterialCommunityIcons name="check-decagram" size={12} color="#10b981" />
-                          <Text style={[styles.verifyText, { color: '#10b981' }]}>Active</Text>
+                  <>
+                    <View style={styles.infoRow}>
+                      <View style={styles.infoIconWrapper}>
+                        <MaterialCommunityIcons name="card-account-details-outline" size={18} color={accentColor} />
+                      </View>
+                      <View style={styles.infoContent}>
+                        <Text style={styles.infoLabel}>S-UID</Text>
+                        <View style={styles.phoneValueRow}>
+                          <Text style={[styles.infoValue, { fontWeight: '900', color: accentColor }]}>{user.studentId}</Text>
+                          <View style={[styles.verifyStatus, { backgroundColor: '#ecfdf5' }]}>
+                            <MaterialCommunityIcons name="check-decagram" size={12} color="#10b981" />
+                            <Text style={[styles.verifyText, { color: '#10b981' }]}>Active</Text>
+                          </View>
                         </View>
                       </View>
                     </View>
-                  </View>
+
+                    <View style={[styles.infoRow, { borderBottomWidth: 0 }]}>
+                      <View style={styles.infoIconWrapper}>
+                        <MaterialCommunityIcons name="school-outline" size={18} color={accentColor} />
+                      </View>
+                      <View style={styles.infoContent}>
+                        <Text style={styles.infoLabel}>Grade / Level</Text>
+                        <View style={styles.phoneValueRow}>
+                          <Text style={[styles.infoValue, { fontWeight: '900', color: accentColor }]}>{user.gradeLevel || 'Not Assigned'}</Text>
+                          <View style={[styles.verifyStatus, { backgroundColor: '#f0f9ff' }]}>
+                            <MaterialCommunityIcons name="star-outline" size={12} color={accentColor} />
+                            <Text style={[styles.verifyText, { color: accentColor }]}>Academic</Text>
+                          </View>
+                        </View>
+                      </View>
+                    </View>
+                  </>
                 )}
 
                 {user?.role === 'parent' && user?.parentId && (
@@ -555,7 +573,7 @@ function ProfileScreen({ navigation }: any) {
         </TouchableOpacity>
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>MentIQ • Version 1.0.0</Text>
+          <Text style={styles.footerText}>MentIQ • Version 1.5.0</Text>
           <Text style={styles.footerSub}>Proudly Made In INDIA 🇮🇳</Text>
         </View>
       </View>

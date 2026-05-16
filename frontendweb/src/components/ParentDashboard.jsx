@@ -3,6 +3,7 @@ import { parentAPI } from '../api';
 import './ParentDashboard.css';
 import { AIAssistantCard } from './AIAssistantCard';
 import { KnowledgeGraphCard } from './KnowledgeGraphCard';
+import { Users, RefreshCcw, UserPlus, Layout, FileText, BookOpen, Activity, ChevronRight, User as UserIcon, Award, ShieldCheck } from 'lucide-react';
 
 export const ParentDashboard = ({ userData }) => {
     const [children, setChildren] = useState([]);
@@ -71,8 +72,11 @@ export const ParentDashboard = ({ userData }) => {
     if (isLoading && !profile) {
         return (
             <div className="premium-loader-container">
-                <div className="loader-pulsar"></div>
-                <p>Synchronizing Guardian Portal...</p>
+                <div className="loader-portal-wrapper">
+                    <div className="loader-portal-ring"></div>
+                    <div className="loader-portal-core"></div>
+                </div>
+                <p className="loader-text">Synchronizing Guardian Portal...</p>
             </div>
         );
     }
@@ -99,9 +103,12 @@ export const ParentDashboard = ({ userData }) => {
                 <aside className="portal-sidebar">
                     <div className="sidebar-card child-selector-card">
                         <div className="card-header">
-                            <h3>My Children</h3>
-                            <button className="icon-btn-small" onClick={fetchData}>
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0114.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0020.49 15"></path></svg>
+                            <div className="card-title-with-icon">
+                                <Users size={18} className="text-gold" />
+                                <h3>My Children</h3>
+                            </div>
+                            <button className="icon-btn-small" onClick={fetchData} title="Sync Data">
+                                <RefreshCcw size={14} />
                             </button>
                         </div>
                         <div className="child-list">
@@ -131,7 +138,10 @@ export const ParentDashboard = ({ userData }) => {
                     </div>
 
                     <div className="sidebar-card link-guardian-card">
-                        <h3>Link New ward</h3>
+                        <div className="card-title-with-icon">
+                            <UserPlus size={18} className="text-gold" />
+                            <h3>Link New ward</h3>
+                        </div>
                         <form onSubmit={handleLinkRequest} className="premium-link-form">
                             <input 
                                 type="text" 
@@ -159,45 +169,64 @@ export const ParentDashboard = ({ userData }) => {
                 <main className="portal-content">
                     {selectedChild ? (
                         <div className="child-insights-view animate-in">
+                            <div className="section-glow"></div>
                             <div className="insight-header">
-                                <div className="student-profile-strip">
-                                    <div className="strip-avatar">
-                                        {selectedChild.profile_image ? <img src={selectedChild.profile_image} alt={selectedChild.name} /> : <span>{selectedChild.name[0]}</span>}
+                                <div className="student-profile-strip premium-strip">
+                                    <div className="strip-avatar-wrapper">
+                                        <div className="strip-avatar-glow"></div>
+                                        <div className="strip-avatar">
+                                            {selectedChild.profile_image ? <img src={selectedChild.profile_image} alt={selectedChild.name} /> : <span>{selectedChild.name[0]}</span>}
+                                        </div>
                                     </div>
                                     <div className="strip-info">
+                                        <div className="strip-badge-row">
+                                            <span className="strip-badge"><ShieldCheck size={12} /> VERIFIED WARD</span>
+                                        </div>
                                         <h2>{selectedChild.name}'s Academic Horizon</h2>
                                         <div className="strip-meta">
-                                            <span>Current Grade: {selectedChild.grade_level || 'Not Assigned'}</span>
+                                            <span className="meta-item"><Layout size={14} /> Grade {selectedChild.grade_level || '10'}</span>
                                             <span className="separator">•</span>
-                                            <span>Attendance: {selectedChild.latest_stats?.attendance_rate || 0}%</span>
+                                            <span className="meta-item"><Activity size={14} /> {selectedChild.latest_stats?.attendance_rate || 0}% Attendance</span>
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
                             <div className="insights-grid">
-                                <div className="insight-card stats-overview">
-                                    <div className="i-stat-box">
-                                        <label>Avg. Score</label>
-                                        <div className="i-val">{selectedChild.latest_stats?.average_quiz_score || 0}%</div>
-                                        <div className="i-trend positive">+2.4%</div>
+                                <div className="insight-card premium-stat-card score">
+                                    <div className="i-stat-icon-wrapper">
+                                        <Activity size={20} />
                                     </div>
-                                    <div className="i-stat-box">
-                                        <label>Quizzes</label>
-                                        <div className="i-val">{selectedChild.latest_stats?.quizzes_completed || 0}</div>
-                                        <div className="i-sub">Completed</div>
+                                    <label>Average Score</label>
+                                    <div className="i-val">{selectedChild.latest_stats?.average_quiz_score || 0}%</div>
+                                    <div className="i-trend positive">+2.4%</div>
+                                </div>
+
+                                <div className="insight-card premium-stat-card quizzes">
+                                    <div className="i-stat-icon-wrapper">
+                                        <Award size={20} />
                                     </div>
-                                    <div className="i-stat-box">
-                                        <label>Lessons</label>
-                                        <div className="i-val">{selectedChild.latest_stats?.lessons_watched || 0}</div>
-                                        <div className="i-sub">Watched</div>
+                                    <label>Quizzes Completed</label>
+                                    <div className="i-val">{selectedChild.latest_stats?.quizzes_completed || 0}</div>
+                                    <div className="i-sub">Total Assessments</div>
+                                </div>
+
+                                <div className="insight-card premium-stat-card lessons">
+                                    <div className="i-stat-icon-wrapper">
+                                        <BookOpen size={20} />
                                     </div>
+                                    <label>Lessons Watched</label>
+                                    <div className="i-val">{selectedChild.latest_stats?.lessons_watched || 0}</div>
+                                    <div className="i-sub">Video Modules</div>
                                 </div>
 
                                 <div className="insight-card report-section">
                                     <div className="card-header">
-                                        <h3>Weekly Progress Summary</h3>
-                                        <span className="report-date">Latest: Week of {new Date().toLocaleDateString()}</span>
+                                        <div className="card-title-with-icon">
+                                            <FileText size={18} className="text-gold" />
+                                            <h3>Weekly Progress Summary</h3>
+                                        </div>
+                                        <span className="report-date">Week of {new Date().toLocaleDateString()}</span>
                                     </div>
                                     
                                     {reports.length === 0 ? (
@@ -207,16 +236,22 @@ export const ParentDashboard = ({ userData }) => {
                                     ) : (
                                         <div className="active-report">
                                             <div className="summary-bubble">
-                                                <div className="summary-badge">PROGRESS INSIGHT</div>
+                                                <div className="summary-badge"><ShieldCheck size={10} /> AI INSIGHT</div>
                                                 <p>{reports[0].ai_summary}</p>
                                             </div>
                                             <div className="report-metrics-row">
                                                 <div className="metric">
-                                                    <span>Focus Level</span>
+                                                    <div className="metric-header">
+                                                        <span>Focus Level</span>
+                                                        <span className="m-val">85%</span>
+                                                    </div>
                                                     <div className="metric-bar"><div className="fill" style={{width: '85%'}}></div></div>
                                                 </div>
                                                 <div className="metric">
-                                                    <span>Retention</span>
+                                                    <div className="metric-header">
+                                                        <span>Retention Rate</span>
+                                                        <span className="m-val">72%</span>
+                                                    </div>
                                                     <div className="metric-bar"><div className="fill" style={{width: '72%', background: 'var(--accent-gold)'}}></div></div>
                                                 </div>
                                             </div>
@@ -226,7 +261,10 @@ export const ParentDashboard = ({ userData }) => {
 
                                 <div className="insight-card courses-section">
                                     <div className="card-header">
-                                        <h3>Registered Courses</h3>
+                                        <div className="card-title-with-icon">
+                                            <Layout size={18} className="text-gold" />
+                                            <h3>Registered Courses</h3>
+                                        </div>
                                     </div>
                                     <div className="course-mini-list">
                                         {courses.length === 0 ? (
@@ -234,13 +272,20 @@ export const ParentDashboard = ({ userData }) => {
                                         ) : (
                                             courses.map(course => (
                                                 <div key={course.id} className="course-mini-card">
-                                                    <div className="c-icon">📚</div>
+                                                    <div className="c-icon">
+                                                        <BookOpen size={18} />
+                                                    </div>
                                                     <div className="c-details">
                                                         <span className="c-title">{course.title}</span>
-                                                        <span className="c-teacher">By {course.teacher_name || 'Expert'}</span>
+                                                        <div className="c-meta">
+                                                            <span className="c-teacher">Instructed by {course.teacher_name || 'MentiQ Expert'}</span>
+                                                        </div>
                                                     </div>
-                                                    <div className="c-progress-pills">
-                                                        {course.progress_percentage}%
+                                                    <div className="c-progress-section">
+                                                        <div className="c-percentage">{course.progress_percentage}%</div>
+                                                        <div className="c-progress-track">
+                                                            <div className="fill" style={{width: `${course.progress_percentage}%`}}></div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             ))

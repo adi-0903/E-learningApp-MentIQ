@@ -15,7 +15,7 @@ export function AdminUserDetail({ userId, userType, onBack }) {
     const [actionMsg, setActionMsg] = useState({ text: '', type: '' });
     const [submitting, setSubmitting] = useState(false);
 
-    const endpoint = userType === 'teacher' ? 'teachers' : 'students';
+    const endpoint = userType === 'teacher' ? 'teachers' : userType === 'parent' ? 'parents' : 'students';
 
     useEffect(() => {
         fetchUser();
@@ -120,6 +120,7 @@ export function AdminUserDetail({ userId, userType, onBack }) {
     }
 
     const isTeacher = user.role === 'teacher';
+    const isParent = user.role === 'parent';
 
     return (
         <div className="admin-user-detail-page">
@@ -127,7 +128,7 @@ export function AdminUserDetail({ userId, userType, onBack }) {
             <div className="admin-topbar" style={{ marginBottom: '1.5rem' }}>
                 <div className="admin-topbar-left">
                     <button className="admin-back-btn" onClick={onBack}><ArrowLeft /></button>
-                    <h1>{isTeacher ? 'Teacher' : 'Student'} Profile</h1>
+                    <h1>{isTeacher ? 'Teacher' : isParent ? 'Parent' : 'Student'} Profile</h1>
                 </div>
             </div>
 
@@ -137,7 +138,7 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                 <div className="admin-profile-content">
                     <div className="admin-profile-avatar-wrapper">
                         <img
-                            src={user.profile_image_url || user.profile_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=${isTeacher ? '0891b2' : '7c3aed'}&color=fff&bold=true&size=200`}
+                            src={user.profile_image_url || user.profile_avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name)}&background=${isTeacher ? '0891b2' : isParent ? '4f46e5' : '7c3aed'}&color=fff&bold=true&size=200`}
                             alt={user.name}
                             className="admin-profile-avatar"
                         />
@@ -145,7 +146,7 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                     <div className="admin-profile-info">
                         <h1>{user.name}</h1>
                         <span className={`admin-profile-role ${user.role}`}>
-                            {isTeacher ? <Shield size={12} /> : <GraduationCap size={12} />}
+                            {isTeacher ? <Shield size={12} /> : isParent ? <Shield size={12} /> : <GraduationCap size={12} />}
                             {user.role}
                         </span>
                         <div className="admin-profile-meta">
@@ -154,14 +155,14 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                                 <span>{user.email}</span>
                             </div>
                             <div className="admin-profile-meta-item">
-                                <label>{isTeacher ? 'Teacher ID' : 'Student ID'}</label>
-                                <span className="mono">{isTeacher ? user.teacher_id || '—' : user.student_id || '—'}</span>
+                                <label>{isTeacher ? 'Teacher ID' : isParent ? 'Parent ID' : 'Student ID'}</label>
+                                <span className="mono">{isTeacher ? user.teacher_id || '—' : isParent ? user.parent_id || '—' : user.student_id || '—'}</span>
                             </div>
                             <div className="admin-profile-meta-item">
                                 <label>Phone</label>
                                 <span>{user.phone_number || '—'}</span>
                             </div>
-                            {!isTeacher && (
+                            {!isTeacher && !isParent && (
                                 <div className="admin-profile-meta-item">
                                     <label>Grade/Class</label>
                                     <span className="admin-uid-chip" style={{ background: 'rgba(5, 150, 105, 0.1)', color: '#059669', fontSize: '0.75rem', padding: '2px 8px' }}>
@@ -183,12 +184,16 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                         </div>
                     </div>
                     <div className="admin-profile-actions">
-                        <button className="admin-profile-action-btn" onClick={() => setShowEditModal(true)}>
-                            <Edit /> Edit
-                        </button>
-                        <button className="admin-profile-action-btn" onClick={() => setShowResetModal(true)}>
-                            <KeyRound /> Reset Password
-                        </button>
+                        {!isParent && (
+                            <button className="admin-profile-action-btn" onClick={() => setShowEditModal(true)}>
+                                <Edit /> Edit
+                            </button>
+                        )}
+                        {!isParent && (
+                            <button className="admin-profile-action-btn" onClick={() => setShowResetModal(true)}>
+                                <KeyRound /> Reset Password
+                            </button>
+                        )}
                         <button className="admin-profile-action-btn danger" onClick={handleDeactivate}>
                             <UserX /> {user.is_active ? 'Deactivate' : 'Activate'}
                         </button>
@@ -204,11 +209,13 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                         <h3><Mail size={17} /> Account Details</h3>
                     </div>
                     <div className="admin-detail-panel-body">
-                        <div className="admin-detail-item">
-                            <label>Bio</label>
-                            <span>{user.bio || 'No bio added'}</span>
-                        </div>
-                        {!isTeacher && (
+                        {!isParent && (
+                            <div className="admin-detail-item">
+                                <label>Bio</label>
+                                <span>{user.bio || 'No bio added'}</span>
+                            </div>
+                        )}
+                        {!isTeacher && !isParent && (
                             <div className="admin-detail-item">
                                 <label>Grade Level</label>
                                 <span>{user.grade_level || 'Not assigned'}</span>
@@ -233,13 +240,31 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                     </div>
                 </div>
 
-                {/* Courses / Enrollments */}
+                {/* Courses / Enrollments / Children */}
                 <div className="admin-detail-panel">
                     <div className="admin-detail-panel-header">
-                        <h3><BookOpen size={17} /> {isTeacher ? 'Courses Teaching' : 'Enrolled Courses'}</h3>
+                        <h3><BookOpen size={17} /> {isTeacher ? 'Courses Teaching' : isParent ? 'Connected Children' : 'Enrolled Courses'}</h3>
                     </div>
                     <div className="admin-detail-panel-body">
-                        {isTeacher ? (
+                        {isParent ? (
+                            user.children?.length > 0 ? (
+                                user.children.map((child, idx) => (
+                                    <div key={idx} className="admin-detail-list-item">
+                                        <div className="admin-detail-list-icon admin-stat-icon purple">
+                                            <GraduationCap />
+                                        </div>
+                                        <div className="admin-detail-list-info">
+                                            <h4>{child.name}</h4>
+                                            <p>S-{child.student_id || '—'} • {child.email}</p>
+                                        </div>
+                                        <span className={`admin-status-badge ${child.is_active ? 'active' : 'inactive'}`} style={{ marginLeft: 'auto', flexShrink: 0 }}>
+                                            <span className="admin-status-dot" />
+                                            {child.is_active ? 'Active' : 'Inactive'}
+                                        </span>
+                                    </div>
+                                ))
+                            ) : <div className="admin-detail-empty">No children linked</div>
+                        ) : isTeacher ? (
                             user.courses?.length > 0 ? (
                                 user.courses.map((c, idx) => (
                                     <div key={idx} className="admin-detail-list-item">
@@ -272,7 +297,7 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                 </div>
 
                 {/* Attendance Stats (Students only) */}
-                {!isTeacher && user.attendance_stats && (
+                {!isTeacher && !isParent && user.attendance_stats && (
                     <div className="admin-detail-panel">
                         <div className="admin-detail-panel-header">
                             <h3><ClipboardCheck size={17} /> Attendance</h3>
@@ -306,7 +331,7 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                 )}
 
                 {/* Quiz Stats (Students only) */}
-                {!isTeacher && (
+                {!isTeacher && !isParent && (
                     <div className="admin-detail-panel">
                         <div className="admin-detail-panel-header">
                             <h3><ClipboardCheck size={17} /> Quiz Performance</h3>
@@ -387,15 +412,17 @@ export function AdminUserDetail({ userId, userType, onBack }) {
                                         onChange={(e) => setEditData({ ...editData, phone_number: e.target.value })}
                                     />
                                 </div>
-                                <div className="admin-form-group">
-                                    <label>Bio</label>
-                                    <textarea
-                                        rows={3}
-                                        value={editData.bio}
-                                        onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
-                                    />
-                                </div>
-                                {!isTeacher && (
+                                {!isParent && (
+                                    <div className="admin-form-group">
+                                        <label>Bio</label>
+                                        <textarea
+                                            rows={3}
+                                            value={editData.bio}
+                                            onChange={(e) => setEditData({ ...editData, bio: e.target.value })}
+                                        />
+                                    </div>
+                                )}
+                                {!isTeacher && !isParent && (
                                     <div className="admin-form-group">
                                         <label>Grade Level / Class</label>
                                         <input

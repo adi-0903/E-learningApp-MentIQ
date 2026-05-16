@@ -35,7 +35,7 @@ class AdminUserListSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email', 'name', 'role', 'bio', 'phone_number',
             'profile_image', 'profile_image_url', 'profile_avatar',
-            'teacher_id', 'student_id', 'grade_level',
+            'teacher_id', 'student_id', 'parent_id', 'grade_level',
             'is_active', 'is_email_verified', 'is_phone_verified',
             'created_at', 'updated_at', 'last_login',
             'courses_count', 'enrollments_count',
@@ -66,7 +66,7 @@ class AdminUserDetailSerializer(serializers.ModelSerializer):
         fields = [
             'id', 'email', 'name', 'role', 'bio', 'phone_number',
             'profile_image', 'profile_image_url', 'profile_avatar',
-            'teacher_id', 'student_id', 'grade_level',
+            'teacher_id', 'student_id', 'parent_id', 'grade_level',
             'is_active', 'is_email_verified', 'is_phone_verified',
             'is_staff', 'is_superuser',
             'created_at', 'updated_at', 'last_login',
@@ -167,6 +167,49 @@ class AdminCreateStudentSerializer(serializers.ModelSerializer):
         user.set_password(password)
         user.save()
         return user
+
+
+class AdminCreateParentSerializer(serializers.Serializer):
+    """Serializer for admin to create a parent account and link to students."""
+    name = serializers.CharField(max_length=150)
+    email = serializers.EmailField()
+    password = serializers.CharField(write_only=True, validators=[validate_password])
+    phone_number = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    children = serializers.ListField(
+        child=serializers.UUIDField(),
+        required=False,
+        allow_empty=True
+    )
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value.lower()).exists():
+            raise serializers.ValidationError('A user with this email already exists.')
+        return value.lower()
+
+    def validate_children(self, value):
+        """Ensure all provided IDs are valid active student accounts."""
+        if not value:
+            return value
+        students = User.objects.filter(id__in=value, role='student')
+        if students.count() != len(value):
+            raise serializers.ValidationError('One or more student IDs are invalid.')
+        return value
+
+    def create(self, validated_data):
+        from apps.parents.models import ParentAccount
+        children_ids = validated_data.pop('children', [])
+        password = validated_data.pop('password')
+
+        user = User(role='parent', is_email_verified=True, **validated_data)
+        user.set_password(password)
+        user.save()
+
+        parent_account = ParentAccount.objects.create(user=user)
+        if children_ids:
+            students = User.objects.filter(id__in=children_ids, role='student')
+            parent_account.children.set(students)
+
+        return user, parent_account
 
 
 class AdminUpdateUserSerializer(serializers.ModelSerializer):

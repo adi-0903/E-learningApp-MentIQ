@@ -31,6 +31,7 @@ from .serializers import (
     AdminUserDetailSerializer,
     AdminCreateTeacherSerializer,
     AdminCreateStudentSerializer,
+    AdminCreateParentSerializer,
     AdminUpdateUserSerializer,
     AdminResetPasswordSerializer,
     AdminCourseListSerializer,
@@ -1182,5 +1183,208 @@ class AdminParentListView(APIView):
             'count': len(data),
             'data': data
         })
+
+
+class AdminParentDetailView(APIView):
+    """
+    GET /api/v1/admin/parents/<id>/
+    Returns full profile detail for a specific parent account.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request, id):
+        from apps.parents.models import ParentAccount
+        try:
+            parent_account = ParentAccount.objects.select_related('user').prefetch_related('children').get(user__id=id)
+        except ParentAccount.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Parent not found.',
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        u = parent_account.user
+        data = {
+            'id': str(u.id),
+            'parent_id': u.parent_id,
+            'name': u.name,
+            'email': u.email,
+            'phone_number': u.phone_number,
+            'bio': getattr(u, 'bio', ''),
+            'is_active': u.is_active,
+            'is_email_verified': getattr(u, 'is_email_verified', False),
+            'is_phone_verified': getattr(u, 'is_phone_verified', False),
+            'last_login': u.last_login,
+            'created_at': u.created_at,
+            'role': 'parent',
+            'profile_image_url': u.profile_image_url if hasattr(u, 'profile_image_url') else '',
+            'profile_avatar': u.profile_avatar if hasattr(u, 'profile_avatar') else '',
+            'children': [{
+                'id': str(c.id),
+                'name': c.name,
+                'student_id': c.student_id,
+                'email': c.email,
+                'grade_level': getattr(c, 'grade_level', ''),
+                'is_active': c.is_active,
+            } for c in parent_account.children.all()]
+        }
+        return Response({'success': True, 'data': data})
+
+
+class AdminParentDeactivateView(APIView):
+    """
+    POST /api/v1/admin/parents/<id>/deactivate/
+    Toggle active status of a parent account.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request, id):
+        try:
+            parent = User.objects.get(id=id, role='parent')
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Parent not found.',
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        parent.is_active = not parent.is_active
+        parent.save(update_fields=['is_active', 'updated_at'])
+
+        action = 'activated' if parent.is_active else 'deactivated'
+        return Response({
+            'success': True,
+            'message': f'Parent account {action} successfully.',
+            'data': {'is_active': parent.is_active},
+        })
+
+
+class AdminParentCreateView(APIView):
+    """
+    POST /api/v1/admin/parents/create/
+    Admin creates a parent account and optionally links to existing students.
+    Body: { name, email, password, phone_number?, children?: [uuid, ...] }
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request):
+        serializer = AdminCreateParentSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user, parent_account = serializer.save()
+
+        children_data = [{
+            'id': str(c.id),
+            'name': c.name,
+            'student_id': c.student_id,
+            'email': c.email,
+        } for c in parent_account.children.all()]
+
+        return Response({
+            'success': True,
+            'message': f'Parent account for {user.name} created successfully.',
+            'data': {
+                'id': str(user.id),
+                'name': user.name,
+                'email': user.email,
+                'parent_id': user.parent_id,
+                'phone_number': user.phone_number,
+                'is_active': user.is_active,
+                'children': children_data,
+                'created_at': user.created_at,
+            }
+        }, status=status.HTTP_201_CREATED)
+
+
+class AdminStudentSearchView(APIView):
+    """
+    GET /api/v1/admin/students/search/?q=<name>
+    Lightweight endpoint for searching students to link to a parent.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def get(self, request):
+        q = request.query_params.get('q', '').strip()
+        students = User.objects.filter(role='student', is_active=True)
+        if q:
+            students = students.filter(
+                Q(name__icontains=q) | Q(email__icontains=q) | Q(student_id__icontains=q)
+            )
+        data = [{
+            'id': str(s.id),
+            'name': s.name,
+            'email': s.email,
+            'student_id': s.student_id,
+        } for s in students[:20]]
+        return Response({'success': True, 'data': data})
+
+
+class AdminParentUpdateView(generics.UpdateAPIView):
+    """
+    PUT/PATCH /api/v1/admin/parents/<id>/update/
+    Admin updates a parent's profile.
+    """
+    serializer_class = AdminUpdateUserSerializer
+    permission_classes = [IsAuthenticated, IsAdmin]
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return User.objects.filter(role='parent')
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        # Return full detail including children to avoid UI inconsistencies
+        from apps.parents.models import ParentAccount
+        try:
+            p_acc = ParentAccount.objects.prefetch_related('children').get(user=instance)
+            children = [{
+                'id': str(c.id),
+                'name': c.name,
+                'student_id': c.student_id,
+                'email': c.email,
+            } for c in p_acc.children.all()]
+        except ParentAccount.DoesNotExist:
+            children = []
+
+        data = AdminUserDetailSerializer(instance).data
+        data['children'] = children
+
+        return Response({
+            'success': True,
+            'message': 'Parent profile updated successfully.',
+            'data': data,
+        })
+
+
+class AdminParentResetPasswordView(APIView):
+    """
+    POST /api/v1/admin/parents/<id>/reset-password/
+    Admin resets a parent's password.
+    """
+    permission_classes = [IsAuthenticated, IsAdmin]
+
+    def post(self, request, id):
+        try:
+            parent = User.objects.get(id=id, role='parent')
+        except User.DoesNotExist:
+            return Response({
+                'success': False,
+                'message': 'Parent not found.',
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = AdminResetPasswordSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        parent.set_password(serializer.validated_data['new_password'])
+        parent.save()
+
+        return Response({
+            'success': True,
+            'message': 'Parent password reset successfully.',
+        })
+
+
 
 

@@ -32,7 +32,6 @@ export function AdminDashboard({ onNavigate }) {
         { label: 'Active Enrollments', value: stats.total_enrollments, icon: ClipboardCheck, color: 'pink' },
         { label: 'Total Quizzes', value: stats.total_quizzes, icon: ClipboardCheck, color: 'indigo' },
         { label: 'Live Classes', value: stats.total_live_classes, icon: Radio, color: 'orange' },
-        { label: 'Total Revenue', value: `$${parseFloat(stats.total_revenue || 0).toLocaleString()}`, icon: CreditCard, color: 'teal' },
     ] : [];
 
     const quickActions = [
@@ -59,7 +58,7 @@ export function AdminDashboard({ onNavigate }) {
             {/* Stats Grid */}
             <div className="admin-stats-grid">
                 {loading ? (
-                    Array.from({ length: 8 }).map((_, i) => (
+                    Array.from({ length: 7 }).map((_, i) => (
                         <div key={i} className="admin-skeleton admin-skeleton-stat" />
                     ))
                 ) : (

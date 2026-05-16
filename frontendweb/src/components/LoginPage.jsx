@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Users, BrainCircuit, Trophy } from 'lucide-react';
+import { Users, BrainCircuit, Trophy, Eye, EyeOff } from 'lucide-react';
 import './LoginPage.css';
 import api from '../api.js';
 
@@ -106,6 +106,8 @@ export function LoginPage({ onBack }) {
     const [forgotId, setForgotId] = useState('');
     const [otpCode, setOtpCode] = useState('');
     const [newPass, setNewPass] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [showNewPass, setShowNewPass] = useState(false);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -263,7 +265,20 @@ export function LoginPage({ onBack }) {
 
                                 <div className="input-wrapper">
                                     <svg className="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                    <input type="password" placeholder="Password" required value={password} onChange={(e) => setPassword(e.target.value)} />
+                                    <input 
+                                        type={showPassword ? "text" : "password"} 
+                                        placeholder="Password" 
+                                        required 
+                                        value={password} 
+                                        onChange={(e) => setPassword(e.target.value)} 
+                                    />
+                                    <button 
+                                        type="button" 
+                                        className="password-toggle-btn"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                    >
+                                        {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
                                 </div>
 
                                 <div className="form-actions-row">
@@ -327,7 +342,20 @@ export function LoginPage({ onBack }) {
 
                                 <div className="input-wrapper">
                                     <svg className="input-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path></svg>
-                                    <input type="password" placeholder="New Password" required value={newPass} onChange={(e) => setNewPass(e.target.value)} />
+                                    <input 
+                                        type={showNewPass ? "text" : "password"} 
+                                        placeholder="New Password" 
+                                        required 
+                                        value={newPass} 
+                                        onChange={(e) => setNewPass(e.target.value)} 
+                                    />
+                                    <button 
+                                        type="button" 
+                                        className="password-toggle-btn"
+                                        onClick={() => setShowNewPass(!showNewPass)}
+                                    >
+                                        {showNewPass ? <EyeOff size={20} /> : <Eye size={20} />}
+                                    </button>
                                 </div>
 
                                 <button type="submit" className="premium-submit-btn" disabled={loading}>

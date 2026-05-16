@@ -105,13 +105,13 @@ const DownloadsScreen: React.FC = ({ navigation }: any) => {
         <View style={styles.center}>
           <ActivityIndicator size="large" color={Colors.light.primary} />
         </View>
-      ) : myDownloads.length === 0 ? (
+      ) : (myDownloads || []).length === 0 ? (
         <View style={styles.emptyContainer}>
           <MaterialCommunityIcons name="download-off-outline" size={64} color="#ccc" />
           <Text style={styles.emptyText}>No offline content yet.</Text>
           <TouchableOpacity 
             style={styles.browseButton}
-            onPress={() => navigation.navigate('StudentHome')}
+            onPress={() => navigation.navigate('HomeTab')}
           >
             <Text style={styles.browseButtonText}>Browse Lessons</Text>
           </TouchableOpacity>

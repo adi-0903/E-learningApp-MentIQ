@@ -162,7 +162,7 @@ export function AdminAnnouncements({ onBack }) {
                         <GraduationCap size={18} />
                     </div>
                     <div className="admin-stat-info">
-                        <h3>{announcements.filter(a => a.target_audience === 'students' || a.target_audience === 'all').length}</h3>
+                        <h3>{announcements.filter(a => a.target_audience === 'students').length}</h3>
                         <span>To Students</span>
                     </div>
                 </div>
@@ -171,7 +171,7 @@ export function AdminAnnouncements({ onBack }) {
                         <BookOpen size={18} />
                     </div>
                     <div className="admin-stat-info">
-                        <h3>{announcements.filter(a => a.target_audience === 'teachers' || a.target_audience === 'all').length}</h3>
+                        <h3>{announcements.filter(a => a.target_audience === 'teachers').length}</h3>
                         <span>To Teachers</span>
                     </div>
                 </div>
@@ -180,7 +180,7 @@ export function AdminAnnouncements({ onBack }) {
                         <Users size={18} />
                     </div>
                     <div className="admin-stat-info">
-                        <h3>{announcements.filter(a => a.target_audience === 'parents' || a.target_audience === 'all').length}</h3>
+                        <h3>{announcements.filter(a => a.target_audience === 'parents').length}</h3>
                         <span>To Parents</span>
                     </div>
                 </div>

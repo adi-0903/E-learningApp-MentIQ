@@ -1,4 +1,4 @@
-import * as Notifications from 'expo-notifications';
+import type * as NotificationsType from 'expo-notifications';
 import * as Device from 'expo-device';
 import { Platform } from 'react-native';
 import Constants from 'expo-constants';
@@ -6,17 +6,26 @@ import Constants from 'expo-constants';
 const isExpoGo = Constants.executionEnvironment === 'storeClient' || Constants.appOwnership === 'expo';
 const isAndroid = Platform.OS === 'android';
 
-// Handle notification behavior when app is in foreground
+// Only import notifications if we are not in Expo Go on Android, 
+// to avoid the SDK 53 "removed from Expo Go" error
+let Notifications: typeof NotificationsType | null = null;
 if (!(isExpoGo && isAndroid)) {
-  Notifications.setNotificationHandler({
-    handleNotification: async () => ({
-      shouldShowAlert: true,
-      shouldPlaySound: true,
-      shouldSetBadge: true,
-      shouldShowBanner: true,
-      shouldShowList: true,
-    }),
-  });
+  try {
+    Notifications = require('expo-notifications');
+    if (Notifications) {
+      Notifications.setNotificationHandler({
+        handleNotification: async () => ({
+          shouldShowAlert: true,
+          shouldPlaySound: true,
+          shouldSetBadge: true,
+          shouldShowBanner: true,
+          shouldShowList: true,
+        }),
+      });
+    }
+  } catch (e) {
+    console.warn('Notifications module failed to load:', e);
+  }
 }
 
 export async function registerForPushNotificationsAsync() {
@@ -27,7 +36,7 @@ export async function registerForPushNotificationsAsync() {
     return null;
   }
 
-  if (Platform.OS === 'android') {
+  if (Platform.OS === 'android' && Notifications) {
     await Notifications.setNotificationChannelAsync('default', {
       name: 'default',
       importance: Notifications.AndroidImportance.MAX,
@@ -36,10 +45,10 @@ export async function registerForPushNotificationsAsync() {
     });
   }
 
-  if (Device.isDevice) {
+  if (Device.isDevice && Notifications) {
     const { status: existingStatus } = await Notifications.getPermissionsAsync();
     let finalStatus = existingStatus;
-    if (existingStatus !== 'granted') {
+    if (existingStatus !== 'granted' && Notifications) {
       const { status } = await Notifications.requestPermissionsAsync();
       finalStatus = status;
     }
@@ -55,9 +64,11 @@ export async function registerForPushNotificationsAsync() {
         throw new Error('EAS project ID not found in app.json');
       }
       
-      token = (await Notifications.getExpoPushTokenAsync({
-        projectId: projectId,
-      })).data;
+      if (Notifications) {
+        token = (await Notifications.getExpoPushTokenAsync({
+          projectId: projectId,
+        })).data;
+      }
       console.log('Push Token Generated:', token);
     } catch (e) {
       console.error('Error fetching push token:', e);
@@ -75,27 +86,31 @@ export async function registerForPushNotificationsAsync() {
  * Hook or setup to listen for notifications
  */
 export const setupNotificationListeners = (
-  onNotificationReceived?: (notification: Notifications.Notification) => void,
-  onNotificationResponse?: (response: Notifications.NotificationResponse) => void
+  onNotificationReceived?: (notification: NotificationsType.Notification) => void,
+  onNotificationResponse?: (response: NotificationsType.NotificationResponse) => void
 ) => {
   // Notification received while app is running
-  let subscription: Notifications.Subscription | null = null;
+  let subscription: any = null;
   try {
-    subscription = Notifications.addNotificationReceivedListener(notification => {
-      console.log('Notification Received:', notification);
-      if (onNotificationReceived) onNotificationReceived(notification);
-    });
+    if (Notifications) {
+      subscription = Notifications.addNotificationReceivedListener((notification: any) => {
+        console.log('Notification Received:', notification);
+        if (onNotificationReceived) onNotificationReceived(notification);
+      });
+    }
   } catch (e) {
     console.warn('Could not add notification received listener:', e);
   }
 
   // Notification tapped/interacted with
-  let responseSubscription: Notifications.Subscription | null = null;
+  let responseSubscription: any = null;
   try {
-    responseSubscription = Notifications.addNotificationResponseReceivedListener(response => {
-      console.log('Notification Tapped:', response);
-      if (onNotificationResponse) onNotificationResponse(response);
-    });
+    if (Notifications) {
+      responseSubscription = Notifications.addNotificationResponseReceivedListener((response: any) => {
+        console.log('Notification Tapped:', response);
+        if (onNotificationResponse) onNotificationResponse(response);
+      });
+    }
   } catch (e) {
     console.warn('Could not add notification response listener:', e);
   }

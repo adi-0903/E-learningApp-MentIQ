@@ -27,16 +27,18 @@ function SplashScreen({ onFinish }: SplashScreenProps) {
     // Initialize app while showing splash
     const initializeApp = async () => {
       try {
+        // Increase timeout to 15s for slower dev environments
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('Initialization timeout')), 5000)
+          setTimeout(() => reject(new Error('Initialization timeout')), 15000)
         );
 
         await Promise.race([
           getCurrentUser(),
           timeoutPromise
         ]);
-      } catch (error) {
-        console.error('Failed to initialize app:', error);
+      } catch (error: any) {
+        console.warn('Initialization notice:', error.message);
+        // We continue anyway so the user isn't stuck on splash
       } finally {
         isAppReady.current = true;
       }

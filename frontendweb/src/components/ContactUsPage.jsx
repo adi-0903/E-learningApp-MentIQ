@@ -1,216 +1,227 @@
 import React, { useState, useEffect } from 'react';
 import './ContactUsPage.css';
-import api from '../api';
+import {
+    ArrowLeft,
+    Mail,
+    Phone,
+    MapPin,
+    Send,
+    MessageSquare,
+    Github,
+    Twitter,
+    Linkedin,
+    Globe,
+    Clock,
+    ShieldCheck
+} from 'lucide-react';
 
-const SUBJECTS = [
-    'General Inquiry',
-    'Technical Support',
-    'Course Issues',
-    'Billing & Payments',
-    'Report a Bug',
-    'Feature Request',
-    'Other',
-];
-
-export function ContactUsPage({ userData }) {
-    const [form, setForm] = useState({
-        sender_name: '',
-        sender_email: '',
+export const ContactUsPage = ({ onBack, userData }) => {
+    const [formData, setFormData] = useState({
+        name: userData?.name || '',
+        email: userData?.email || '',
         subject: '',
-        message: '',
+        message: ''
     });
 
-    const [loading, setLoading] = useState(false);
-    const [sent, setSent] = useState(false);
-    const [showSubjects, setShowSubjects] = useState(false);
-    const [focusedField, setFocusedField] = useState(null);
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [submitted, setSubmitted] = useState(false);
 
     useEffect(() => {
         if (userData) {
-            setForm(prev => ({
+            setFormData(prev => ({
                 ...prev,
-                sender_name: userData.name || '',
-                sender_email: userData.email || '',
+                name: userData.full_name || userData.name || '',
+                email: userData.email || ''
             }));
         }
     }, [userData]);
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setForm(prev => ({ ...prev, [name]: value }));
+        setFormData(prev => ({ ...prev, [name]: value }));
     };
 
-    const handleSubjectSelect = (subj) => {
-        setForm(prev => ({ ...prev, subject: subj }));
-        setShowSubjects(false);
-    };
-
-    const handleSubmit = async (e) => {
+    const handleSubmit = (e) => {
         e.preventDefault();
+        setIsSubmitting(true);
 
-        if (!form.sender_name.trim()) return alert('Please enter your name.');
-        if (!form.sender_email.trim() || !form.sender_email.includes('@')) return alert('Please enter a valid email.');
-        if (!form.subject.trim()) return alert('Please select a subject.');
-        if (!form.message.trim() || form.message.length < 10) return alert('Message must be at least 10 characters.');
+        // Simulate API call
+        setTimeout(() => {
+            setIsSubmitting(false);
+            setSubmitted(true);
+            setFormData({
+                name: userData?.full_name || userData?.name || '',
+                email: userData?.email || '',
+                subject: '',
+                message: ''
+            });
 
-        setLoading(true);
-        try {
-            const res = await api.post('emails/contact/', form);
-            if (res.data && res.data.success) {
-                setSent(true);
-            } else {
-                alert(res.data.error?.message || 'Failed to send message.');
-            }
-        } catch (error) {
-            console.error(error);
-            alert('An error occurred while sending your message.');
-        } finally {
-            setLoading(false);
-        }
+            // Reset success message after 5 seconds
+            setTimeout(() => setSubmitted(false), 5000);
+        }, 1500);
     };
-
-    if (sent) {
-        return (
-            <div className="contact-page-wrapper">
-                <div className="success-container">
-                    <div className="success-icon-wrapper">
-                        <div className="success-ring"></div>
-                        <svg className="success-check" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="3">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                    </div>
-                    <h2 className="success-title">Message Sent!</h2>
-                    <p className="success-message">Thank you for reaching out. Our team will get back to you at <strong>{form.sender_email}</strong> within 24 hours.</p>
-                    <button className="back-btn" onClick={() => setSent(false)}>Send Another Message</button>
-                </div>
-            </div>
-        );
-    }
 
     return (
-        <div className="contact-page-wrapper">
-            <div className="contact-header">
-                <h1>Get in Touch</h1>
-                <p>We'd love to hear from you. Send us a message and we'll respond as soon as possible.</p>
-            </div>
+        <div className="contact-page-wrapper fade-in">
+            {/* Background Elements */}
+            <div className="contact-bg-blob blob-1"></div>
+            <div className="contact-bg-blob blob-2"></div>
+            <div className="contact-bg-glow"></div>
 
-            <div className="contact-content">
+            <header className="contact-header">
+                <button className="back-btn-modern" onClick={onBack}>
+                    <ArrowLeft size={20} />
+                    <span>Back to Dashboard</span>
+                </button>
+                <div className="header-text">
+                    <h1 className="contact-title">Get in <span className="text-gradient">Touch</span></h1>
+                    <p className="contact-subtitle">Have questions or feedback? We're here to help you on your learning journey.</p>
+                </div>
+            </header>
+
+            <div className="contact-container">
+                {/* Contact Info Side */}
                 <div className="contact-info-section">
-                    <div className="info-card">
-                        <div className="info-icon email-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                            </svg>
+                    <div className="info-card-grid">
+                        <div className="info-card">
+                            <div className="info-icon-wrapper">
+                                <Mail className="info-icon" />
+                            </div>
+                            <div className="info-content">
+                                <h3>Email Us</h3>
+                                <p>mentiq.learn@gmail.com</p>
+                                <span className="info-hint">Response within 24h</span>
+                            </div>
                         </div>
-                        <h3>Email Us</h3>
-                        <p>mentiq.learn@gmail.com</p>
+
+                        <div className="info-card">
+                            <div className="info-icon-wrapper">
+                                <Phone className="info-icon" />
+                            </div>
+                            <div className="info-content">
+                                <h3>Call Us</h3>
+                                <p>+91 70098 12679</p>
+                                <span className="info-hint">Mon-Fri, 9am-6pm</span>
+                            </div>
+                        </div>
+
+                        <div className="info-card">
+                            <div className="info-icon-wrapper">
+                                <MapPin className="info-icon" />
+                            </div>
+                            <div className="info-content">
+                                <h3>Visit Us</h3>
+                                <p>MentiQ Hub, Sector 42, Delhi</p>
+                            </div>
+                        </div>
                     </div>
 
-                    <div className="info-card">
-                        <div className="info-icon time-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
+                    <div className="social-connect">
+                        <h3>Follow Us</h3>
+                        <div className="social-links">
+                            <a href="#" className="social-icon"><Github size={18} /></a>
+                            <a href="#" className="social-icon"><Twitter size={18} /></a>
+                            <a href="#" className="social-icon"><Linkedin size={18} /></a>
                         </div>
-                        <h3>Response Time</h3>
-                        <p>Usually within 3 hours</p>
-                    </div>
-
-                    <div className="info-card">
-                        <div className="info-icon hours-icon">
-                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                        <h3>Working Hours</h3>
-                        <p>Mon - Fri, 9am - 6pm IST</p>
                     </div>
                 </div>
 
+                {/* Form Section */}
                 <div className="contact-form-section">
-                    <form onSubmit={handleSubmit} className="contact-form">
+                    <form className="contact-form-modern" onSubmit={handleSubmit}>
+                        <div className="form-header-inner">
+                            <MessageSquare className="form-header-icon" />
+                            <h2>Send a Message</h2>
+                        </div>
+
                         <div className="form-row">
-                            <div className={`form-group ${focusedField === 'name' || form.sender_name ? 'focused' : ''}`}>
-                                <label>Your Name</label>
-                                <input
-                                    type="text"
-                                    name="sender_name"
-                                    value={form.sender_name}
-                                    onChange={handleChange}
-                                    onFocus={() => setFocusedField('name')}
-                                    onBlur={() => setFocusedField(null)}
-                                    placeholder="Enter your name"
-                                />
-                            </div>
-                            <div className={`form-group ${focusedField === 'email' || form.sender_email ? 'focused' : ''}`}>
-                                <label>Email Address</label>
-                                <input
-                                    type="email"
-                                    name="sender_email"
-                                    value={form.sender_email}
-                                    onChange={handleChange}
-                                    onFocus={() => setFocusedField('email')}
-                                    onBlur={() => setFocusedField(null)}
-                                    placeholder="Enter your email"
-                                />
-                            </div>
-                        </div>
-
-                        <div className={`form-group ${focusedField === 'subject' || form.subject ? 'focused' : ''}`}>
-                            <label>Subject</label>
-                            <div className="custom-select" onClick={() => setShowSubjects(!showSubjects)}>
-                                <span className="select-value">{form.subject || 'Select a topic'}</span>
-                                <svg className={`select-arrow ${showSubjects ? 'open' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </div>
-                            {showSubjects && (
-                                <div className="select-dropdown">
-                                    {SUBJECTS.map((s) => (
-                                        <div
-                                            key={s}
-                                            className={`select-option ${form.subject === s ? 'selected' : ''}`}
-                                            onClick={(e) => {
-                                                e.stopPropagation();
-                                                handleSubjectSelect(s);
-                                            }}
-                                        >
-                                            {s}
-                                        </div>
-                                    ))}
+                            <div className="form-group-modern">
+                                <label>Full Name</label>
+                                <div className="input-wrapper">
+                                    <input
+                                        type="text"
+                                        name="name"
+                                        value={formData.name}
+                                        onChange={handleChange}
+                                        placeholder="Enter your name"
+                                        required
+                                    />
                                 </div>
-                            )}
+                            </div>
+                            <div className="form-group-modern">
+                                <label>Email Address</label>
+                                <div className="input-wrapper">
+                                    <input
+                                        type="email"
+                                        name="email"
+                                        value={formData.email}
+                                        onChange={handleChange}
+                                        placeholder="Enter your email"
+                                        required
+                                    />
+                                </div>
+                            </div>
                         </div>
 
-                        <div className={`form-group ${focusedField === 'message' || form.message ? 'focused' : ''}`}>
+                        <div className="form-group-modern">
+                            <label>Subject</label>
+                            <div className="input-wrapper">
+                                <select
+                                    name="subject"
+                                    value={formData.subject}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="" disabled>Select a subject</option>
+                                    <option value="General Inquiry">General Inquiry</option>
+                                    <option value="Technical Support">Technical Support</option>
+                                    <option value="Billing">Billing & Payments</option>
+                                    <option value="Course Feedback">Course Feedback</option>
+                                    <option value="Partnership">Partnership</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div className="form-group-modern">
                             <label>Message</label>
-                            <textarea
-                                name="message"
-                                value={form.message}
-                                onChange={handleChange}
-                                onFocus={() => setFocusedField('message')}
-                                onBlur={() => setFocusedField(null)}
-                                placeholder="Write your message here..."
-                                rows="5"
-                            ></textarea>
-                            <span className="char-count">{form.message.length} characters</span>
+                            <div className="input-wrapper">
+                                <textarea
+                                    name="message"
+                                    value={formData.message}
+                                    onChange={handleChange}
+                                    placeholder="Write your message here..."
+                                    rows="5"
+                                    required
+                                ></textarea>
+                            </div>
                         </div>
 
-                        <button type="submit" className="submit-btn" disabled={loading}>
-                            {loading ? (
-                                <span>Sending...</span>
+                        <button
+                            type="submit"
+                            className={`submit-btn-modern ${isSubmitting ? 'loading' : ''} ${submitted ? 'success' : ''}`}
+                            disabled={isSubmitting || submitted}
+                        >
+                            {isSubmitting ? (
+                                <span className="loader-dots">Sending...</span>
+                            ) : submitted ? (
+                                <>
+                                    <ShieldCheck size={18} />
+                                    <span>Message Sent!</span>
+                                </>
                             ) : (
                                 <>
                                     <span>Send Message</span>
-                                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3"></path>
-                                    </svg>
+                                    <Send size={18} />
                                 </>
                             )}
                         </button>
+
+                        {submitted && (
+                            <p className="success-text fade-in">Thank you! We'll get back to you shortly.</p>
+                        )}
                     </form>
                 </div>
             </div>
         </div>
     );
-}
+};

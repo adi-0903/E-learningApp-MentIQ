@@ -222,7 +222,11 @@ function App() {
                     <AdminUserDetail
                         userId={adminSelectedUserId}
                         userType={adminSelectedUserType}
-                        onBack={() => setCurrentPage(adminSelectedUserType === 'teacher' ? 'admin_teachers' : 'admin_students')}
+                        onBack={() => setCurrentPage(
+                            adminSelectedUserType === 'teacher' ? 'admin_teachers' :
+                            adminSelectedUserType === 'parent' ? 'admin_parents' :
+                            'admin_students'
+                        )}
                     />
                 ) : currentPage === 'admin_courses' ? (
                     <AdminCourses
@@ -251,7 +255,10 @@ function App() {
                 ) : currentPage === 'admin_attendance' ? (
                     <AdminAttendance onBack={() => setCurrentPage('dashboard')} />
                 ) : currentPage === 'admin_parents' ? (
-                    <AdminParents onBack={() => setCurrentPage('dashboard')} />
+                    <AdminParents 
+                        onBack={() => setCurrentPage('dashboard')} 
+                        onViewDetail={(id, type) => handleAdminNavigate('admin_user_detail', id, type)}
+                    />
                 ) : currentPage === 'parents' ? (
                     <TeacherParents onBack={() => setCurrentPage('dashboard')} />
 

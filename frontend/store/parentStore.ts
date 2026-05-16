@@ -65,8 +65,8 @@ export const useParentStore = create<ParentState>((set, get) => ({
   fetchProfile: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await parentApi.getProfile();
-      set({ profile: response.data, isLoading: false });
+      const { data } = await parentApi.getProfile();
+      set({ profile: data.data || data, isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
     }
@@ -75,8 +75,8 @@ export const useParentStore = create<ParentState>((set, get) => ({
   updateProfile: async (data) => {
     set({ isLoading: true, error: null });
     try {
-      const response = await parentApi.updateProfile(data);
-      set({ profile: response.data, isLoading: false });
+      const { data } = await parentApi.updateProfile(data);
+      set({ profile: data.data || data, isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
     }
@@ -85,8 +85,9 @@ export const useParentStore = create<ParentState>((set, get) => ({
   fetchChildren: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await parentApi.getChildren();
-      set({ children: response.data, isLoading: false });
+      const { data } = await parentApi.getChildren();
+      const results = data.data || data.results || data;
+      set({ children: Array.isArray(results) ? results : [], isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
     }
@@ -95,8 +96,9 @@ export const useParentStore = create<ParentState>((set, get) => ({
   fetchLinkRequests: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await parentApi.getLinkRequests();
-      set({ linkRequests: response.data, isLoading: false });
+      const { data } = await parentApi.getLinkRequests();
+      const results = data.data || data.results || data;
+      set({ linkRequests: Array.isArray(results) ? results : [], isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
     }
@@ -119,8 +121,9 @@ export const useParentStore = create<ParentState>((set, get) => ({
   fetchPendingParentRequests: async () => {
     set({ isLoading: true, error: null });
     try {
-      const response = await parentApi.getPendingParentRequests();
-      set({ pendingParentRequests: response.data, isLoading: false });
+      const { data } = await parentApi.getPendingParentRequests();
+      const results = data.data || data.results || data;
+      set({ pendingParentRequests: Array.isArray(results) ? results : [], isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
     }
@@ -141,8 +144,9 @@ export const useParentStore = create<ParentState>((set, get) => ({
 
   fetchChildReports: async (studentId) => {
     try {
-      const response = await parentApi.getChildReports(studentId);
-      return response.data;
+      const { data } = await parentApi.getChildReports(studentId);
+      const results = data.data || data.results || data;
+      return Array.isArray(results) ? results : [];
     } catch (err) {
       console.error('Failed to fetch child reports:', err);
       return [];

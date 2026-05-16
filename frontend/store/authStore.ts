@@ -16,6 +16,7 @@ export interface User {
   teacherId?: string;
   studentId?: string;
   parentId?: string;
+  gradeLevel?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -65,6 +66,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         teacherId: data.user?.teacher_id || '',
         studentId: data.user?.student_id || '',
         parentId: data.user?.parent_id || '',
+        gradeLevel: data.user?.grade_level || '',
       };
 
       // Verify role matches
@@ -138,6 +140,7 @@ export const useAuthStore = create<AuthState>((set) => ({
           teacherId: actualData.teacher_id || '',
           studentId: actualData.student_id || '',
           parentId: actualData.parent_id || '',
+          gradeLevel: actualData.grade_level || '',
         };
         set({ user: freshUser, isLoggedIn: true, isLoading: false });
         await AsyncStorage.setItem('currentUser', JSON.stringify(freshUser));
@@ -191,6 +194,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         isPhoneVerified: actualData.is_phone_verified ?? (state.user?.isPhoneVerified || false),
         profileImage: actualData.profile_image_url || actualData.profile_image || (state.user?.profileImage || ''),
         profileAvatar: actualData.profile_avatar || (state.user?.profileAvatar || ''),
+        gradeLevel: actualData.grade_level || (state.user?.gradeLevel || ''),
       };
       set({ user: updatedUser });
       await AsyncStorage.setItem('currentUser', JSON.stringify(updatedUser));

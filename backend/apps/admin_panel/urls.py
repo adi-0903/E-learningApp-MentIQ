@@ -24,6 +24,7 @@ urlpatterns = [
     # ── Student Management ────────────────────────────────────
     path('students/', views.AdminStudentListView.as_view(), name='student-list'),
     path('students/create/', views.AdminStudentCreateView.as_view(), name='student-create'),
+    path('students/search/', views.AdminStudentSearchView.as_view(), name='student-search'),
     path('students/<uuid:id>/', views.AdminStudentDetailView.as_view(), name='student-detail'),
     path('students/<uuid:id>/update/', views.AdminStudentUpdateView.as_view(), name='student-update'),
     path('students/<uuid:id>/deactivate/', views.AdminStudentDeactivateView.as_view(), name='student-deactivate'),
@@ -64,4 +65,9 @@ urlpatterns = [
 
     # ── Parent Management ─────────────────────────────────────
     path('parents/', views.AdminParentListView.as_view(), name='parent-list'),
+    path('parents/create/', views.AdminParentCreateView.as_view(), name='parent-create'),
+    path('parents/<uuid:id>/', views.AdminParentDetailView.as_view(), name='parent-detail'),
+    path('parents/<uuid:id>/update/', views.AdminParentUpdateView.as_view(), name='parent-update'),
+    path('parents/<uuid:id>/deactivate/', views.AdminParentDeactivateView.as_view(), name='parent-deactivate'),
+    path('parents/<uuid:id>/reset-password/', views.AdminParentResetPasswordView.as_view(), name='parent-reset-password'),
 ]
