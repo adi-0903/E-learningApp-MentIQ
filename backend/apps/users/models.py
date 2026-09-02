@@ -192,6 +192,7 @@ class PhoneOTP(TimeStampedModel):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='phone_otps')
     otp_code = models.CharField(max_length=6)
     is_used = models.BooleanField(default=False)
+    attempts = models.PositiveIntegerField(default=0)
     expires_at = models.DateTimeField()
 
     class Meta:
