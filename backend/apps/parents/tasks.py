@@ -15,6 +15,7 @@ from apps.notifications.models import Notification
 User = get_user_model()
 logger = logging.getLogger(__name__)
 
+
 @shared_task(name="apps.parents.tasks.generate_weekly_reports")
 def generate_weekly_reports():
     """
@@ -28,17 +29,23 @@ def generate_weekly_reports():
     
     logger.info(f"Generating weekly reports for range {start_date} to {end_date}")
     
-    parents = ParentAccount.objects.filter(receive_weekly_reports=True)
+    parents = ParentAccount.objects.filter(
+        receive_weekly_reports=True
+    ).select_related('user').prefetch_related('children')
+
+    # Pre-fetch existing weekly reports for this week to avoid N+1 queries
+    existing_reports = set(
+        WeeklyProgressReport.objects.filter(
+            week_end_date=end_date
+        ).values_list('parent_id', 'student_id')
+    )
+
     count = 0
     
     for parent in parents:
         for student in parent.children.all():
             # Check if report already exists for this week
-            if WeeklyProgressReport.objects.filter(
-                student=student, 
-                parent=parent, 
-                week_end_date=end_date
-            ).exists():
+            if (parent.id, student.id) in existing_reports:
                 continue
                 
             try:
@@ -59,7 +66,7 @@ def generate_weekly_reports():
                     title="Weekly Progress Report Ready",
                     body=f"The weekly report for {student.name} is now available in your dashboard.",
                     notification_type=Notification.TypeChoices.SYSTEM,
-                    data={"type": "weekly_report", "student_id": student.id}
+                    data={"type": "weekly_report", "student_id": str(student.id)}
                 )
                 count += 1
             except Exception as e:
@@ -83,9 +90,6 @@ def _calculate_student_metrics(student, start_date, end_date):
     quizzes_completed = quiz_attempts.count()
     avg_score = 0.0
     if quizzes_completed > 0:
-        # We need to calculate percentage manually if not stored, 
-        # but QuizAttempt has a 'score' and 'total_questions'
-        # Let's assume average of (score/total_questions)*100
         scores = [a.percentage for a in quiz_attempts]
         avg_score = sum(scores) / len(scores)
         

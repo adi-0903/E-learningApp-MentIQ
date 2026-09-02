@@ -1,10 +1,15 @@
+import os
+from unittest.mock import patch
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from apps.users.models import PhoneOTP
+from create_users import get_seed_password
 
 User = get_user_model()
+
 
 class UserAuthTests(TestCase):
     def setUp(self):
@@ -196,6 +201,120 @@ class UserAuthTests(TestCase):
         self.assertEqual(len(otp.otp_code), 4)
         self.assertTrue(otp.otp_code.isdigit())
         self.assertTrue(1000 <= int(otp.otp_code) <= 9999)
+
+
+class ForgotPasswordSecurityTests(TestCase):
+    def setUp(self):
+        from django.core.cache import cache
+        cache.clear()
+        self.client = APIClient()
+        self.forgot_request_url = '/api/v1/auth/forgot-password/request/'
+        self.forgot_verify_url = '/api/v1/auth/forgot-password/verify/'
+        self.login_url = '/api/v1/auth/login/'
+
+        self.user = User.objects.create_user(
+            email='existing@mentiq.com',
+            password='OldPassword123!',
+            name='Existing User',
+            role='student'
+        )
+
+    def test_forgot_password_request_existing_user(self):
+        response = self.client.post(self.forgot_request_url, {
+            'identifier': 'existing@mentiq.com'
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('success'))
+        self.assertEqual(
+            response.data.get('message'),
+            'If an account matches that information, a verification code has been sent.'
+        )
+        self.assertTrue(PhoneOTP.objects.filter(user=self.user, is_used=False).exists())
+
+    def test_forgot_password_request_non_existing_user_prevents_enumeration(self):
+        response = self.client.post(self.forgot_request_url, {
+            'identifier': 'nonexistent@mentiq.com'
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('success'))
+        self.assertEqual(
+            response.data.get('message'),
+            'If an account matches that information, a verification code has been sent.'
+        )
+        self.assertEqual(PhoneOTP.objects.count(), 0)
+
+    def test_forgot_password_verify_non_existing_user_prevents_enumeration(self):
+        response = self.client.post(self.forgot_verify_url, {
+            'identifier': 'nonexistent@mentiq.com',
+            'otp_code': '0000',
+            'new_password': 'NewPassword123!'
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(response.data.get('success'))
+        self.assertEqual(
+            response.data.get('message'),
+            'Invalid or expired verification code.'
+        )
+
+    def test_forgot_password_verify_success_and_login(self):
+        # Request reset
+        self.client.post(self.forgot_request_url, {
+            'identifier': 'existing@mentiq.com'
+        }, format='json')
+
+        otp_obj = PhoneOTP.objects.filter(user=self.user, is_used=False).latest('created_at')
+
+        # Verify and update password
+        response = self.client.post(self.forgot_verify_url, {
+            'identifier': 'existing@mentiq.com',
+            'otp_code': otp_obj.otp_code,
+            'new_password': 'BrandNewPassword123!'
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('success'))
+
+        # Verify login works with new password
+        login_resp = self.client.post(self.login_url, {
+            'email': 'existing@mentiq.com',
+            'password': 'BrandNewPassword123!'
+        }, format='json')
+        self.assertEqual(login_resp.status_code, status.HTTP_200_OK)
+
+
+class SeederPasswordGenerationTests(TestCase):
+    def test_generated_password_randomness_and_complexity(self):
+        pwd1 = get_seed_password()
+        pwd2 = get_seed_password()
+
+        self.assertNotEqual(pwd1, pwd2)
+        self.assertGreaterEqual(len(pwd1), 16)
+        self.assertTrue(any(c.islower() for c in pwd1))
+        self.assertTrue(any(c.isupper() for c in pwd1))
+        self.assertTrue(any(c.isdigit() for c in pwd1))
+        self.assertTrue(any(c in "!@#$%^&*" for c in pwd1))
+
+        # Ensure generated password passes Django's password validators
+        validate_password(pwd1)
+
+    @patch.dict(os.environ, {'SEED_PASSWORD': 'CustomGlobalPassword123!'}, clear=False)
+    def test_global_env_password_override(self):
+        pwd = get_seed_password('someuser@mentiq.com')
+        self.assertEqual(pwd, 'CustomGlobalPassword123!')
+
+    @patch.dict(os.environ, {
+        'SEED_PASSWORD_ADMIN_MENTIQ_COM': 'AdminSpecificPassword2026!',
+        'SEED_PASSWORD': 'FallbackGlobalPassword123!'
+    }, clear=False)
+    def test_user_specific_env_password_override(self):
+        pwd_admin = get_seed_password('admin@mentiq.com')
+        pwd_other = get_seed_password('other@mentiq.com')
+
+        self.assertEqual(pwd_admin, 'AdminSpecificPassword2026!')
+        self.assertEqual(pwd_other, 'FallbackGlobalPassword123!')
 
 
 class SeederLogSecurityTests(TestCase):

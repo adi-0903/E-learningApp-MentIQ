@@ -922,7 +922,7 @@ class AdminAnnouncementCreateView(APIView):
 
         # Send notifications to the targeted audience
         try:
-            from apps.notifications.utils import create_notification
+            from apps.notifications.utils import bulk_create_notifications
             from apps.notifications.models import Notification
 
             title = f"Admin Announcement: {announcement.title}"
@@ -931,27 +931,23 @@ class AdminAnnouncementCreateView(APIView):
             type_val = Notification.TypeChoices.ANNOUNCEMENT
 
             target = announcement.target_audience
+            recipient_roles = []
             if target == 'students' or target == 'all':
-                students = User.objects.filter(role='student', is_active=True)
-                for s in students:
-                    create_notification(
-                        user=s, title=title, body=body,
-                        notification_type=type_val, data=data
-                    )
+                recipient_roles.append('student')
             if target == 'teachers' or target == 'all':
-                teachers = User.objects.filter(role='teacher', is_active=True)
-                for t in teachers:
-                    create_notification(
-                        user=t, title=title, body=body,
-                        notification_type=type_val, data=data
-                    )
+                recipient_roles.append('teacher')
             if target == 'parents' or target == 'all':
-                parents = User.objects.filter(role='parent', is_active=True)
-                for p in parents:
-                    create_notification(
-                        user=p, title=title, body=body,
-                        notification_type=type_val, data=data
-                    )
+                recipient_roles.append('parent')
+
+            if recipient_roles:
+                recipients = User.objects.filter(role__in=recipient_roles, is_active=True).distinct()
+                bulk_create_notifications(
+                    users=recipients,
+                    title=title,
+                    body=body,
+                    notification_type=type_val,
+                    data=data
+                )
         except Exception as e:
             print(f'Admin Announcement Notification Error: {e}')
 

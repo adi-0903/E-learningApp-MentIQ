@@ -17,7 +17,11 @@ def run_seeder(script_name):
     module_name = os.path.splitext(script_name)[0]
     try:
         module = importlib.import_module(module_name)
-        if hasattr(module, 'create_quizzes'):
+        if hasattr(module, 'create_users'):
+            module.create_users()
+        elif hasattr(module, 'create_parents'):
+            module.create_parents()
+        elif hasattr(module, 'create_quizzes'):
             module.create_quizzes()
         elif hasattr(module, 'seed_lessons'):
             module.seed_lessons()

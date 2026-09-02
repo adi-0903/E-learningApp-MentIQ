@@ -140,7 +140,6 @@ class StudentDashboardView(APIView):
             'overall_progress': round(overall, 1),
         }
 
-
         return Response({'success': True, 'data': data})
 
 
@@ -375,7 +374,6 @@ class StudentKnowledgeGraphView(APIView):
             quiz__course_id__in=course_ids,
         ).aggregate(total=Sum('time_taken'))['total'] or 0
 
-        # Accurate course study time (Lessons + Quizzes) for the enrolled courses
         total_time_seconds = lesson_time_seconds + quiz_time_seconds
         warnings = []
 
@@ -498,39 +496,85 @@ class StudentTeachersView(generics.ListAPIView):
 class StudentProgressView(APIView):
     """
     GET /api/v1/students/progress/
-    Returns progress summary for all enrolled courses.
+    Returns progress summary for all enrolled courses without N+1 queries.
     """
     permission_classes = [IsAuthenticated, IsStudent]
 
     def get(self, request):
         student = request.user
-        enrolled_ids = Enrollment.objects.filter(
-            student=student, is_active=True
-        ).values_list('course_id', flat=True)
+        enrolled_ids = list(
+            Enrollment.objects.filter(
+                student=student, is_active=True
+            ).values_list('course_id', flat=True)
+        )
 
         courses = Course.objects.filter(id__in=enrolled_ids)
-        progress_data = []
+
+        total_lessons_map = {
+            row['course']: row['total']
+            for row in Lesson.objects.filter(
+                course_id__in=enrolled_ids, is_deleted=False
+            ).values('course').annotate(total=Count('id'))
+        }
+
+        completed_lessons_map = {
+            row['lesson__course']: row['completed']
+            for row in LessonProgress.objects.filter(
+                student=student, lesson__course_id__in=enrolled_ids, completed=True
+            ).values('lesson__course').annotate(completed=Count('id'))
+        }
+
+        existing_cp_map = {
+            cp.course_id: cp
+            for cp in CourseProgress.objects.filter(
+                student=student, course_id__in=enrolled_ids
+            )
+        }
+
+        quiz_avg_map = {
+            row['quiz__course']: row['avg']
+            for row in QuizAttempt.objects.filter(
+                student=student, quiz__course_id__in=enrolled_ids
+            ).values('quiz__course').annotate(avg=Avg('score'))
+        }
+
+        new_cps = []
+        cp_map = {}
 
         for course in courses:
-            total_lessons = course.lessons.count()
-            completed_lessons = LessonProgress.objects.filter(
-                student=student, lesson__course=course, completed=True
-            ).count()
-
-            progress_pct = 0
+            total_lessons = total_lessons_map.get(course.id, 0)
+            completed_lessons = completed_lessons_map.get(course.id, 0)
+            progress_pct = 0.0
             if total_lessons > 0:
                 progress_pct = round((completed_lessons / total_lessons) * 100, 1)
 
-            # Course progress record
-            cp, _ = CourseProgress.objects.get_or_create(
-                student=student, course=course,
-                defaults={'progress_percentage': progress_pct}
-            )
+            if course.id in existing_cp_map:
+                cp_map[course.id] = existing_cp_map[course.id]
+            else:
+                new_cps.append(
+                    CourseProgress(
+                        student=student,
+                        course=course,
+                        progress_percentage=progress_pct,
+                    )
+                )
 
-            # Quiz average for this course
-            quiz_avg = QuizAttempt.objects.filter(
-                student=student, quiz__course=course
-            ).aggregate(avg=Avg('score'))['avg']
+        if new_cps:
+            created_cps = CourseProgress.objects.bulk_create(new_cps)
+            for cp in created_cps:
+                cp_map[cp.course_id] = cp
+
+        progress_data = []
+        for course in courses:
+            total_lessons = total_lessons_map.get(course.id, 0)
+            completed_lessons = completed_lessons_map.get(course.id, 0)
+            progress_pct = (
+                round((completed_lessons / total_lessons) * 100, 1)
+                if total_lessons > 0
+                else 0
+            )
+            cp = cp_map.get(course.id)
+            quiz_avg = quiz_avg_map.get(course.id)
 
             progress_data.append({
                 'course_id': course.id,
@@ -538,8 +582,8 @@ class StudentProgressView(APIView):
                 'total_lessons': total_lessons,
                 'completed_lessons': completed_lessons,
                 'progress_percentage': progress_pct,
-                'last_accessed': cp.updated_at,
-                'quiz_average': round(quiz_avg, 1) if quiz_avg else None,
+                'last_accessed': cp.updated_at if cp else None,
+                'quiz_average': round(quiz_avg, 1) if quiz_avg is not None else None,
             })
 
         return Response({'success': True, 'data': progress_data})
@@ -605,6 +649,8 @@ class StudentBrowseCoursesView(generics.ListAPIView):
             queryset = queryset.order_by(sort)
 
         return queryset
+
+
 class StudentSessionBookingCreateView(generics.CreateAPIView):
     """
     POST /api/v1/students/book-session/
@@ -669,6 +715,7 @@ class StudentMessageTeacherView(generics.CreateAPIView):
             )
         except Exception as e:
             print(f"Message Notification Failure: {e}")
+
 
 class StudentMessageHistoryView(generics.ListAPIView):
     """
