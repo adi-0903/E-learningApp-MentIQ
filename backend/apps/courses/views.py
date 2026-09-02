@@ -8,7 +8,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
 from apps.core.pagination import StandardPagination
-from apps.core.permissions import IsCourseTeacher, IsTeacher, IsTeacherOrReadOnly
+from apps.core.permissions import IsTeacherOrReadOnly
 
 from .models import Course, CourseReview
 from .serializers import (
