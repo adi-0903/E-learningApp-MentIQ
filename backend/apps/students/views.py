@@ -93,13 +93,24 @@ class StudentDashboardView(APIView):
         attendance_percentage = round((present_count / total_attendance) * 100, 1) if total_attendance > 0 else 0.0
 
         # Per-course attendance
+        course_attendance_map = {
+            str(row['session__course_id']): row
+            for row in AttendanceRecord.objects.filter(
+                student=student,
+                session__course__in=enrolled_courses
+            ).values('session__course_id').annotate(
+                total=Count('id'),
+                present=Count('id', filter=Q(is_present=True))
+            )
+        }
+
         course_attendance_stats = []
         for course in enrolled_courses:
-            course_records = AttendanceRecord.objects.filter(student=student, session__course=course)
-            c_total = course_records.count()
-            c_present = course_records.filter(is_present=True).count()
+            stats = course_attendance_map.get(str(course.id))
+            c_total = stats['total'] if stats else 0
+            c_present = stats['present'] if stats else 0
             c_percentage = round((c_present / c_total) * 100, 1) if c_total > 0 else 0.0
-            
+
             course_attendance_stats.append({
                 'id': str(course.id),
                 'title': course.title,
