@@ -106,14 +106,11 @@ class TeacherDashboardStatsView(APIView):
 
         active_courses = courses.filter(is_published=True).count()
         
-        # Pending Doubts (mocking for now as Doubt model isn't imported, but assuming there is an app)
-        # Note: If there's an actual doubt system we should query it here. Let's return 0 or do a basic query if we find it later.
-        pending_doubts = 0
-        try:
-            from apps.live_classes.models import SessionBooking # Or whichever model handles doubts/questions
-            pending_doubts = SessionBooking.objects.filter(teacher=teacher, status='scheduled').count()
-        except:
-            pass
+        # Pending Doubts / 1:1 Session Bookings
+        pending_doubts = SessionBooking.objects.filter(
+            teacher=teacher,
+            status=SessionBooking.StatusChoices.PENDING
+        ).count()
 
         # Average Attendance
         avg_attendance = 0 
