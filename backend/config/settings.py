@@ -223,13 +223,10 @@ SIMPLE_JWT = {
 }
 
 # CORS Configuration
-if DEBUG:
-    CORS_ALLOW_ALL_ORIGINS = True  # Allow any origin in development
-else:
-    CORS_ALLOWED_ORIGINS = env.list(
-        'CORS_ALLOWED_ORIGINS',
-        ['http://localhost:3000', 'http://localhost:8081', 'http://localhost:5173']
-    )
+CORS_ALLOWED_ORIGINS = env.list(
+    'CORS_ALLOWED_ORIGINS',
+    ['http://localhost:3000', 'http://localhost:8081', 'http://localhost:5173']
+)
 CSRF_TRUSTED_ORIGINS = env.list(
     'CSRF_TRUSTED_ORIGINS',
     ['http://localhost:3000', 'http://localhost:8081', 'http://localhost:5173']
