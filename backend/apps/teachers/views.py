@@ -3,7 +3,7 @@ Teacher-specific views.
 All endpoints here are restricted to users with role='teacher'.
 """
 from django.contrib.auth import get_user_model
-from django.db.models import Avg, Count, Q
+from django.db.models import Avg, Count, Max, Q
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -179,30 +179,55 @@ class TeacherStudentsView(APIView):
             course__in=courses, is_active=True
         ).select_related('student', 'course').order_by('-enrolled_at')
 
+        student_ids = list({e.student_id for e in enrollments})
+        course_ids = list({e.course_id for e in enrollments})
+
+        if not student_ids or not course_ids:
+            return Response({'success': True, 'data': []})
+
+        total_lessons_map = {
+            item['course_id']: item['total']
+            for item in Lesson.objects.filter(course_id__in=course_ids).values('course_id').annotate(total=Count('id'))
+        }
+
+        progress_map = {
+            (cp.student_id, cp.course_id): cp.progress_percentage
+            for cp in CourseProgress.objects.filter(student_id__in=student_ids, course_id__in=course_ids)
+        }
+
+        completed_lessons_map = {
+            (item['student_id'], item['lesson__course_id']): item['completed_count']
+            for item in LessonProgress.objects.filter(
+                student_id__in=student_ids, lesson__course_id__in=course_ids, completed=True
+            ).values('student_id', 'lesson__course_id').annotate(completed_count=Count('id'))
+        }
+
+        avg_quiz_map = {
+            (item['student_id'], item['quiz__course_id']): item['avg_score']
+            for item in QuizAttempt.objects.filter(
+                student_id__in=student_ids, quiz__course_id__in=course_ids
+            ).values('student_id', 'quiz__course_id').annotate(avg_score=Avg('score'))
+        }
+
+        last_progress_map = {
+            (item['student_id'], item['lesson__course_id']): item['last_active']
+            for item in LessonProgress.objects.filter(
+                student_id__in=student_ids, lesson__course_id__in=course_ids
+            ).values('student_id', 'lesson__course_id').annotate(last_active=Max('updated_at'))
+        }
+
         students_data = []
         for enrollment in enrollments:
             student = enrollment.student
             course = enrollment.course
+            student_id = student.id
+            course_id = course.id
 
-            # Get progress from CourseProgress model
-            progress_obj = CourseProgress.objects.filter(student=student, course=course).first()
-            progress_pct = progress_obj.progress_percentage if progress_obj else 0.0
-
-            # Progress details for this specific enrollment
-            total_lessons = course.lessons.count()
-            completed_lessons = LessonProgress.objects.filter(
-                student=student, lesson__course=course, completed=True
-            ).count()
-
-            # Average quiz for this course
-            avg_quiz = QuizAttempt.objects.filter(
-                student=student, quiz__course=course
-            ).aggregate(avg=Avg('score'))['avg']
-
-            # Last active
-            last_progress = LessonProgress.objects.filter(
-                student=student, lesson__course=course
-            ).order_by('-updated_at').first()
+            progress_pct = progress_map.get((student_id, course_id), 0.0)
+            total_lessons = total_lessons_map.get(course_id, 0)
+            completed_lessons = completed_lessons_map.get((student_id, course_id), 0)
+            avg_quiz = avg_quiz_map.get((student_id, course_id))
+            last_active = last_progress_map.get((student_id, course_id), enrollment.enrolled_at)
 
             students_data.append({
                 'student_id': student.id,
@@ -214,7 +239,7 @@ class TeacherStudentsView(APIView):
                 'total_lessons': total_lessons,
                 'lessons_completed': completed_lessons,
                 'average_quiz_score': round(avg_quiz, 1) if avg_quiz else None,
-                'last_active': last_progress.updated_at if last_progress else enrollment.enrolled_at,
+                'last_active': last_active,
                 'enrolled_at': enrollment.enrolled_at,
             })
 
@@ -241,29 +266,52 @@ class TeacherCourseStudentsView(APIView):
             course=course, is_active=True
         ).select_related('student').order_by('-enrolled_at')
 
+        student_ids = [e.student_id for e in enrollments]
+        if not student_ids:
+            return Response({'success': True, 'data': []})
+
+        total_lessons = course.lessons.count()
+
+        progress_map = {
+            cp.student_id: cp.progress_percentage
+            for cp in CourseProgress.objects.filter(course=course, student_id__in=student_ids)
+        }
+
+        completed_lessons_map = {
+            item['student_id']: item['completed_count']
+            for item in LessonProgress.objects.filter(
+                student_id__in=student_ids, lesson__course=course, completed=True
+            ).values('student_id').annotate(completed_count=Count('id'))
+        }
+
+        quiz_stats_map = {
+            item['student_id']: item
+            for item in QuizAttempt.objects.filter(
+                student_id__in=student_ids, quiz__course=course
+            ).values('student_id').annotate(
+                avg_score=Avg('score'),
+                attempts_count=Count('id')
+            )
+        }
+
         students_data = []
         for enrollment in enrollments:
             student = enrollment.student
-            
-            progress_obj = CourseProgress.objects.filter(student=student, course=course).first()
-            progress_pct = progress_obj.progress_percentage if progress_obj else 0.0
+            student_id = student.id
 
-            completed_lessons = LessonProgress.objects.filter(
-                student=student, lesson__course=course, completed=True
-            ).count()
-
-            quiz_attempts = QuizAttempt.objects.filter(
-                student=student, quiz__course=course
-            )
-            avg_quiz = quiz_attempts.aggregate(avg=Avg('score'))['avg']
+            progress_pct = progress_map.get(student_id, 0.0)
+            completed_lessons = completed_lessons_map.get(student_id, 0)
+            q_stats = quiz_stats_map.get(student_id)
+            attempts_count = q_stats['attempts_count'] if q_stats else 0
+            avg_quiz = q_stats['avg_score'] if q_stats else None
 
             students_data.append({
-                'student_id': student.id,
+                'student_id': student_id,
                 'student_name': student.name,
                 'lessons_completed': completed_lessons,
-                'total_lessons': course.lessons.count(),
+                'total_lessons': total_lessons,
                 'progress_percentage': progress_pct,
-                'quiz_attempts': quiz_attempts.count(),
+                'quiz_attempts': attempts_count,
                 'avg_quiz_score': round(avg_quiz, 1) if avg_quiz else None,
                 'enrolled_at': enrollment.enrolled_at,
             })
