@@ -72,11 +72,11 @@ export const useParentStore = create<ParentState>((set, get) => ({
     }
   },
 
-  updateProfile: async (data) => {
+  updateProfile: async (payload) => {
     set({ isLoading: true, error: null });
     try {
-      const { data } = await parentApi.updateProfile(data);
-      set({ profile: data.data || data, isLoading: false });
+      const res = await parentApi.updateProfile(payload);
+      set({ profile: res.data.data || res.data, isLoading: false });
     } catch (err: any) {
       set({ error: err.message, isLoading: false });
     }

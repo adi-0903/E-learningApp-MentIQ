@@ -124,7 +124,7 @@ const ParentHomeScreen = ({ navigation }: any) => {
           <View style={styles.emptyState}>
             <MaterialCommunityIcons name="account-group-outline" size={80} color="#E2E8F0" />
             <Text style={styles.emptyTitle}>No children linked yet</Text>
-            <Text style={styles.emptySub}>Connect with your child's student account to monitor their progress.</Text>
+            <Text style={styles.emptySub}>Connect with your child&apos;s student account to monitor their progress.</Text>
             <TouchableOpacity 
               style={styles.emptyButton}
               onPress={() => navigation.navigate('LinkChild')}

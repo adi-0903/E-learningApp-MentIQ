@@ -131,9 +131,9 @@ export default function ManageLiveClassesScreen({ navigation }: any) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'active': return '#10b981';
+      case 'live': return '#10b981';
       case 'scheduled': return '#4338ca';
-      case 'completed': return '#64748b';
+      case 'completed': case 'ended': return '#64748b';
       case 'cancelled': return '#ef4444';
       default: return '#94a3b8';
     }
@@ -141,9 +141,9 @@ export default function ManageLiveClassesScreen({ navigation }: any) {
 
   const getStatusLabel = (status: string) => {
     switch (status) {
-      case 'active': return 'LIVE NOW';
+      case 'live': return 'LIVE NOW';
       case 'scheduled': return 'UPCOMING';
-      case 'completed': return 'ENDED';
+      case 'completed': case 'ended': return 'ENDED';
       case 'cancelled': return 'CANCELLED';
       default: return status.toUpperCase();
     }
@@ -209,7 +209,7 @@ export default function ManageLiveClassesScreen({ navigation }: any) {
               </Button>
             </>
           )}
-          {item.status === 'active' && (
+          {item.status === 'live' && (
             <>
               <Button
                 mode="contained"

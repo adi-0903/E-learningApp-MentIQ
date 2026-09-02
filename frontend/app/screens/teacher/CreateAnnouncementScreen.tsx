@@ -259,7 +259,7 @@ function CreateAnnouncementScreen({ navigation, route }: any) {
 
               <View style={styles.headerTitleGroup}>
                 <Text style={styles.premiumTitle}>Broadcast Center</Text>
-                <Text style={styles.premiumLabel}>Teacher's Executive Hub</Text>
+                <Text style={styles.premiumLabel}>Teacher&apos;s Executive Hub</Text>
               </View>
 
               <View style={styles.broadcastStatus}>

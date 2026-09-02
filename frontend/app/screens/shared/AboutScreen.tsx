@@ -88,7 +88,7 @@ function AboutScreen({ navigation }: AboutScreenProps) {
           <Card style={styles.visionCard}>
             <Card.Content>
               <Text style={styles.visionBody}>
-                "We believe that education shouldn't just be consumed; it should be cultivated. Bloom is an intelligent ecosystem designed to bridge the gap between human curiosity and actionable excellence."
+                &quot;We believe that education shouldn&apos;t just be consumed; it should be cultivated. Bloom is an intelligent ecosystem designed to bridge the gap between human curiosity and actionable excellence.&quot;
               </Text>
               <View style={styles.impactGrid}>
                 <View style={styles.impactItem}>

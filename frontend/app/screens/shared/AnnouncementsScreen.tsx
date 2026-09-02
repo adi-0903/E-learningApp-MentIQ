@@ -4,7 +4,7 @@ import { useCourseStore } from '@/store/courseStore';
 import { useNotificationStore } from '@/store/notificationStore';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { format } from 'date-fns';
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import * as IntentLauncher from 'expo-intent-launcher';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as MediaLibrary from 'expo-media-library';
@@ -296,7 +296,7 @@ function AnnouncementsScreen({ navigation }: any) {
                   <View style={styles.expandedAttachments}>
                     {attachments.images?.map((img, idx) => (
                       <TouchableOpacity
-                        key={img}
+                        key={typeof img === 'string' ? img : (img as any).uri || idx}
                         style={styles.attachmentRow}
                         onPress={(e) => {
                           e.stopPropagation();

@@ -25,6 +25,7 @@ export const Colors = {
     tabIconSelected: tintColorLight,
     divider: '#f1f5f9',
     white: '#FFFFFF',
+    icon: '#687076',
   },
   dark: {
     primary: '#818CF8', // Indigo 400
@@ -47,7 +48,13 @@ export const Colors = {
     tabIconSelected: tintColorDark,
     divider: '#374151',
     white: '#FFFFFF',
+    icon: '#9BA1A6',
   },
+};
+
+export const Fonts = {
+  mono: 'SpaceMono',
+  rounded: 'System',
 };
 
 export const Spacing = {

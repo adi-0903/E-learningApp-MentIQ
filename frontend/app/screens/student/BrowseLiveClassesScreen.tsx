@@ -293,7 +293,7 @@ export default function BrowseLiveClassesScreen({ navigation }: any) {
                   />
                   <Text style={styles.comingSoonTitle}>No Live Classes</Text>
                   <Text style={styles.comingSoonSubtitle}>
-                    When your teachers schedule or start live sessions, they'll appear here
+                    When your teachers schedule or start live sessions, they&apos;ll appear here
                   </Text>
                   <View style={styles.featureList}>
                     <View style={styles.featureItem}>

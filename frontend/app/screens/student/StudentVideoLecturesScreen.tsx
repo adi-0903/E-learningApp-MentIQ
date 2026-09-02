@@ -47,14 +47,6 @@ export default function StudentVideoLecturesScreen({ route, navigation }: any) {
     }
   }, [courseId]);
 
-  if (!courseId) {
-    return (
-      <View style={styles.centerContainer}>
-        <Text>Invalid course ID</Text>
-      </View>
-    );
-  }
-
   const loadLessons = async () => {
     if (!courseId) {
       Alert.alert('Error', 'Invalid course ID');
@@ -137,6 +129,14 @@ export default function StudentVideoLecturesScreen({ route, navigation }: any) {
       </Card.Content>
     </Card>
   ), [handlePlayVideo]);
+
+  if (!courseId) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text>Invalid course ID</Text>
+      </View>
+    );
+  }
 
   if (isLoading) {
     return (

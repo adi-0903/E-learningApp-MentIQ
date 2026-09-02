@@ -1,6 +1,7 @@
 import axios from 'axios';
 
-export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1/';
+const RAW_API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/v1/';
+export const API_URL = RAW_API_URL.endsWith('/') ? RAW_API_URL : `${RAW_API_URL}/`;
 
 const api = axios.create({
     baseURL: API_URL,
@@ -34,16 +35,17 @@ api.interceptors.response.use(
                 const refreshToken = localStorage.getItem('refreshToken');
                 if (refreshToken) {
                     const res = await axios.post(`${API_URL}auth/token/refresh/`, { refresh: refreshToken });
-                    if (res.data && res.data.access) {
-                        localStorage.setItem('accessToken', res.data.access);
-                        originalRequest.headers['Authorization'] = `Bearer ${res.data.access}`;
+                    const newAccess = res.data?.access || res.data?.data?.access;
+                    if (newAccess) {
+                        localStorage.setItem('accessToken', newAccess);
+                        originalRequest.headers['Authorization'] = `Bearer ${newAccess}`;
                         return api(originalRequest);
                     }
                 }
             } catch (err) {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
-                // You could trigger a custom event here to log user out visually
+                window.dispatchEvent(new CustomEvent('auth:session_expired'));
             }
         }
         return Promise.reject(error);

@@ -76,7 +76,7 @@ const ParentLinkChildScreen = ({ navigation }: any) => {
 
       <View style={styles.content}>
         <Surface style={styles.inputCard} elevation={2}>
-          <Text style={styles.inputLabel}>Enter Child's Student ID</Text>
+          <Text style={styles.inputLabel}>Enter Child&apos;s Student ID</Text>
           <Text style={styles.inputSub}>Ask your child for their 8-digit unique ID shown on their profile to link instantly.</Text>
           <View style={styles.inputWrapper}>
             <MaterialCommunityIcons name="account-search-outline" size={24} color="#94A3B8" />

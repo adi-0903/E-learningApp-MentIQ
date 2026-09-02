@@ -3,7 +3,7 @@
  * Handles downloading micro-lesson videos and managing local storage.
  * Uses expo-file-system for persistence.
  */
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from 'expo-file-system/legacy';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useOfflineStore } from '@/store/offlineStore';
 
@@ -69,7 +69,7 @@ export async function downloadMicroLesson(microLesson: any): Promise<boolean> {
         id: downloadRecord.id,
         lessonId: microLesson.lesson_id,
         localPath: result.uri,
-        fileSize: result.size || microLesson.file_size_bytes,
+        fileSize: (result as any).size || microLesson.file_size_bytes,
         downloadedAt: new Date().toISOString()
       });
       
