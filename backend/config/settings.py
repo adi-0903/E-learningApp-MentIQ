@@ -7,6 +7,8 @@ import sys
 from datetime import timedelta
 from pathlib import Path
 
+from django.core.exceptions import ImproperlyConfigured
+from django.core.management.utils import get_random_secret_key
 from environs import Env
 import dj_database_url
 
@@ -20,8 +22,24 @@ sys.path.append(str(BASE_DIR))
 sys.path.append(str(BASE_DIR / 'apps'))
 
 # Security Settings
-SECRET_KEY = env.str('SECRET_KEY', 'django-insecure-change-this-in-production')
 DEBUG = env.bool('DEBUG', False)
+
+_INSECURE_SECRET_KEYS = {
+    'django-insecure-change-this-in-production',
+    'your-secret-key-here-change-in-production',
+    'change-me-in-production',
+    '',
+}
+
+_secret_key_env = env.str('SECRET_KEY', default=None)
+
+if not _secret_key_env or _secret_key_env.strip() in _INSECURE_SECRET_KEYS:
+    if not DEBUG:
+        raise ImproperlyConfigured("SECRET_KEY environment variable must be securely set in production.")
+    SECRET_KEY = get_random_secret_key()
+else:
+    SECRET_KEY = _secret_key_env.strip()
+
 ALLOWED_HOSTS = ['*'] if DEBUG else env.list('ALLOWED_HOSTS', ['localhost', '127.0.0.1'])
 
 # Application definition
