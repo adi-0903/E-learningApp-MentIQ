@@ -6,7 +6,6 @@ Uses Cloudinary's built-in video transformation for compression.
 import logging
 
 from celery import shared_task
-from django.utils import timezone
 
 logger = logging.getLogger(__name__)
 
@@ -83,27 +82,20 @@ def _compress_via_cloudinary(original_url):
     Generate a compressed video URL using Cloudinary transformations.
     This applies server-side transcoding: lower bitrate, 720p, efficient codec.
     """
-    try:
-        import cloudinary.utils
+    # If the URL is already a Cloudinary URL, apply transformation
+    if 'cloudinary' in original_url or 'res.cloudinary.com' in original_url:
+        # Extract the public_id from the URL
+        # Cloudinary URLs follow: .../video/upload/v1234/public_id.mp4
+        parts = original_url.split('/upload/')
+        if len(parts) == 2:
+            base = parts[0] + '/upload/'
+            # Insert transformation: scale to 720p, lower quality, mp4
+            transformation = 'c_scale,w_720,q_auto:low,f_mp4,vc_h264'
+            compressed_url = f"{base}{transformation}/{parts[1]}"
+            return compressed_url
 
-        # If the URL is already a Cloudinary URL, apply transformation
-        if 'cloudinary' in original_url or 'res.cloudinary.com' in original_url:
-            # Extract the public_id from the URL
-            # Cloudinary URLs follow: .../video/upload/v1234/public_id.mp4
-            parts = original_url.split('/upload/')
-            if len(parts) == 2:
-                base = parts[0] + '/upload/'
-                # Insert transformation: scale to 720p, lower quality, mp4
-                transformation = 'c_scale,w_720,q_auto:low,f_mp4,vc_h264'
-                compressed_url = f"{base}{transformation}/{parts[1]}"
-                return compressed_url
-
-        # For non-Cloudinary URLs, return None (will use original as fallback)
-        return None
-
-    except ImportError:
-        logger.warning("Cloudinary not available, skipping compression.")
-        return None
+    # For non-Cloudinary URLs, return None (will use original as fallback)
+    return None
 
 
 def _estimate_file_size(url):
