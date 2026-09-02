@@ -185,3 +185,170 @@ describe('authStore - getCurrentUser', () => {
     });
   });
 });
+
+describe('authStore - verifyPhoneOTP', () => {
+  const initialUser = {
+    id: '10',
+    email: 'user@example.com',
+    name: 'OTP User',
+    role: 'student' as const,
+    phoneNumber: '1234567890',
+    isPhoneVerified: false,
+  };
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    useAuthStore.setState({
+      user: null,
+      isLoading: false,
+      isLoggedIn: false,
+    });
+  });
+
+  it('should verify OTP, update user state and AsyncStorage, and reset isLoading when user is logged in', async () => {
+    useAuthStore.setState({
+      user: initialUser,
+      isLoggedIn: true,
+      isLoading: false,
+    });
+
+    const apiResponse = {
+      data: {
+        success: true,
+        data: {
+          phone_number: '1234567890',
+          is_phone_verified: true,
+        },
+      },
+    };
+
+    (authApi.verifyPhoneOTP as jest.Mock).mockResolvedValue(apiResponse);
+
+    const result = await useAuthStore.getState().verifyPhoneOTP('1234');
+
+    expect(authApi.verifyPhoneOTP).toHaveBeenCalledWith('1234', undefined);
+    expect(result).toEqual(apiResponse.data);
+
+    const state = useAuthStore.getState();
+    expect(state.isLoading).toBe(false);
+    expect(state.user).toEqual({
+      ...initialUser,
+      phoneNumber: '1234567890',
+      isPhoneVerified: true,
+    });
+
+    expect(AsyncStorage.setItem).toHaveBeenCalledWith(
+      'currentUser',
+      JSON.stringify({
+        ...initialUser,
+        phoneNumber: '1234567890',
+        isPhoneVerified: true,
+      })
+    );
+  });
+
+  it('should pass explicit phoneNumber argument and update user state accordingly', async () => {
+    useAuthStore.setState({
+      user: initialUser,
+      isLoggedIn: true,
+      isLoading: false,
+    });
+
+    const apiResponse = {
+      data: {
+        success: true,
+        data: {
+          phone_number: '+19876543210',
+          is_phone_verified: true,
+        },
+      },
+    };
+
+    (authApi.verifyPhoneOTP as jest.Mock).mockResolvedValue(apiResponse);
+
+    const result = await useAuthStore.getState().verifyPhoneOTP('5678', '+19876543210');
+
+    expect(authApi.verifyPhoneOTP).toHaveBeenCalledWith('5678', '+19876543210');
+    expect(result).toEqual(apiResponse.data);
+
+    const state = useAuthStore.getState();
+    expect(state.isLoading).toBe(false);
+    expect(state.user?.phoneNumber).toBe('+19876543210');
+    expect(state.user?.isPhoneVerified).toBe(true);
+  });
+
+  it('should handle OTP verification when no user is logged in (user: null)', async () => {
+    useAuthStore.setState({
+      user: null,
+      isLoggedIn: false,
+      isLoading: false,
+    });
+
+    const apiResponse = {
+      data: {
+        success: true,
+        message: 'Phone number verified',
+      },
+    };
+
+    (authApi.verifyPhoneOTP as jest.Mock).mockResolvedValue(apiResponse);
+
+    const result = await useAuthStore.getState().verifyPhoneOTP('1234');
+
+    expect(authApi.verifyPhoneOTP).toHaveBeenCalledWith('1234', undefined);
+    expect(result).toEqual(apiResponse.data);
+
+    const state = useAuthStore.getState();
+    expect(state.user).toBeNull();
+    expect(state.isLoading).toBe(false);
+    expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+  });
+
+  it('should rethrow error and reset isLoading to false when authApi.verifyPhoneOTP fails', async () => {
+    useAuthStore.setState({
+      user: initialUser,
+      isLoggedIn: true,
+      isLoading: false,
+    });
+
+    const error = new Error('Invalid or expired OTP.');
+    (authApi.verifyPhoneOTP as jest.Mock).mockRejectedValue(error);
+
+    await expect(useAuthStore.getState().verifyPhoneOTP('9999')).rejects.toThrow(
+      'Invalid or expired OTP.'
+    );
+
+    const state = useAuthStore.getState();
+    expect(state.isLoading).toBe(false);
+    expect(state.user).toEqual(initialUser);
+    expect(AsyncStorage.setItem).not.toHaveBeenCalled();
+  });
+
+  it('should rethrow error and reset isLoading to false when AsyncStorage.setItem throws', async () => {
+    useAuthStore.setState({
+      user: initialUser,
+      isLoggedIn: true,
+      isLoading: false,
+    });
+
+    const apiResponse = {
+      data: {
+        success: true,
+        data: {
+          phone_number: '1234567890',
+          is_phone_verified: true,
+        },
+      },
+    };
+
+    (authApi.verifyPhoneOTP as jest.Mock).mockResolvedValue(apiResponse);
+    (AsyncStorage.setItem as jest.Mock).mockRejectedValue(new Error('AsyncStorage write error'));
+
+    await expect(useAuthStore.getState().verifyPhoneOTP('1234')).rejects.toThrow(
+      'AsyncStorage write error'
+    );
+
+    const state = useAuthStore.getState();
+    expect(state.isLoading).toBe(false);
+  });
+});
