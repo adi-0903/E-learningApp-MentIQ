@@ -95,3 +95,33 @@ class TeacherStudentsViewsTests(TestCase):
     def test_unauthenticated_access(self):
         response = self.client.get('/api/v1/teachers/students/')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_teacher_dashboard_stats(self):
+        from datetime import date, time
+        from apps.live_classes.models import SessionBooking
+
+        SessionBooking.objects.create(
+            student=self.student,
+            teacher=self.teacher,
+            date=date.today(),
+            time=time(10, 0),
+            topic='Algebra doubt',
+            status=SessionBooking.StatusChoices.PENDING
+        )
+        SessionBooking.objects.create(
+            student=self.student,
+            teacher=self.teacher,
+            date=date.today(),
+            time=time(11, 0),
+            topic='Geometry question',
+            status=SessionBooking.StatusChoices.CONFIRMED
+        )
+
+        self.client.force_authenticate(user=self.teacher)
+        response = self.client.get('/api/v1/teachers/dashboard-stats/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('success'))
+        data = response.data.get('data')
+        self.assertEqual(data['total_students'], 1)
+        self.assertEqual(data['active_courses'], 1)
+        self.assertEqual(data['pending_doubts'], 1)
