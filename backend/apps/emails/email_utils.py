@@ -265,7 +265,7 @@ def send_welcome_email(user) -> bool:
         to_email=user.email,
         to_name=getattr(user, 'name', '') or user.email,
         subject="Welcome to MentiQ – Your Learning Journey Starts Now! 🚀",
-        html_content=welcome_email_html(getattr(user, 'name', 'there')),
+        html_content=welcome_email_html(getattr(user, 'name', '') or 'there'),
         email_type='welcome',
     )
 
@@ -360,6 +360,6 @@ def send_otp_email(user, otp_code: str) -> bool:
         to_email=user.email,
         to_name=getattr(user, 'name', '') or user.email,
         subject="Password Reset Verification Code - MentiQ",
-        html_content=otp_email_html(getattr(user, 'name', 'there'), otp_code),
+        html_content=otp_email_html(getattr(user, 'name', '') or 'there', otp_code),
         email_type='generic',
     )
