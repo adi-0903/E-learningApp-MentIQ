@@ -24,6 +24,7 @@ from .serializers import (
     UserProfileSerializer,
     UserUpdateSerializer,
 )
+from .throttles import PasswordResetRequestThrottle, PasswordResetVerifyThrottle
 
 User = get_user_model()
 
@@ -248,7 +249,6 @@ class VerifyPhoneOTPView(APIView):
         # Find the latest valid OTP
         otp_obj = PhoneOTP.objects.filter(
             user=user,
-            otp_code=otp_code,
             is_used=False,
             expires_at__gt=timezone.now()
         ).first()
@@ -259,9 +259,33 @@ class VerifyPhoneOTPView(APIView):
                 'message': 'Invalid or expired OTP.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        MAX_ATTEMPTS = 5
+        if otp_obj.attempts >= MAX_ATTEMPTS:
+            otp_obj.is_used = True
+            otp_obj.save(update_fields=['is_used'])
+            return Response({
+                'success': False,
+                'message': 'Maximum OTP verification attempts reached. Please request a new OTP.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if otp_obj.otp_code != str(otp_code):
+            otp_obj.attempts += 1
+            if otp_obj.attempts >= MAX_ATTEMPTS:
+                otp_obj.is_used = True
+                otp_obj.save(update_fields=['attempts', 'is_used'])
+                return Response({
+                    'success': False,
+                    'message': 'Maximum OTP verification attempts reached. Please request a new OTP.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            otp_obj.save(update_fields=['attempts'])
+            return Response({
+                'success': False,
+                'message': 'Invalid or expired OTP.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         # Mark OTP as used and user as verified
         otp_obj.is_used = True
-        otp_obj.save()
+        otp_obj.save(update_fields=['is_used'])
 
         user.is_phone_verified = True
         user.save(update_fields=['is_phone_verified'])
@@ -275,6 +299,7 @@ class VerifyPhoneOTPView(APIView):
 class ForgotPasswordRequestView(APIView):
     """View to request a password reset OTP (Public)."""
     permission_classes = [AllowAny]
+    throttle_classes = [PasswordResetRequestThrottle]
 
     def post(self, request):
         identifier = request.data.get('identifier')
@@ -376,6 +401,7 @@ class ForgotPasswordRequestView(APIView):
 class ForgotPasswordVerifyView(APIView):
     """View to verify OTP and reset password (Public)."""
     permission_classes = [AllowAny]
+    throttle_classes = [PasswordResetVerifyThrottle]
 
     def post(self, request):
         identifier = request.data.get('identifier')
@@ -409,7 +435,6 @@ class ForgotPasswordVerifyView(APIView):
         # Find the latest valid OTP
         otp_obj = PhoneOTP.objects.filter(
             user=user,
-            otp_code=otp_code,
             is_used=False,
             expires_at__gt=timezone.now()
         ).first()
@@ -420,9 +445,33 @@ class ForgotPasswordVerifyView(APIView):
                 'message': 'Invalid or expired verification code.'
             }, status=status.HTTP_400_BAD_REQUEST)
 
+        MAX_ATTEMPTS = 5
+        if otp_obj.attempts >= MAX_ATTEMPTS:
+            otp_obj.is_used = True
+            otp_obj.save(update_fields=['is_used'])
+            return Response({
+                'success': False,
+                'message': 'Maximum verification attempts exceeded. Please request a new code.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if otp_obj.otp_code != str(otp_code):
+            otp_obj.attempts += 1
+            if otp_obj.attempts >= MAX_ATTEMPTS:
+                otp_obj.is_used = True
+                otp_obj.save(update_fields=['attempts', 'is_used'])
+                return Response({
+                    'success': False,
+                    'message': 'Maximum verification attempts exceeded. Please request a new code.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            otp_obj.save(update_fields=['attempts'])
+            return Response({
+                'success': False,
+                'message': 'Invalid or expired verification code.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
         # Mark OTP as used
         otp_obj.is_used = True
-        otp_obj.save()
+        otp_obj.save(update_fields=['is_used'])
 
         # Update password
         user.set_password(new_password)
