@@ -1,8 +1,12 @@
+import os
+from unittest.mock import patch
 from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 from apps.users.models import PhoneOTP
+from create_users import get_seed_password
 
 User = get_user_model()
 
@@ -86,3 +90,35 @@ class UserAuthTests(TestCase):
         self.assertEqual(len(otp.otp_code), 4)
         self.assertTrue(otp.otp_code.isdigit())
         self.assertTrue(1000 <= int(otp.otp_code) <= 9999)
+
+
+class SeederPasswordGenerationTests(TestCase):
+    def test_generated_password_randomness_and_complexity(self):
+        pwd1 = get_seed_password()
+        pwd2 = get_seed_password()
+
+        self.assertNotEqual(pwd1, pwd2)
+        self.assertGreaterEqual(len(pwd1), 16)
+        self.assertTrue(any(c.islower() for c in pwd1))
+        self.assertTrue(any(c.isupper() for c in pwd1))
+        self.assertTrue(any(c.isdigit() for c in pwd1))
+        self.assertTrue(any(c in "!@#$%^&*" for c in pwd1))
+
+        # Ensure generated password passes Django's password validators
+        validate_password(pwd1)
+
+    @patch.dict(os.environ, {'SEED_PASSWORD': 'CustomGlobalPassword123!'}, clear=False)
+    def test_global_env_password_override(self):
+        pwd = get_seed_password('someuser@mentiq.com')
+        self.assertEqual(pwd, 'CustomGlobalPassword123!')
+
+    @patch.dict(os.environ, {
+        'SEED_PASSWORD_ADMIN_MENTIQ_COM': 'AdminSpecificPassword2026!',
+        'SEED_PASSWORD': 'FallbackGlobalPassword123!'
+    }, clear=False)
+    def test_user_specific_env_password_override(self):
+        pwd_admin = get_seed_password('admin@mentiq.com')
+        pwd_other = get_seed_password('other@mentiq.com')
+
+        self.assertEqual(pwd_admin, 'AdminSpecificPassword2026!')
+        self.assertEqual(pwd_other, 'FallbackGlobalPassword123!')

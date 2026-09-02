@@ -11,17 +11,16 @@ def run_seeder(script_name):
     print(f"RUNNING SEEDER: {script_name}")
     print(f"{'='*50}")
     
-    # We use exec(open(...).read()) but since some scripts have their own django.setup()
-    # and some don't, we'll try to run them as modules or handle the setup gracefully.
     try:
         if script_name == 'create_users.py':
             import create_users
+            if hasattr(create_users, 'create_users'):
+                create_users.create_users()
         elif script_name == 'create_courses.py':
             import create_courses
         elif script_name == 'create_lessons.py':
             import create_lessons
         elif script_name == 'create_quizzes.py':
-            # create_quizzes.py has a create_quizzes() function and if __name__ == "__main__"
             from create_quizzes import create_quizzes
             create_quizzes()
         else:
