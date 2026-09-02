@@ -47,8 +47,8 @@ for p_data in parents_to_create:
     try:
         child = User.objects.get(email=child_email, role='student')
         parent_profile.children.add(child)
-        print(f"{status} Parent: {name:15} | Linked to Student: {child.name:15} | Pass: {password}")
+        print(f"{status} Parent: {name:15} | Linked to Student: {child.name:15} | Pass: [PROTECTED]")
     except User.DoesNotExist:
-        print(f"{status} Parent: {name:15} | ERROR: Student {child_email} not found | Pass: {password}")
+        print(f"{status} Parent: {name:15} | ERROR: Student {child_email} not found | Pass: [PROTECTED]")
 
 print("\nSuccess: 4 Parents created and linked.")

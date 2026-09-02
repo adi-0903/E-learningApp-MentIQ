@@ -86,3 +86,29 @@ class UserAuthTests(TestCase):
         self.assertEqual(len(otp.otp_code), 4)
         self.assertTrue(otp.otp_code.isdigit())
         self.assertTrue(1000 <= int(otp.otp_code) <= 9999)
+
+
+class SeederLogSecurityTests(TestCase):
+    def test_create_users_seeder_does_not_log_passwords(self):
+        import io
+        import runpy
+        from contextlib import redirect_stdout
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            runpy.run_module('create_users', run_name='__main__')
+        output = f.getvalue()
+        self.assertNotIn('@12345', output)
+        self.assertIn('Password: [PROTECTED]', output)
+
+    def test_create_parents_seeder_does_not_log_passwords(self):
+        import io
+        import runpy
+        from contextlib import redirect_stdout
+
+        f = io.StringIO()
+        with redirect_stdout(f):
+            runpy.run_module('create_parents', run_name='__main__')
+        output = f.getvalue()
+        self.assertNotIn('@12345', output)
+        self.assertIn('Pass: [PROTECTED]', output)
