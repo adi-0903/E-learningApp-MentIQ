@@ -47,6 +47,7 @@ export interface QuizAttempt {
   timeSpent?: number;
   answers?: Record<string, string>;
   questions?: any[];
+  new_badges?: any[];
 }
 
 function normalizeQuiz(raw: any): Quiz {
@@ -97,6 +98,7 @@ function normalizeAttempt(raw: any): QuizAttempt {
     timeSpent: raw.time_taken || raw.timeSpent,
     answers: raw.answers,
     questions: raw.questions,
+    new_badges: raw.new_badges || raw.new_badges_awarded || [],
   };
 }
 

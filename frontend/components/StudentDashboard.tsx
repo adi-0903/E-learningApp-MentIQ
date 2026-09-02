@@ -127,7 +127,7 @@ const DailyMotivation = () => {
             <Text style={styles.motivationLabel}>DAILY INSPIRATION</Text>
           </View>
           <Text style={styles.motivationQuote}>
-            "{todayQuote.text}"
+            &quot;{todayQuote.text}&quot;
           </Text>
           <Text style={styles.motivationAuthor}>— {todayQuote.author}</Text>
         </View>

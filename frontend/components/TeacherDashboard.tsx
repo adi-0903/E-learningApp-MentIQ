@@ -286,7 +286,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({
                       <Text style={styles.ratingText}>{review.rating}</Text>
                     </View>
                   </View>
-                  <Text style={styles.reviewText} numberOfLines={3}>"{review.comment || 'No comment provided.'}"</Text>
+                  <Text style={styles.reviewText} numberOfLines={3}>&quot;{review.comment || 'No comment provided.'}&quot;</Text>
                 </Surface>
               </View>
             ))}

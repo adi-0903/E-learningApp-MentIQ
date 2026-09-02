@@ -217,7 +217,8 @@ export const authApi = {
   login: (email: string, password: string) =>
     api.post('/v1/auth/login/', { email, password }, { skipAuth: true }),
 
-
+  register: (data: { email: string; password: string; name: string; role: string }) =>
+    api.post('/v1/auth/register/', data, { skipAuth: true }),
 
   logout: (refreshToken: string) =>
     api.post('/v1/auth/logout/', { refresh: refreshToken }),

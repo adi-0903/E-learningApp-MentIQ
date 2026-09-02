@@ -79,7 +79,7 @@ const MyBadgesScreen: React.FC<{ navigation: any }> = ({ navigation }) => {
           Start earning badges by completing quizzes, maintaining streaks, and finishing courses!
         </Text>
         <Text style={styles.emptyHint}>
-          💡 Tip: Complete your first quiz to earn the "First Quiz" badge
+          💡 Tip: Complete your first quiz to earn the &quot;First Quiz&quot; badge
         </Text>
       </LinearGradient>
     </View>

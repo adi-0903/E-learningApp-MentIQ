@@ -76,7 +76,7 @@ const ChildDetailScreen = ({ route, navigation }: any) => {
           <TouchableOpacity onPress={() => navigation.goBack()}>
             <MaterialCommunityIcons name="chevron-left" size={32} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>{name}'s Progress</Text>
+          <Text style={styles.headerTitle}>{`${name}'s Progress`}</Text>
         </View>
       </LinearGradient>
 

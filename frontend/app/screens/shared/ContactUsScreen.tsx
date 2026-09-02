@@ -88,7 +88,7 @@ export default function ContactUsScreen({ navigation }: any) {
                     </LinearGradient>
                     <Text style={styles.successTitle}>Message Sent! 🎉</Text>
                     <Text style={styles.successText}>
-                        We've received your message and will get back to you at{' '}
+                        We&apos;ve received your message and will get back to you at{' '}
                         <Text style={styles.successEmailHighlight}>{form.sender_email}</Text>{' '}
                         within 24 hours.
                     </Text>

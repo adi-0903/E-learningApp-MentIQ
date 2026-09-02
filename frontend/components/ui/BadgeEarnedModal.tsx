@@ -83,7 +83,7 @@ export const BadgeEarnedModal: React.FC<BadgeEarnedModalProps> = ({ visible, bad
                 <MaterialCommunityIcons name="trophy-variant" size={40} color="#d97706" />
               </View>
               <Text style={styles.title}>Achievement Unlocked!</Text>
-              <Text style={styles.subtitle}>You've earned a new milestone</Text>
+              <Text style={styles.subtitle}>You&apos;ve earned a new milestone</Text>
             </View>
 
             <View style={styles.badgeContainer}>
