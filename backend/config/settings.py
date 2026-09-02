@@ -28,12 +28,19 @@ _INSECURE_SECRET_KEYS = {
     'django-insecure-change-this-in-production',
     'your-secret-key-here-change-in-production',
     'change-me-in-production',
+    'dev-secret-key-mentiq',
     '',
 }
 
 _secret_key_env = env.str('SECRET_KEY', default=None)
 
-if not _secret_key_env or _secret_key_env.strip() in _INSECURE_SECRET_KEYS:
+is_insecure_key = (
+    not _secret_key_env
+    or _secret_key_env.strip() in _INSECURE_SECRET_KEYS
+    or _secret_key_env.strip().startswith('django-insecure-')
+)
+
+if is_insecure_key:
     if not DEBUG:
         raise ImproperlyConfigured("SECRET_KEY environment variable must be securely set in production.")
     SECRET_KEY = get_random_secret_key()

@@ -10,10 +10,23 @@ from django.test import SimpleTestCase
 class SecretKeySettingsTests(SimpleTestCase):
     def test_production_mode_without_secret_key_raises_error(self):
         """In DEBUG=False mode, if SECRET_KEY is missing or set to insecure default, raise ImproperlyConfigured."""
-        with mock.patch.dict(os.environ, {"DEBUG": "False", "SECRET_KEY": "django-insecure-change-this-in-production"}, clear=True):
-            from config import settings
-            with self.assertRaises(ImproperlyConfigured):
-                reload(settings)
+        insecure_keys = [
+            "django-insecure-change-this-in-production",
+            "django-insecure-random-dev-key",
+            "dev-secret-key-mentiq",
+            "your-secret-key-here-change-in-production",
+            "change-me-in-production",
+            "",
+        ]
+        for key in insecure_keys:
+            with self.subTest(key=key):
+                env_vars = {"DEBUG": "False"}
+                if key != "":
+                    env_vars["SECRET_KEY"] = key
+                with mock.patch.dict(os.environ, env_vars, clear=True):
+                    from config import settings
+                    with self.assertRaises(ImproperlyConfigured):
+                        reload(settings)
 
     def test_production_mode_with_valid_secret_key(self):
         """In DEBUG=False mode, if a valid SECRET_KEY is provided, it is set correctly."""
