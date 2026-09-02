@@ -2,6 +2,7 @@ from django.test import TestCase
 from rest_framework.test import APIClient
 from rest_framework import status
 from django.contrib.auth import get_user_model
+from apps.users.models import PhoneOTP
 
 User = get_user_model()
 
@@ -49,3 +50,39 @@ class UserAuthTests(TestCase):
         self.client.force_authenticate(user=user)
         response = self.client.get(self.profile_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_request_phone_otp_generation(self):
+        user = User.objects.create_user(
+            email=self.user_data['email'],
+            password=self.user_data['password'],
+            name=self.user_data['name'],
+            role=self.user_data['role'],
+            phone_number='+1234567890'
+        )
+        self.client.force_authenticate(user=user)
+        response = self.client.post('/api/v1/auth/request-phone-otp/', {
+            'phone_number': '+1234567890'
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        otp = PhoneOTP.objects.filter(user=user, is_used=False).first()
+        self.assertIsNotNone(otp)
+        self.assertEqual(len(otp.otp_code), 4)
+        self.assertTrue(otp.otp_code.isdigit())
+        self.assertTrue(1000 <= int(otp.otp_code) <= 9999)
+
+    def test_forgot_password_request_otp_generation(self):
+        user = User.objects.create_user(
+            email=self.user_data['email'],
+            password=self.user_data['password'],
+            name=self.user_data['name'],
+            role=self.user_data['role']
+        )
+        response = self.client.post('/api/v1/auth/forgot-password/request/', {
+            'identifier': user.email
+        }, format='json')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        otp = PhoneOTP.objects.filter(user=user, is_used=False).first()
+        self.assertIsNotNone(otp)
+        self.assertEqual(len(otp.otp_code), 4)
+        self.assertTrue(otp.otp_code.isdigit())
+        self.assertTrue(1000 <= int(otp.otp_code) <= 9999)

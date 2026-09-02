@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-import random
+import secrets
 from datetime import timedelta
 from django.utils import timezone
 import os
@@ -193,7 +193,7 @@ class RequestPhoneOTPView(APIView):
             user.save(update_fields=['phone_number', 'is_phone_verified'])
 
         # Generate a 4-digit OTP
-        otp_code = str(random.randint(1000, 9999))
+        otp_code = str(secrets.randbelow(9000) + 1000)
         expires_at = timezone.now() + timedelta(minutes=10)
 
         # Invalidate old OTPs
@@ -303,7 +303,7 @@ class ForgotPasswordRequestView(APIView):
             }, status=status.HTTP_404_NOT_FOUND)
 
         # Generate a 4-digit OTP
-        otp_code = str(random.randint(1000, 9999))
+        otp_code = str(secrets.randbelow(9000) + 1000)
         expires_at = timezone.now() + timedelta(minutes=10)
 
         # Invalidate old OTPs
