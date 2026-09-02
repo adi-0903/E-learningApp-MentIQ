@@ -49,3 +49,89 @@ class UserAuthTests(TestCase):
         self.client.force_authenticate(user=user)
         response = self.client.get(self.profile_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+
+class ForgotPasswordSecurityTests(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.forgot_request_url = '/api/v1/auth/forgot-password/request/'
+        self.forgot_verify_url = '/api/v1/auth/forgot-password/verify/'
+        self.login_url = '/api/v1/auth/login/'
+
+        self.user = User.objects.create_user(
+            email='existing@mentiq.com',
+            password='OldPassword123!',
+            name='Existing User',
+            role='student'
+        )
+
+    def test_forgot_password_request_existing_user(self):
+        from apps.users.models import PhoneOTP
+
+        response = self.client.post(self.forgot_request_url, {
+            'identifier': 'existing@mentiq.com'
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('success'))
+        self.assertEqual(
+            response.data.get('message'),
+            'If an account matches that information, a verification code has been sent.'
+        )
+        self.assertTrue(PhoneOTP.objects.filter(user=self.user, is_used=False).exists())
+
+    def test_forgot_password_request_non_existing_user_prevents_enumeration(self):
+        from apps.users.models import PhoneOTP
+
+        response = self.client.post(self.forgot_request_url, {
+            'identifier': 'nonexistent@mentiq.com'
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('success'))
+        self.assertEqual(
+            response.data.get('message'),
+            'If an account matches that information, a verification code has been sent.'
+        )
+        self.assertEqual(PhoneOTP.objects.count(), 0)
+
+    def test_forgot_password_verify_non_existing_user_prevents_enumeration(self):
+        response = self.client.post(self.forgot_verify_url, {
+            'identifier': 'nonexistent@mentiq.com',
+            'otp_code': '0000',
+            'new_password': 'NewPassword123!'
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertFalse(response.data.get('success'))
+        self.assertEqual(
+            response.data.get('message'),
+            'Invalid or expired verification code.'
+        )
+
+    def test_forgot_password_verify_success_and_login(self):
+        from apps.users.models import PhoneOTP
+
+        # Request reset
+        self.client.post(self.forgot_request_url, {
+            'identifier': 'existing@mentiq.com'
+        }, format='json')
+
+        otp_obj = PhoneOTP.objects.filter(user=self.user, is_used=False).latest('created_at')
+
+        # Verify and update password
+        response = self.client.post(self.forgot_verify_url, {
+            'identifier': 'existing@mentiq.com',
+            'otp_code': otp_obj.otp_code,
+            'new_password': 'BrandNewPassword123!'
+        }, format='json')
+
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('success'))
+
+        # Verify login works with new password
+        login_resp = self.client.post(self.login_url, {
+            'email': 'existing@mentiq.com',
+            'password': 'BrandNewPassword123!'
+        }, format='json')
+        self.assertEqual(login_resp.status_code, status.HTTP_200_OK)

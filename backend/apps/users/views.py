@@ -296,81 +296,64 @@ class ForgotPasswordRequestView(APIView):
             Q(student_id=identifier)
         ).first()
 
-        if not user:
-            return Response({
-                'success': False,
-                'message': 'No account found with this information.'
-            }, status=status.HTTP_404_NOT_FOUND)
+        if user:
+            # Generate a 4-digit OTP
+            otp_code = str(random.randint(1000, 9999))
+            expires_at = timezone.now() + timedelta(minutes=10)
 
-        # Generate a 4-digit OTP
-        otp_code = str(random.randint(1000, 9999))
-        expires_at = timezone.now() + timedelta(minutes=10)
+            # Invalidate old OTPs
+            PhoneOTP.objects.filter(user=user, is_used=False).update(is_used=True)
 
-        # Invalidate old OTPs
-        PhoneOTP.objects.filter(user=user, is_used=False).update(is_used=True)
+            # Save new OTP
+            PhoneOTP.objects.create(
+                user=user,
+                otp_code=otp_code,
+                expires_at=expires_at
+            )
 
-        # Save new OTP
-        PhoneOTP.objects.create(
-            user=user,
-            otp_code=otp_code,
-            expires_at=expires_at
-        )
-
-        sent_via = []
-
-        # Try sending via email
-        if user.email:
-            try:
-                from apps.emails.tasks import send_otp_email_task
-                # Use a smaller timeout for connection to avoid hanging the request
-                send_otp_email_task.apply_async(args=[str(user.id), otp_code], connect_timeout=2)
-                sent_via.append("Email")
-            except Exception as e:
-                print(f"Celery Error: {e}. Falling back to sync email.")
+            # Try sending via email
+            if user.email:
                 try:
-                    from apps.emails.email_utils import send_otp_email
-                    if send_otp_email(user, otp_code):
-                        sent_via.append("Email")
-                except Exception as sync_e:
-                    print(f"Sync Email Error: {sync_e}")
+                    from apps.emails.tasks import send_otp_email_task
+                    # Use a smaller timeout for connection to avoid hanging the request
+                    send_otp_email_task.apply_async(args=[str(user.id), otp_code], connect_timeout=2)
+                except Exception as e:
+                    print(f"Celery Error: {e}. Falling back to sync email.")
+                    try:
+                        from apps.emails.email_utils import send_otp_email
+                        send_otp_email(user, otp_code)
+                    except Exception as sync_e:
+                        print(f"Sync Email Error: {sync_e}")
 
-        # Try sending via SMS if phone exists
-        if user.phone_number:
-            try:
-                account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
-                auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
-                twilio_phone = os.environ.get('TWILIO_PHONE_NUMBER')
+            # Try sending via SMS if phone exists
+            if user.phone_number:
+                try:
+                    account_sid = os.environ.get('TWILIO_ACCOUNT_SID')
+                    auth_token = os.environ.get('TWILIO_AUTH_TOKEN')
+                    twilio_phone = os.environ.get('TWILIO_PHONE_NUMBER')
 
-                if account_sid and auth_token and twilio_phone:
-                    # Normalize for Twilio
-                    import re
-                    target_phone = re.sub(r'[^\d+]', '', user.phone_number)
-                    if not target_phone.startswith('+'):
-                        target_phone = f'+91{target_phone}'
+                    if account_sid and auth_token and twilio_phone:
+                        # Normalize for Twilio
+                        import re
+                        target_phone = re.sub(r'[^\d+]', '', user.phone_number)
+                        if not target_phone.startswith('+'):
+                            target_phone = f'+91{target_phone}'
 
-                    print(f"DEBUG: Attempting to send Password Reset OTP to {target_phone} via Twilio")
+                        print(f"DEBUG: Attempting to send Password Reset OTP to {target_phone} via Twilio")
 
-                    client = Client(account_sid, auth_token)
-                    client.messages.create(
-                        body=f"Your MentiQ password reset code is: {otp_code}. Valid for 10 minutes.",
-                        from_=twilio_phone,
-                        to=target_phone
-                    )
-                    sent_via.append("SMS")
-            except Exception as e:
-                print(f"Twilio Error: {e}")
-
-        if not sent_via:
-            # Fallback for local development or if both failed
-            return Response({
-                'success': True,
-                'message': f'OTP generated (Simulation: {otp_code}). Please check logs.',
-            })
+                        client = Client(account_sid, auth_token)
+                        client.messages.create(
+                            body=f"Your MentiQ password reset code is: {otp_code}. Valid for 10 minutes.",
+                            from_=twilio_phone,
+                            to=target_phone
+                        )
+                except Exception as e:
+                    print(f"Twilio Error: {e}")
 
         return Response({
             'success': True,
-            'message': f"Verification code sent via {' & '.join(sent_via)}.",
-        })
+            'message': 'If an account matches that information, a verification code has been sent.',
+        }, status=status.HTTP_200_OK)
 
 
 class ForgotPasswordVerifyView(APIView):
@@ -400,21 +383,17 @@ class ForgotPasswordVerifyView(APIView):
             Q(student_id=identifier)
         ).first()
 
-        if not user:
-            return Response({
-                'success': False,
-                'message': 'User not found.'
-            }, status=status.HTTP_404_NOT_FOUND)
+        otp_obj = None
+        if user:
+            # Find the latest valid OTP
+            otp_obj = PhoneOTP.objects.filter(
+                user=user,
+                otp_code=otp_code,
+                is_used=False,
+                expires_at__gt=timezone.now()
+            ).first()
 
-        # Find the latest valid OTP
-        otp_obj = PhoneOTP.objects.filter(
-            user=user,
-            otp_code=otp_code,
-            is_used=False,
-            expires_at__gt=timezone.now()
-        ).first()
-
-        if not otp_obj:
+        if not user or not otp_obj:
             return Response({
                 'success': False,
                 'message': 'Invalid or expired verification code.'
