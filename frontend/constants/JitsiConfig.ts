@@ -41,8 +41,8 @@ export function getRoomName(classId: number | string): string {
 /**
  * Validate Jitsi configuration
  */
-export function validateJitsiConfig(): boolean {
-    if (!JITSI_DOMAIN) {
+export function validateJitsiConfig(domain: string = JITSI_DOMAIN): boolean {
+    if (!domain) {
         console.warn('Jitsi domain not configured.');
         return false;
     }
