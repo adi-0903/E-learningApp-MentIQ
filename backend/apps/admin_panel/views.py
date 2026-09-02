@@ -659,9 +659,9 @@ class AdminAttendanceStudentSummaryView(APIView):
     permission_classes = [IsAuthenticated, IsAdmin]
 
     def get(self, request):
+        from collections import defaultdict
         from apps.enrollments.models import Enrollment
-        from django.db.models import Count, Q, Subquery, OuterRef, Value, FloatField
-        from django.db.models.functions import Coalesce
+        from django.db.models import Count, Q
 
         search = request.query_params.get('search', '')
         course_id = request.query_params.get('course', '')
@@ -673,39 +673,85 @@ class AdminAttendanceStudentSummaryView(APIView):
                 Q(name__icontains=search) | Q(email__icontains=search) | Q(student_id__icontains=search)
             )
 
+        students = list(students_qs[:100])  # Cap at 100
+        if not students:
+            return Response({
+                'success': True,
+                'count': 0,
+                'data': [],
+            })
+
+        student_ids = [s.id for s in students]
+
+        # Get all active enrollments for these students upfront
+        enrollments_qs = Enrollment.objects.filter(
+            student_id__in=student_ids, is_active=True
+        ).select_related('course')
+
+        if course_id:
+            enrollments_qs = enrollments_qs.filter(course_id=course_id)
+
+        enrollments = list(enrollments_qs)
+
+        # Group enrollments by student_id and collect course_ids
+        student_enrollments = defaultdict(list)
+        course_ids = set()
+        for enrollment in enrollments:
+            student_enrollments[enrollment.student_id].append(enrollment)
+            course_ids.add(enrollment.course_id)
+
+        # Pre-query session counts per course
+        session_counts = {}
+        if course_ids:
+            session_counts_qs = (
+                AttendanceSession.objects.filter(course_id__in=course_ids)
+                .values('course_id')
+                .annotate(total=Count('id'))
+            )
+            session_counts = {item['course_id']: item['total'] for item in session_counts_qs}
+
+        # Pre-query student attendance per course: (student_id, course_id) -> (present_count, absent_count)
+        course_attendance_map = {}
+        if course_ids and student_ids:
+            records_qs = (
+                AttendanceRecord.objects.filter(
+                    student_id__in=student_ids,
+                    session__course_id__in=course_ids
+                )
+                .values('student_id', 'session__course_id')
+                .annotate(
+                    present_count=Count('id', filter=Q(is_present=True)),
+                    absent_count=Count('id', filter=Q(is_present=False))
+                )
+            )
+            for row in records_qs:
+                key = (row['student_id'], row['session__course_id'])
+                course_attendance_map[key] = (row['present_count'], row['absent_count'])
+
+        # Pre-query overall student attendance records: student_id -> (overall_total, overall_present)
+        overall_attendance_map = {}
+        if student_ids:
+            overall_qs = (
+                AttendanceRecord.objects.filter(student_id__in=student_ids)
+                .values('student_id')
+                .annotate(
+                    total=Count('id'),
+                    present=Count('id', filter=Q(is_present=True))
+                )
+            )
+            for row in overall_qs:
+                overall_attendance_map[row['student_id']] = (row['total'], row['present'])
+
         result = []
-        for student in students_qs[:100]:  # Cap at 100
-            # Get enrolled courses
-            enrollments = Enrollment.objects.filter(
-                student=student, is_active=True
-            ).select_related('course')
-
-            if course_id:
-                enrollments = enrollments.filter(course_id=course_id)
-
+        for student in students:
+            student_enrolls = student_enrollments.get(student.id, [])
             courses_data = []
-            total_sessions = 0
-            total_present = 0
 
-            for enrollment in enrollments:
+            for enrollment in student_enrolls:
                 course = enrollment.course
-                # All sessions for this course
-                sessions = AttendanceSession.objects.filter(course=course)
-                session_count = sessions.count()
+                session_count = session_counts.get(course.id, 0)
 
-                # Student's attendance for this course
-                present_count = AttendanceRecord.objects.filter(
-                    session__course=course,
-                    student=student,
-                    is_present=True
-                ).count()
-
-                absent_count = AttendanceRecord.objects.filter(
-                    session__course=course,
-                    student=student,
-                    is_present=False
-                ).count()
-
+                present_count, absent_count = course_attendance_map.get((student.id, course.id), (0, 0))
                 recorded = present_count + absent_count
                 percentage = round((present_count / recorded) * 100, 1) if recorded > 0 else 0
 
@@ -718,17 +764,12 @@ class AdminAttendanceStudentSummaryView(APIView):
                     'percentage': percentage,
                 })
 
-                total_sessions += session_count
-                total_present += present_count
-
-            overall_records = AttendanceRecord.objects.filter(student=student)
-            overall_total = overall_records.count()
-            overall_present = overall_records.filter(is_present=True).count()
+            overall_total, overall_present = overall_attendance_map.get(student.id, (0, 0))
             overall_pct = round((overall_present / overall_total) * 100, 1) if overall_total > 0 else 0
 
             result.append({
                 'student_id': str(student.id),
-                'student_uid': student.uid,
+                'student_uid': getattr(student, 'student_id', str(student.id)),
                 'name': student.name,
                 'email': student.email,
                 'profile_image_url': student.profile_image_url if hasattr(student, 'profile_image_url') else '',
