@@ -119,22 +119,22 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 
     def save(self, *args, **kwargs):
         if self.role == self.RoleChoices.TEACHER and not self.teacher_id:
-            import random
+            import secrets
             while True:
-                tid = str(random.randint(10000, 99999))
+                tid = str(secrets.randbelow(90000) + 10000)
                 if not User.objects.filter(teacher_id=tid).exists():
                     self.teacher_id = tid
                     break
         
         if self.role == self.RoleChoices.STUDENT and not self.student_id:
-            import random
+            import secrets
             from datetime import datetime
             
             current_year_suffix = str(datetime.now().year)[-2:] # e.g., '26' for 2026
             prefix = f"1{current_year_suffix}" # e.g., '126'
             
             while True:
-                random_digits = str(random.randint(0, 99999)).zfill(5)
+                random_digits = str(secrets.randbelow(100000)).zfill(5)
                 sid = f"{prefix}{random_digits}"
                 
                 if not User.objects.filter(student_id=sid).exists():
@@ -142,9 +142,9 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
                     break
         
         if self.role == self.RoleChoices.PARENT and not self.parent_id:
-            import random
+            import secrets
             while True:
-                pid = str(random.randint(100000, 999999))
+                pid = str(secrets.randbelow(900000) + 100000)
                 if not User.objects.filter(parent_id=pid).exists():
                     self.parent_id = pid
                     break
