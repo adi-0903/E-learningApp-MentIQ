@@ -163,21 +163,24 @@ class LeaderboardView(APIView):
             query = query.filter(student__class_section=request.user.class_section)
         
         # Build leaderboard data
+        top_entries = list(query.order_by('-rare_badges', '-total_badges')[:100])
+        student_ids = [entry['student'] for entry in top_entries]
+        users_by_id = {user.id: user for user in User.objects.filter(id__in=student_ids)}
+
         leaderboard_data = []
-        for idx, entry in enumerate(query.order_by('-rare_badges', '-total_badges')[:100]):
-            try:
-                student = User.objects.get(id=entry['student'])
-                leaderboard_data.append({
-                    'rank': idx + 1,
-                    'student_id': str(entry['student']),
-                    'student_name': student.name,
-                    'student_email': student.email,
-                    'total_badges': entry['total_badges'],
-                    'rare_badges': entry['rare_badges'],
-                    'score': entry['rare_badges'] * 10 + entry['total_badges']
-                })
-            except User.DoesNotExist:
+        for idx, entry in enumerate(top_entries):
+            student = users_by_id.get(entry['student'])
+            if not student:
                 continue
+            leaderboard_data.append({
+                'rank': idx + 1,
+                'student_id': str(entry['student']),
+                'student_name': student.name,
+                'student_email': student.email,
+                'total_badges': entry['total_badges'],
+                'rare_badges': entry['rare_badges'],
+                'score': entry['rare_badges'] * 10 + entry['total_badges']
+            })
         
         serializer = LeaderboardEntrySerializer(leaderboard_data, many=True)
         return Response(serializer.data)
