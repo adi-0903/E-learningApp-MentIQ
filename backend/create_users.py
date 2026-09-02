@@ -24,7 +24,7 @@ users_to_create = [
 
 created_users = []
 
-print("Updating user passwords to: firstname@12345")
+print("Updating user passwords...")
 
 for user_data in users_to_create:
     email = user_data['email']
@@ -56,4 +56,4 @@ for user_data in users_to_create:
 
 print("\n--- USER CREDENTIALS ---")
 for u in created_users:
-    print(f"Role: {u['role']:8} | Email: {u['email']:25} | Password: {u['password']}")
+    print(f"Role: {u['role']:8} | Email: {u['email']:25} | Password: [PROTECTED]")
