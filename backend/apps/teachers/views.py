@@ -356,6 +356,33 @@ class TeacherStudentDetailView(APIView):
             'courses': []
         }
 
+        course_ids = [e.course_id for e in enrollments]
+
+        course_progress_map = {
+            cp.course_id: cp.progress_percentage
+            for cp in CourseProgress.objects.filter(student=student, course_id__in=course_ids)
+        }
+
+        lessons_by_course = {}
+        for lesson in Lesson.objects.filter(course_id__in=course_ids).order_by('sequence_number'):
+            lessons_by_course.setdefault(lesson.course_id, []).append(lesson)
+
+        lesson_progress_map = {
+            lp.lesson_id: lp
+            for lp in LessonProgress.objects.filter(student=student, lesson__course_id__in=course_ids)
+        }
+
+        quiz_attempts_by_course = {}
+        all_attempts = QuizAttempt.objects.filter(
+            student=student, quiz__course_id__in=course_ids
+        ).select_related('quiz').order_by('quiz_id', '-score', '-created_at')
+
+        seen_quizzes = set()
+        for qa in all_attempts:
+            if qa.quiz_id not in seen_quizzes:
+                seen_quizzes.add(qa.quiz_id)
+                quiz_attempts_by_course.setdefault(qa.quiz.course_id, []).append(qa)
+
         processed_course_ids = set()
 
         for enrollment in enrollments:
@@ -366,19 +393,14 @@ class TeacherStudentDetailView(APIView):
                 continue
             processed_course_ids.add(course.id)
             
-            progress_obj = CourseProgress.objects.filter(student=student, course=course).first()
-            progress_pct = progress_obj.progress_percentage if progress_obj else 0.0
+            progress_pct = course_progress_map.get(course.id, 0.0)
 
             # Lessons and progress
-            lessons = Lesson.objects.filter(course=course).order_by('sequence_number')
-            progress_map = {
-                lp.lesson_id: lp 
-                for lp in LessonProgress.objects.filter(student=student, lesson__course=course)
-            }
+            lessons = lessons_by_course.get(course.id, [])
             
             lesson_details = []
             for lesson in lessons:
-                progress = progress_map.get(lesson.id)
+                progress = lesson_progress_map.get(lesson.id)
                 lesson_details.append({
                     'id': lesson.id,
                     'title': lesson.title,
@@ -387,20 +409,7 @@ class TeacherStudentDetailView(APIView):
                     'last_accessed': progress.updated_at if progress else None,
                 })
 
-            # Quiz attempts - Group by quiz to show only unique quizzes or best attempts
-            # For the history, we'll show unique quizzes with their best score
-            # We use set() and order_by() to ensure distinctness is not compromised by default model ordering
-            unique_quiz_ids = set(QuizAttempt.objects.filter(
-                student=student, quiz__course=course
-            ).order_by().values_list('quiz_id', flat=True).distinct())
-            
-            best_attempts = []
-            for q_id in unique_quiz_ids:
-                best_attempt = QuizAttempt.objects.filter(
-                    student=student, quiz_id=q_id
-                ).order_by('-score', '-created_at').first()
-                if best_attempt:
-                    best_attempts.append(best_attempt)
+            best_attempts = quiz_attempts_by_course.get(course.id, [])
 
             course_data = {
                 'id': course.id,

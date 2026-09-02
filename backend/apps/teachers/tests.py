@@ -95,3 +95,32 @@ class TeacherStudentsViewsTests(TestCase):
     def test_unauthenticated_access(self):
         response = self.client.get('/api/v1/teachers/students/')
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_teacher_student_detail_view(self):
+        # Create additional courses & enrollments to test query behavior across multiple courses
+        extra_courses = []
+        for i in range(2, 6):
+            c = Course.objects.create(
+                title=f'Test Course {i}',
+                teacher=self.teacher,
+                is_published=True
+            )
+            Enrollment.objects.create(
+                student=self.student,
+                course=c,
+                is_active=True
+            )
+            CourseProgress.objects.create(
+                student=self.student,
+                course=c,
+                progress_percentage=float(i * 10)
+            )
+            extra_courses.append(c)
+
+        self.client.force_authenticate(user=self.teacher)
+        response = self.client.get(f'/api/v1/teachers/students/{self.student.id}/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertTrue(response.data.get('success'))
+        data = response.data.get('data')
+        self.assertEqual(data['student']['id'], self.student.id)
+        self.assertEqual(len(data['courses']), 5)
